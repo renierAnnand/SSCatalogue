@@ -7,39 +7,39 @@ import re
 
 # Page configuration
 st.set_page_config(
-    page_title="Shared Services Digital Catalogue",
+    page_title="Group Shared Services Catalog",
     page_icon="🏢",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for enhanced styling
+# Custom CSS for B2B service catalog styling
 st.markdown("""
 <style>
     .main-header {
         text-align: center;
         padding: 2rem 0;
-        background: linear-gradient(90deg, #1f77b4, #ff7f0e);
+        background: linear-gradient(90deg, #1f77b4, #2e86ab);
         color: white;
         margin: -1rem -1rem 2rem -1rem;
         border-radius: 0 0 20px 20px;
     }
     
-    .dept-card {
+    .service-dept-card {
         background: white;
         padding: 2rem;
         border-radius: 15px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         border: 2px solid #f0f0f0;
         text-align: center;
-        height: 320px;
+        height: 350px;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         cursor: pointer;
         position: relative;
         margin: 1rem 0;
     }
     
-    .dept-card:hover {
+    .service-dept-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         border-color: #1f77b4;
@@ -73,13 +73,17 @@ st.markdown("""
         margin-bottom: 1rem;
     }
     
-    .dept-metrics {
+    .pricing-info {
+        background: #e8f4fd;
+        padding: 0.5rem;
+        border-radius: 8px;
         font-size: 0.8rem;
-        color: #888;
+        color: #1976d2;
+        font-weight: bold;
         margin-top: 1rem;
     }
     
-    .soon-badge {
+    .coming-soon-badge {
         position: absolute;
         top: 15px;
         right: 15px;
@@ -92,7 +96,7 @@ st.markdown("""
         transform: rotate(15deg);
     }
     
-    .service-card {
+    .service-offering-card {
         background-color: white;
         padding: 20px;
         border-radius: 10px;
@@ -102,34 +106,44 @@ st.markdown("""
         transition: transform 0.2s ease;
     }
     
-    .service-card:hover {
+    .service-offering-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     
-    .sla-badge {
+    .pricing-badge {
         background: #28a745;
         color: white;
-        padding: 0.25rem 0.5rem;
+        padding: 0.25rem 0.75rem;
         border-radius: 12px;
         font-size: 0.75rem;
         font-weight: bold;
+        display: inline-block;
+        margin: 0.25rem 0;
     }
     
-    .priority-critical { background: #dc3545; }
-    .priority-high { background: #fd7e14; }
-    .priority-medium { background: #ffc107; color: #000; }
-    .priority-low { background: #28a745; }
+    .tier-standard { background: #28a745; }
+    .tier-premium { background: #fd7e14; }
+    .tier-enterprise { background: #6f42c1; }
     
-    .metric-row {
-        background-color: #f8f9fa;
+    .budget-selection {
+        background: #f8f9fa;
         padding: 1rem;
         border-radius: 10px;
         margin: 1rem 0;
+        border: 2px solid #28a745;
     }
     
-    .coming-soon {
-        background-color: #fff3cd;
+    .roi-highlight {
+        background: linear-gradient(90deg, #e8f5e8, #f0f8f0);
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+        border-left: 4px solid #28a745;
+    }
+    
+    .subsidiary-portal {
+        background: #fff3cd;
         border: 1px solid #ffeaa7;
         padding: 20px;
         border-radius: 10px;
@@ -137,37 +151,15 @@ st.markdown("""
         margin: 20px 0;
     }
     
-    .search-container {
-        background: #f8f9fa;
+    .cost-calculator {
+        background: #e3f2fd;
         padding: 1rem;
         border-radius: 10px;
         margin: 1rem 0;
     }
     
-    .category-header {
-        background: linear-gradient(90deg, #e3f2fd, #f3e5f5);
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0 0.5rem 0;
-        border-left: 4px solid #1976d2;
-    }
-    
-    .request-button {
-        background: #1f77b4;
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background 0.3s ease;
-    }
-    
-    .request-button:hover {
-        background: #1565c0;
-    }
-    
-    .feedback-section {
-        background: #e8f5e8;
+    .service-tier-tabs {
+        background: #f8f9fa;
         padding: 1rem;
         border-radius: 8px;
         margin: 1rem 0;
@@ -175,262 +167,176 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
+# Initialize session state for budget selections
+if 'selected_services' not in st.session_state:
+    st.session_state.selected_services = {}
+if 'current_subsidiary' not in st.session_state:
+    st.session_state.current_subsidiary = None
+if 'budget_year' not in st.session_state:
+    st.session_state.budget_year = 2025
 if 'selected_department' not in st.session_state:
     st.session_state.selected_department = None
-if 'service_requests' not in st.session_state:
-    st.session_state.service_requests = []
-if 'feedback_data' not in st.session_state:
-    st.session_state.feedback_data = []
 
-# Enhanced service data with governance and actionable information
+# Enhanced service offerings data for subsidiaries
 @st.cache_data
-def load_enhanced_service_data():
-    """Load comprehensive service data with all required fields"""
+def load_service_offerings():
+    """Load comprehensive service offerings for subsidiaries"""
     
-    # Enhanced IT Services with complete information
-    it_services = [
+    # IT Service Offerings
+    it_offerings = [
         {
-            "service_name": "Oracle HCM Absence Management Setup",
+            "service_name": "Oracle HCM Cloud Services",
             "category": "Human Capital Management",
-            "description": "Configure and manage employee leave tracking, approval workflows, and absence reporting in Oracle HCM. Get automated leave calculations and compliance reporting.",
-            "business_value": "Reduces manual leave processing by 80% and ensures compliance with labor regulations.",
-            "how_to_request": "Submit a ticket through IT Service Portal with required absence types and approval hierarchy details.",
-            "target_users": "HR Team, People Managers, All Employees",
-            "service_owner": "Oracle HCM Team",
-            "sla_hours": 72,
-            "sla_description": "3 business days for standard configuration",
-            "cost_model": "Fixed scope rate",
-            "prerequisites": "Valid Oracle HCM license, approved business requirements",
-            "available_hours": "Monday-Friday 8:00-17:00",
-            "priority": "Medium",
-            "request_volume_monthly": 8,
-            "satisfaction_score": 4.2
+            "description": "Complete HR management solution including payroll, absence management, performance tracking, and learning management for your organization.",
+            "business_value": "Reduce HR operational costs by 40%, improve employee satisfaction by 35%, ensure 100% compliance with labor regulations.",
+            "service_tiers": {
+                "Standard": {"price_per_employee_monthly": 25, "features": "Basic HCM, Payroll, Absence Management", "min_users": 50},
+                "Premium": {"price_per_employee_monthly": 45, "features": "Full HCM Suite, Advanced Analytics, Mobile Access", "min_users": 100},
+                "Enterprise": {"price_per_employee_monthly": 65, "features": "Complete Platform, AI-powered Insights, Custom Integration", "min_users": 500}
+            },
+            "implementation_cost": 50000,
+            "ongoing_support": "24/7 support included",
+            "contract_terms": "12-month minimum commitment",
+            "target_subsidiaries": "All subsidiaries with 50+ employees",
+            "roi_timeline": "ROI achieved within 8-12 months",
+            "case_studies": "ABC Subsidiary reduced HR costs by $200K annually",
+            "service_owner": "Oracle HCM Center of Excellence",
+            "available_regions": "Global"
         },
         {
-            "service_name": "Oracle Payroll Implementation",
-            "category": "Payroll & Benefits",
-            "description": "Implement complete payroll processing solution with automated salary calculations, tax compliance, and integrated reporting for your organization.",
-            "business_value": "Ensures 100% accurate payroll processing and reduces payroll cycle time by 50%.",
-            "how_to_request": "Contact Payroll Implementation Team via email with company structure and payroll requirements document.",
-            "target_users": "Payroll Team, Finance Department, HR Leadership",
-            "service_owner": "Payroll Systems Team",
-            "sla_hours": 336,
-            "sla_description": "14 business days for standard implementation",
-            "cost_model": "Project-based pricing",
-            "prerequisites": "Organizational chart, salary structures, tax registration documents",
-            "available_hours": "Monday-Friday 8:00-17:00",
-            "priority": "High",
-            "request_volume_monthly": 3,
-            "satisfaction_score": 4.5
+            "service_name": "Enterprise IT Infrastructure Services",
+            "category": "Infrastructure & Operations",
+            "description": "Comprehensive IT infrastructure management including cloud hosting, security, backup, monitoring, and 24/7 support for your business operations.",
+            "business_value": "Reduce IT infrastructure costs by 30%, achieve 99.9% uptime, eliminate need for in-house IT infrastructure team.",
+            "service_tiers": {
+                "Standard": {"price_per_user_monthly": 35, "features": "Basic Cloud Infrastructure, Email, Office Apps", "min_users": 25},
+                "Premium": {"price_per_user_monthly": 55, "features": "Advanced Security, Backup, Monitoring, VPN", "min_users": 50},
+                "Enterprise": {"price_per_user_monthly": 85, "features": "Custom Infrastructure, Advanced Analytics, Dedicated Support", "min_users": 200}
+            },
+            "implementation_cost": 75000,
+            "ongoing_support": "24/7 NOC support included",
+            "contract_terms": "24-month commitment recommended",
+            "target_subsidiaries": "All subsidiaries requiring IT infrastructure",
+            "roi_timeline": "ROI achieved within 6-9 months",
+            "case_studies": "DEF Subsidiary eliminated $500K annual IT infrastructure costs",
+            "service_owner": "Infrastructure Services Team",
+            "available_regions": "Americas, EMEA, APAC"
         },
         {
-            "service_name": "Learning Management System Access",
-            "category": "Learning & Development",
-            "description": "Get access to Oracle Learning platform for employee training, certification tracking, and skills development programs with personalized learning paths.",
-            "business_value": "Improves employee skills development efficiency by 60% and tracks compliance training automatically.",
-            "how_to_request": "Request through Manager approval in Employee Self-Service portal or submit form to L&D team.",
-            "target_users": "All Employees, Learning & Development Team, Managers",
-            "service_owner": "Learning & Development",
-            "sla_hours": 24,
-            "sla_description": "24 hours for access provisioning",
-            "cost_model": "Included in employee benefits",
-            "prerequisites": "Manager approval, completed orientation program",
-            "available_hours": "24/7 self-service, support Monday-Friday 8:00-17:00",
-            "priority": "Medium",
-            "request_volume_monthly": 45,
-            "satisfaction_score": 4.1
-        },
-        {
-            "service_name": "IT Help Desk - Hardware Support",
-            "category": "Technical Support",
-            "description": "Get immediate support for computer hardware issues, equipment replacement, and peripheral setup. Includes diagnosis, repair, and replacement services.",
-            "business_value": "Minimizes business disruption with 95% first-call resolution rate for hardware issues.",
-            "how_to_request": "Call IT Help Desk at ext. 2000, submit online ticket, or use chat support in company portal.",
-            "target_users": "All Employees",
-            "service_owner": "IT Support Team",
-            "sla_hours": 4,
-            "sla_description": "4 hours for critical hardware issues, 24 hours for standard requests",
-            "cost_model": "Included in IT support package",
-            "prerequisites": "Valid employee ID, asset tag information",
-            "available_hours": "24/7 for critical issues, regular support Monday-Friday 7:00-19:00",
-            "priority": "High",
-            "request_volume_monthly": 120,
-            "satisfaction_score": 4.3
-        },
-        {
-            "service_name": "Network Access & VPN Setup",
-            "category": "Network & Security",
-            "description": "Configure secure network access and VPN connectivity for remote work. Includes security protocols setup and multi-factor authentication.",
-            "business_value": "Enables secure remote work capabilities while maintaining 99.9% network security standards.",
-            "how_to_request": "Submit security access form through IT portal with manager approval and business justification.",
-            "target_users": "Remote Employees, Contractors, Traveling Staff",
-            "service_owner": "Network Security Team",
-            "sla_hours": 8,
-            "sla_description": "8 hours for standard VPN setup, 2 hours for emergency access",
-            "cost_model": "Included in security package",
-            "prerequisites": "Security clearance, completed security training, approved device",
-            "available_hours": "Monday-Friday 8:00-17:00, emergency support 24/7",
-            "priority": "Medium",
-            "request_volume_monthly": 35,
-            "satisfaction_score": 4.0
+            "service_name": "Digital Transformation Consulting",
+            "category": "Strategic Consulting",
+            "description": "Expert consulting services to digitize your business processes, implement automation, and optimize operations for competitive advantage.",
+            "business_value": "Increase operational efficiency by 50%, reduce manual processes by 70%, accelerate digital adoption.",
+            "service_tiers": {
+                "Assessment": {"price_fixed": 25000, "features": "Digital Maturity Assessment, Roadmap Development", "duration": "4-6 weeks"},
+                "Implementation": {"price_per_month": 50000, "features": "Process Digitization, System Integration, Training", "duration": "6-12 months"},
+                "Transformation": {"price_per_month": 100000, "features": "Complete Digital Transformation, Change Management", "duration": "12-24 months"}
+            },
+            "implementation_cost": 0,
+            "ongoing_support": "Quarterly reviews included",
+            "contract_terms": "Project-based engagement",
+            "target_subsidiaries": "Subsidiaries undergoing digital transformation",
+            "roi_timeline": "ROI achieved within 12-18 months",
+            "case_studies": "GHI Subsidiary achieved 200% ROI in 18 months",
+            "service_owner": "Digital Transformation Office",
+            "available_regions": "Global with local consultants"
         }
     ]
     
-    # Enhanced Procurement Services
-    procurement_services = [
+    # Procurement Service Offerings
+    procurement_offerings = [
         {
-            "service_name": "Supplier Registration & Onboarding",
+            "service_name": "Strategic Sourcing & Procurement Services",
+            "category": "Procurement Management",
+            "description": "End-to-end procurement services including strategic sourcing, vendor management, contract negotiation, and procurement operations.",
+            "business_value": "Achieve 15-25% cost savings, reduce procurement cycle time by 60%, ensure compliance and risk mitigation.",
+            "service_tiers": {
+                "Essential": {"price_percentage": 2.5, "features": "Basic Procurement Support, Vendor Management", "spend_threshold": 1000000},
+                "Professional": {"price_percentage": 2.0, "features": "Strategic Sourcing, Contract Management, Analytics", "spend_threshold": 5000000},
+                "Enterprise": {"price_percentage": 1.5, "features": "Complete Procurement Outsourcing, Advanced Analytics", "spend_threshold": 20000000}
+            },
+            "implementation_cost": 30000,
+            "ongoing_support": "Dedicated procurement team",
+            "contract_terms": "36-month commitment for best rates",
+            "target_subsidiaries": "Subsidiaries with significant procurement spend",
+            "roi_timeline": "Savings realized within 3-6 months",
+            "case_studies": "JKL Subsidiary saved $2M annually on $10M spend",
+            "service_owner": "Strategic Procurement Team",
+            "available_regions": "Global with local sourcing expertise"
+        },
+        {
+            "service_name": "Supplier Onboarding & Management Platform",
             "category": "Vendor Management",
-            "description": "Complete supplier registration process including documentation verification, compliance checking, and system setup for new vendors.",
-            "business_value": "Ensures 100% compliant supplier base and reduces onboarding time by 40%.",
-            "how_to_request": "Submit supplier details through Procurement Portal or email procurement team with vendor information package.",
-            "target_users": "Procurement Team, Department Heads, Project Managers",
-            "service_owner": "Vendor Management Team",
-            "sla_hours": 72,
-            "sla_description": "3 business days for standard registration",
-            "cost_model": "No charge to internal requesters",
-            "prerequisites": "Vendor tax documents, bank details, insurance certificates, business license",
-            "available_hours": "Monday-Friday 8:00-17:00",
-            "priority": "Medium",
-            "request_volume_monthly": 25,
-            "satisfaction_score": 4.2
-        },
-        {
-            "service_name": "Purchase Request Processing",
-            "category": "Purchasing",
-            "description": "End-to-end purchase request handling from requisition to purchase order, including approval workflows and supplier coordination.",
-            "business_value": "Reduces procurement cycle time by 50% and ensures 100% compliance with purchasing policies.",
-            "how_to_request": "Submit purchase requisition through ERP system with detailed specifications and budget approval.",
-            "target_users": "All Departments, Project Managers, Budget Holders",
-            "service_owner": "Purchasing Team",
-            "sla_hours": 48,
-            "sla_description": "2 business days for standard requests under $10K",
-            "cost_model": "Included in departmental overhead",
-            "prerequisites": "Approved budget, detailed specifications, three quotes for purchases over $5K",
-            "available_hours": "Monday-Friday 8:00-17:00",
-            "priority": "High",
-            "request_volume_monthly": 85,
-            "satisfaction_score": 4.1
-        },
-        {
-            "service_name": "Procurement Training & Support",
-            "category": "Training & Development",
-            "description": "Comprehensive training on procurement policies, system usage, and best practices for department procurement coordinators.",
-            "business_value": "Improves procurement compliance by 85% and reduces processing errors by 70%.",
-            "how_to_request": "Register for training sessions through Learning Portal or request customized training via procurement team.",
-            "target_users": "Department Coordinators, New Employees, Project Managers",
-            "service_owner": "Procurement Training Team",
-            "sla_hours": 168,
-            "sla_description": "7 days to schedule training session",
-            "cost_model": "Included in training budget",
-            "prerequisites": "Basic computer skills, employee access to ERP system",
-            "available_hours": "Monday-Friday 9:00-16:00",
-            "priority": "Medium",
-            "request_volume_monthly": 15,
-            "satisfaction_score": 4.4
-        },
-        {
-            "service_name": "Strategic Sourcing Support",
-            "category": "Strategic Planning",
-            "description": "Professional sourcing support for complex procurements including market analysis, RFP development, and vendor evaluation.",
-            "business_value": "Achieves average 15% cost savings and ensures optimal vendor selection for strategic purchases.",
-            "how_to_request": "Submit strategic sourcing request through procurement with project details and business case.",
-            "target_users": "Senior Management, Department Heads, Project Leaders",
-            "service_owner": "Strategic Sourcing Team",
-            "sla_hours": 120,
-            "sla_description": "5 business days for project initiation",
-            "cost_model": "Shared savings model",
-            "prerequisites": "Approved project budget over $50K, defined requirements, stakeholder alignment",
-            "available_hours": "Monday-Friday 8:00-17:00",
-            "priority": "High",
-            "request_volume_monthly": 8,
-            "satisfaction_score": 4.6
+            "description": "Comprehensive supplier lifecycle management including onboarding, performance monitoring, risk assessment, and compliance tracking.",
+            "business_value": "Reduce supplier onboarding time by 80%, improve supplier performance by 40%, ensure 100% compliance.",
+            "service_tiers": {
+                "Standard": {"price_per_supplier": 50, "features": "Basic Onboarding, Performance Tracking", "max_suppliers": 500},
+                "Premium": {"price_per_supplier": 35, "features": "Advanced Analytics, Risk Assessment, Integration", "max_suppliers": 2000},
+                "Enterprise": {"price_per_supplier": 25, "features": "Custom Workflows, AI-powered Insights, Unlimited", "max_suppliers": "Unlimited"}
+            },
+            "implementation_cost": 15000,
+            "ongoing_support": "Platform support and training included",
+            "contract_terms": "12-month minimum commitment",
+            "target_subsidiaries": "Subsidiaries with complex supplier networks",
+            "roi_timeline": "ROI achieved within 4-6 months",
+            "case_studies": "MNO Subsidiary reduced supplier management costs by 60%",
+            "service_owner": "Vendor Management Platform Team",
+            "available_regions": "Global platform with local compliance"
         }
     ]
     
-    # Enhanced Facility Services
-    facility_services = [
+    # Facilities Service Offerings
+    facilities_offerings = [
         {
-            "service_name": "Workspace Setup & Allocation",
-            "category": "Space Management",
-            "description": "Professional workspace setup including desk assignment, equipment installation, and ergonomic assessment for new employees or relocations.",
-            "business_value": "Ensures 100% ready workspaces for new hires and improves employee satisfaction by 30%.",
-            "how_to_request": "Submit workspace request through HR onboarding system or Facilities portal with move-in date and requirements.",
-            "target_users": "HR Team, New Employees, Department Managers",
-            "service_owner": "Space Planning Team",
-            "sla_hours": 48,
-            "sla_description": "2 business days for standard setup",
-            "cost_model": "Included in facilities overhead",
-            "prerequisites": "Approved headcount, security clearance, equipment specifications",
-            "available_hours": "Monday-Friday 8:00-17:00",
-            "priority": "High",
-            "request_volume_monthly": 20,
-            "satisfaction_score": 4.3
+            "service_name": "Integrated Facilities Management",
+            "category": "Facilities Operations",
+            "description": "Complete facilities management including maintenance, security, cleaning, space planning, and asset management for your locations.",
+            "business_value": "Reduce facilities costs by 25%, improve workplace satisfaction by 45%, ensure 99.5% service availability.",
+            "service_tiers": {
+                "Basic": {"price_per_sqft_monthly": 3.5, "features": "Basic Maintenance, Cleaning, Security", "min_sqft": 10000},
+                "Comprehensive": {"price_per_sqft_monthly": 5.0, "features": "Full FM Services, Space Planning, Asset Management", "min_sqft": 25000},
+                "Premium": {"price_per_sqft_monthly": 7.0, "features": "Concierge Services, Advanced Analytics, Sustainability", "min_sqft": 50000}
+            },
+            "implementation_cost": 25000,
+            "ongoing_support": "24/7 service desk included",
+            "contract_terms": "24-month commitment for optimal rates",
+            "target_subsidiaries": "Subsidiaries with significant office space",
+            "roi_timeline": "Savings realized immediately",
+            "case_studies": "PQR Subsidiary reduced facilities costs by $300K annually",
+            "service_owner": "Integrated Facilities Management Team",
+            "available_regions": "Major metropolitan areas globally"
         },
         {
-            "service_name": "Preventive Maintenance Services",
-            "category": "Asset Maintenance",
-            "description": "Scheduled maintenance for building systems, furniture, and equipment to prevent breakdowns and extend asset life.",
-            "business_value": "Reduces emergency repairs by 60% and extends equipment life by 25%.",
-            "how_to_request": "Maintenance requests are automatically scheduled. Report issues through Facilities portal for additional service.",
-            "target_users": "All Building Occupants",
-            "service_owner": "Maintenance Team",
-            "sla_hours": 168,
-            "sla_description": "Scheduled based on maintenance calendar",
-            "cost_model": "Included in facilities budget",
-            "prerequisites": "None for scheduled maintenance",
-            "available_hours": "Monday-Friday 7:00-18:00",
-            "priority": "Medium",
-            "request_volume_monthly": 50,
-            "satisfaction_score": 4.0
-        },
-        {
-            "service_name": "Security & Access Control",
-            "category": "Safety & Security",
-            "description": "Comprehensive building security including access card management, visitor registration, and 24/7 monitoring services.",
-            "business_value": "Maintains 100% security compliance and reduces security incidents by 90%.",
-            "how_to_request": "Submit access requests through Security portal with manager approval. Report security issues immediately by calling 3911.",
-            "target_users": "All Employees, Visitors, Contractors",
-            "service_owner": "Security Team",
-            "sla_hours": 2,
-            "sla_description": "2 hours for access provisioning, immediate for security incidents",
-            "cost_model": "Included in security budget",
-            "prerequisites": "Security clearance, photo ID, manager approval",
-            "available_hours": "24/7 monitoring, access requests Monday-Friday 8:00-17:00",
-            "priority": "Critical",
-            "request_volume_monthly": 40,
-            "satisfaction_score": 4.5
-        },
-        {
-            "service_name": "Environmental Services",
-            "category": "Cleaning & Maintenance",
-            "description": "Professional cleaning, sanitization, and waste management services to maintain healthy and productive work environment.",
-            "business_value": "Maintains 98% cleanliness standards and reduces sick leave by 20%.",
-            "how_to_request": "Standard cleaning is automatically scheduled. Request additional services through Facilities portal.",
-            "target_users": "All Building Occupants",
-            "service_owner": "Environmental Services Team",
-            "sla_hours": 24,
-            "sla_description": "24 hours for additional cleaning requests",
-            "cost_model": "Included in facilities budget",
-            "prerequisites": "None for standard services",
-            "available_hours": "Cleaning: Monday-Friday 6:00-8:00 & 17:00-20:00",
-            "priority": "Medium",
-            "request_volume_monthly": 30,
-            "satisfaction_score": 4.1
+            "service_name": "Workplace Experience & Space Optimization",
+            "category": "Workplace Strategy",
+            "description": "Modern workplace design, space optimization, hybrid work solutions, and employee experience enhancement services.",
+            "business_value": "Optimize space utilization by 40%, increase employee satisfaction by 50%, enable flexible work models.",
+            "service_tiers": {
+                "Assessment": {"price_fixed": 15000, "features": "Space Utilization Analysis, Recommendations", "duration": "2-4 weeks"},
+                "Design": {"price_per_sqft": 25, "features": "Workplace Design, Technology Integration", "min_sqft": 5000},
+                "Implementation": {"price_per_sqft": 75, "features": "Complete Workplace Transformation", "min_sqft": 10000}
+            },
+            "implementation_cost": 0,
+            "ongoing_support": "Quarterly optimization reviews",
+            "contract_terms": "Project-based with optional ongoing support",
+            "target_subsidiaries": "Subsidiaries modernizing workplace strategies",
+            "roi_timeline": "ROI achieved within 12-15 months through space savings",
+            "case_studies": "STU Subsidiary reduced real estate footprint by 30%",
+            "service_owner": "Workplace Strategy Team",
+            "available_regions": "Global with local design partners"
         }
     ]
     
     return {
-        'it_services': pd.DataFrame(it_services),
-        'procurement_services': pd.DataFrame(procurement_services),
-        'facility_services': pd.DataFrame(facility_services)
+        'it_offerings': pd.DataFrame(it_offerings),
+        'procurement_offerings': pd.DataFrame(procurement_offerings),
+        'facilities_offerings': pd.DataFrame(facilities_offerings)
     }
 
-# Enhanced departments configuration
-departments = {
+# Service departments configuration for B2B catalog
+service_departments = {
     "Information Technology": {
-        "description": "Delivering technical support, enterprise applications support, digital and AI solutions, network services, administration services with IT operations to enable innovation, operational excellence, and enterprise security solutions across the organization.",
+        "description": "Enterprise technology solutions, cloud services, digital transformation, and IT infrastructure management to accelerate your business growth and operational excellence.",
         "icon": """<svg width="60" height="60" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
   <rect x="15" y="20" width="50" height="35" rx="3" fill="#2E5BBA" stroke="#1E4A99" stroke-width="2"/>
   <rect x="18" y="23" width="44" height="26" fill="#87CEEB"/>
@@ -449,32 +355,14 @@ departments = {
   <ellipse cx="30" cy="15" rx="4" ry="2.5" fill="#E6F3FF"/>
 </svg>""",
         "color": "#1f77b4",
-        "services_count": 276,
-        "avg_resolution_time": "24-72 hours",
-        "contact": "it-support@company.com",
-        "satisfaction_score": 4.2,
-        "availability": "99.5%"
-    },
-    "Finance": {
-        "description": "Finance Department plays a critical role in supporting an organization's financial health, decision-making, and compliance. It provides a wide range of services that ensure efficient management of money, resources, and reporting.",
-        "icon": "💰",
-        "color": "#ff7f0e",
-        "services_count": "TBD",
-        "avg_resolution_time": "TBD", 
-        "contact": "finance@company.com",
-        "soon": True
-    },
-    "HR": {
-        "description": "Report all your HR issues, inquiries, or complaints, from payroll and attendance to system access and more, and track their resolution with full transparency, instant updates, and streamlined communication through one platform.",
-        "icon": "🧑‍💼",
-        "color": "#2ca02c",
-        "services_count": "TBD",
-        "avg_resolution_time": "TBD",
-        "contact": "hr@company.com",
-        "soon": True
+        "offerings_count": 15,
+        "avg_implementation": "3-6 months",
+        "pricing_model": "Per user/Per transaction",
+        "global_availability": True,
+        "avg_cost_savings": "25-40%"
     },
     "Procurement": {
-        "description": "The Procurement Department focuses on ensuring the availability of materials and services by coordinating with suppliers, updating their information, creating items, and maintaining efficiency, quality, and competitive pricing across all processes.",
+        "description": "Strategic sourcing, vendor management, procurement operations, and supply chain optimization services to reduce costs and improve operational efficiency.",
         "icon": """<svg width="60" height="60" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
   <rect x="20" y="30" width="40" height="30" fill="#CD853F" stroke="#8B4513" stroke-width="2"/>
   <path d="M20 30 L30 20 L50 20 L60 30" fill="#DEB887" stroke="#8B4513" stroke-width="1"/>
@@ -501,14 +389,14 @@ departments = {
   <path d="M48 10 L60 5 L72 10" fill="#2E5BBA"/>
 </svg>""", 
         "color": "#d62728",
-        "services_count": 51,
-        "avg_resolution_time": "24-72 hours",
-        "contact": "procurement@company.com",
-        "satisfaction_score": 4.3,
-        "availability": "99.2%"
+        "offerings_count": 8,
+        "avg_implementation": "2-4 months",
+        "pricing_model": "% of spend/Fixed fee",
+        "global_availability": True,
+        "avg_cost_savings": "15-25%"
     },
-    "Facility": {
-        "description": "The Facilities and Safety Department delivers multiple services in maintenance, safety and security, facility operations, asset inventory. Organizing the workspace to ensure a safe, efficient, and well-organized work environment.",
+    "Facilities": {
+        "description": "Comprehensive facilities management, workplace strategy, space optimization, and corporate real estate services to create efficient and engaging work environments.",
         "icon": """<svg width="60" height="60" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
   <rect x="25" y="25" width="30" height="40" fill="#4A90E2" stroke="#2E5BBA" stroke-width="2"/>
   <path d="M20 25 L40 15 L60 25" fill="#2E5BBA"/>
@@ -541,64 +429,116 @@ departments = {
   <rect x="67" y="62" width="8" height="3" fill="#666"/>
 </svg>""",
         "color": "#9467bd",
-        "services_count": 45,
-        "avg_resolution_time": "2-48 hours",
-        "contact": "facilities@company.com",
-        "satisfaction_score": 4.1,
-        "availability": "99.8%"
+        "offerings_count": 6,
+        "avg_implementation": "1-3 months",
+        "pricing_model": "Per sq ft/Per employee",
+        "global_availability": True,
+        "avg_cost_savings": "20-35%"
     },
-    "Legal": {
-        "description": "Legal advisory, contract management, compliance, and risk management services to support business operations and ensure regulatory compliance.",
+    "Finance & Accounting": {
+        "description": "Financial planning, accounting operations, treasury management, and business intelligence services to optimize financial performance and ensure compliance.",
+        "icon": "💰",
+        "color": "#ff7f0e",
+        "offerings_count": "Coming Soon",
+        "avg_implementation": "TBD",
+        "pricing_model": "TBD", 
+        "global_availability": False,
+        "coming_soon": True
+    },
+    "Human Resources": {
+        "description": "HR operations, talent management, payroll services, learning & development, and workforce analytics to optimize human capital management.",
+        "icon": "🧑‍💼",
+        "color": "#2ca02c",
+        "offerings_count": "Coming Soon",
+        "avg_implementation": "TBD",
+        "pricing_model": "TBD",
+        "global_availability": False,
+        "coming_soon": True
+    },
+    "Legal & Compliance": {
+        "description": "Legal advisory, contract management, regulatory compliance, and risk management services to support business operations and mitigate risks.",
         "icon": "⚖️",
         "color": "#8c564b",
-        "services_count": "TBD", 
-        "avg_resolution_time": "TBD",
-        "contact": "legal@company.com",
-        "soon": True
+        "offerings_count": "Coming Soon", 
+        "avg_implementation": "TBD",
+        "pricing_model": "TBD",
+        "global_availability": False,
+        "coming_soon": True
     }
 }
 
-# Load enhanced service data
-service_data = load_enhanced_service_data()
+# Load service offerings
+service_offerings = load_service_offerings()
 
-def show_main_page():
-    """Enhanced main landing page with KPIs and improved design"""
+def show_main_catalog_page():
+    """Main B2B service catalog page for subsidiaries"""
     
-    # Main header with KPIs
+    # Header with value proposition
     st.markdown("""
     <div class='main-header'>
-        <h1>🏢 Shared Services Digital Catalogue</h1>
-        <p>Your gateway to efficient, professional shared services</p>
+        <h1>🏢 Group Shared Services Catalog</h1>
+        <p>Professional services for subsidiary companies • Budget Planning • Service Selection</p>
+        <p><strong>Proven Results:</strong> 25% average cost reduction • 99.5% service availability • Global delivery</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Quick metrics
+    # Subsidiary selection and budget year
     col1, col2, col3, col4 = st.columns(4)
-    total_services = sum([int(dept["services_count"]) for dept in departments.values() if isinstance(dept["services_count"], int)])
-    active_depts = len([d for d in departments.values() if not d.get("soon", False)])
     
     with col1:
-        st.metric("Total Services", total_services, "🚀")
+        subsidiary_options = [
+            "Select Your Subsidiary...",
+            "ABC Manufacturing Ltd",
+            "DEF Technology Inc", 
+            "GHI Retail Corp",
+            "JKL Energy Solutions",
+            "MNO Financial Services",
+            "PQR Healthcare Group"
+        ]
+        selected_subsidiary = st.selectbox("🏛️ Select Your Subsidiary", subsidiary_options)
+        if selected_subsidiary != "Select Your Subsidiary...":
+            st.session_state.current_subsidiary = selected_subsidiary
+    
     with col2:
-        st.metric("Active Departments", f"{active_depts}/6", "📈")
+        budget_year = st.selectbox("📅 Budget Planning Year", [2024, 2025, 2026])
+        st.session_state.budget_year = budget_year
+    
     with col3:
-        st.metric("Avg Satisfaction", "4.2/5.0", "⭐")
+        if st.session_state.current_subsidiary:
+            st.metric("Your Current Selections", len(st.session_state.selected_services))
+    
     with col4:
-        st.metric("Service Availability", "99.5%", "✅")
+        if st.session_state.current_subsidiary:
+            total_budget = sum([item.get('annual_cost', 0) for item in st.session_state.selected_services.values()])
+            st.metric("Estimated Annual Cost", f"${total_budget:,.0f}")
+    
+    # Key value propositions
+    st.markdown("### 🎯 Why Choose Group Shared Services?")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Average Cost Savings", "25%", "vs building in-house")
+    with col2:
+        st.metric("Service Availability", "99.5%", "SLA guaranteed")
+    with col3:
+        st.metric("Global Reach", "50+ Countries", "Local expertise")
+    with col4:
+        st.metric("Implementation Speed", "50% Faster", "vs traditional approaches")
     
     st.markdown("---")
     
-    # Department cards grid
+    # Service department cards
+    st.markdown("### 🛍️ Browse Our Service Offerings")
     col1, col2, col3 = st.columns(3)
     
-    departments_list = list(departments.items())
+    departments_list = list(service_departments.items())
     
     for i, (dept_name, dept_info) in enumerate(departments_list):
         col = [col1, col2, col3][i % 3]
         
         with col:
-            # Create enhanced clickable card
-            soon_badge = '<div class="soon-badge">Soon</div>' if dept_info.get("soon", False) else ''
+            # Create service department card
+            coming_soon_badge = '<div class="coming-soon-badge">Coming Soon</div>' if dept_info.get("coming_soon", False) else ''
             
             # Handle both SVG and emoji icons
             if dept_info['icon'].startswith('<svg'):
@@ -606,384 +546,193 @@ def show_main_page():
             else:
                 icon_display = f"<div style='font-size: 4rem;'>{dept_info['icon']}</div>"
             
-            # Add metrics for active departments
-            metrics_html = ""
-            if not dept_info.get("soon", False):
-                satisfaction = dept_info.get("satisfaction_score", "N/A")
-                availability = dept_info.get("availability", "N/A")
-                metrics_html = f"""
-                <div class="dept-metrics">
-                    📊 {dept_info['services_count']} services<br>
-                    ⭐ {satisfaction}/5.0 satisfaction<br>
-                    ✅ {availability} availability
+            # Pricing info for active departments
+            pricing_html = ""
+            if not dept_info.get("coming_soon", False):
+                pricing_html = f"""
+                <div class="pricing-info">
+                    💰 {dept_info['pricing_model']}<br>
+                    ⏱️ {dept_info['avg_implementation']} implementation<br>
+                    💹 {dept_info['avg_cost_savings']} average savings
                 </div>
                 """
             
             card_html = f"""
-            <div class="dept-card">
-                {soon_badge}
+            <div class="service-dept-card">
+                {coming_soon_badge}
                 <div class="dept-icon">{icon_display}</div>
                 <div class="dept-title">{dept_name}</div>
-                <div class="dept-description">{dept_info['description'][:120]}...</div>
-                {metrics_html}
+                <div class="dept-description">{dept_info['description'][:140]}...</div>
+                <p><strong>{dept_info['offerings_count']}</strong> available offerings</p>
+                {pricing_html}
             </div>
             """
             
             st.markdown(card_html, unsafe_allow_html=True)
             
-            # Button to select department
-            if st.button(f"Enter {dept_name}", key=f"btn_{dept_name}", use_container_width=True):
-                st.session_state.selected_department = dept_name
-                st.rerun()
+            # Browse button
+            if dept_info.get("coming_soon", False):
+                st.button(f"🚧 Coming Q3 2025", key=f"btn_{dept_name}", disabled=True, use_container_width=True)
+            else:
+                if st.button(f"🛍️ Browse {dept_name}", key=f"btn_{dept_name}", use_container_width=True):
+                    st.session_state.selected_department = dept_name
+                    st.rerun()
 
-def show_enhanced_service_catalogue(department_name, df):
-    """Enhanced service catalogue with better categorization and search"""
+def show_service_offering_details(offering, idx, department):
+    """Enhanced service offering card with pricing and selection options"""
     
-    st.subheader("🔍 Service Catalogue")
+    # Calculate pricing examples
+    tiers = offering['service_tiers']
+    tier_names = list(tiers.keys())
     
-    # Enhanced search and filter section
-    st.markdown('<div class="search-container">', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        search_term = st.text_input("🔍 Search services...", placeholder="Enter keywords", key="service_search")
-    
-    with col2:
-        categories = ['All Categories'] + list(df['category'].unique())
-        selected_category = st.selectbox("📂 Filter by Category", categories)
-    
-    with col3:
-        priorities = ['All Priorities'] + list(df['priority'].unique())
-        selected_priority = st.selectbox("⚡ Filter by Priority", priorities)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Apply filters
-    filtered_df = df.copy()
-    
-    if search_term:
-        mask = (
-            filtered_df['service_name'].str.contains(search_term, case=False, na=False) |
-            filtered_df['description'].str.contains(search_term, case=False, na=False) |
-            filtered_df['target_users'].str.contains(search_term, case=False, na=False)
-        )
-        filtered_df = filtered_df[mask]
-    
-    if selected_category != 'All Categories':
-        filtered_df = filtered_df[filtered_df['category'] == selected_category]
-    
-    if selected_priority != 'All Priorities':
-        filtered_df = filtered_df[filtered_df['priority'] == selected_priority]
-    
-    # Group services by category
-    if not filtered_df.empty:
-        categories = filtered_df['category'].unique()
+    with st.expander(f"🛍️ {offering['service_name']}", expanded=False):
         
-        for category in categories:
-            category_services = filtered_df[filtered_df['category'] == category]
-            
-            # Category header
-            st.markdown(f"""
-            <div class="category-header">
-                <h3>📂 {category} ({len(category_services)} services)</h3>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Services in this category
-            for idx, service in category_services.iterrows():
-                show_enhanced_service_card(service, idx)
-    else:
-        st.warning("No services found matching your search criteria.")
-
-def show_enhanced_service_card(service, idx):
-    """Enhanced service card with all governance information"""
-    
-    # Priority badge
-    priority_class = f"priority-{service['priority'].lower()}"
-    sla_badge = f'<span class="sla-badge {priority_class}">{service["sla_description"]}</span>'
-    
-    with st.expander(f"🔧 {service['service_name']} {sla_badge}", expanded=False):
-        
-        # Main service information
+        # Service overview
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            st.markdown(f"**📋 Description:**")
-            st.write(service['description'])
+            st.markdown(f"**📋 Service Description:**")
+            st.write(offering['description'])
             
-            st.markdown(f"**💼 Business Value:**")
-            st.write(service['business_value'])
+            st.markdown(f"**💼 Business Value & ROI:**")
+            st.markdown(f'<div class="roi-highlight">{offering["business_value"]}</div>', unsafe_allow_html=True)
+            st.write(f"**ROI Timeline:** {offering['roi_timeline']}")
             
-            st.markdown(f"**📝 How to Request:**")
-            st.info(service['how_to_request'])
-        
         with col2:
             st.markdown("**📊 Service Details**")
-            st.write(f"**Owner:** {service['service_owner']}")
-            st.write(f"**Target Users:** {service['target_users']}")
-            st.write(f"**Priority:** {service['priority']}")
-            st.write(f"**Available:** {service['available_hours']}")
+            st.write(f"**Service Owner:** {offering['service_owner']}")
+            st.write(f"**Target:** {offering['target_subsidiaries']}")
+            st.write(f"**Global Availability:** {'✅ Yes' if offering['available_regions'] == 'Global' else offering['available_regions']}")
+            st.write(f"**Contract Terms:** {offering['contract_terms']}")
             
-            # Metrics
-            st.markdown("**📈 Performance**")
-            col_met1, col_met2 = st.columns(2)
-            with col_met1:
-                st.metric("Monthly Requests", service['request_volume_monthly'])
-            with col_met2:
-                st.metric("Satisfaction", f"{service['satisfaction_score']}/5.0")
+            if offering.get('case_studies'):
+                st.markdown("**🎯 Success Story:**")
+                st.info(offering['case_studies'])
         
-        # Prerequisites and additional info
-        if service['prerequisites'] and service['prerequisites'] != "None":
-            st.markdown(f"**⚠️ Prerequisites:** {service['prerequisites']}")
+        # Service tiers and pricing
+        st.markdown("### 💰 Service Tiers & Pricing")
         
-        if service['cost_model']:
-            st.markdown(f"**💰 Cost Model:** {service['cost_model']}")
+        tier_tabs = st.tabs([f"📦 {tier}" for tier in tier_names])
         
-        # Action buttons
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            if st.button(f"🎫 Request {service['service_name']}", key=f"req_{idx}", use_container_width=True):
-                st.session_state.selected_service = service['service_name']
-                st.success(f"✅ Service request initiated for: {service['service_name']}")
-        
-        with col2:
-            if st.button("📞 Contact Owner", key=f"contact_{idx}"):
-                st.info(f"Contact: {service['service_owner']}")
-        
-        with col3:
-            if st.button("⭐ Rate Service", key=f"rate_{idx}"):
-                st.session_state.rating_service = service['service_name']
+        for i, (tier_name, tier_info) in enumerate(tiers.items()):
+            with tier_tabs[i]:
+                col1, col2, col3 = st.columns([2, 1, 1])
+                
+                with col1:
+                    st.write(f"**Features:** {tier_info['features']}")
+                    
+                    # Pricing display based on model
+                    if 'price_per_employee_monthly' in tier_info:
+                        st.write(f"**💰 Pricing:** ${tier_info['price_per_employee_monthly']}/employee/month")
+                        st.write(f"**📊 Minimum:** {tier_info['min_users']} employees")
+                        
+                        # Cost calculator
+                        st.markdown("**💡 Cost Calculator:**")
+                        num_employees = st.number_input(f"Number of Employees ({tier_name})", 
+                                                      min_value=tier_info['min_users'], 
+                                                      value=tier_info['min_users'],
+                                                      key=f"calc_{idx}_{tier_name}_emp")
+                        monthly_cost = num_employees * tier_info['price_per_employee_monthly']
+                        annual_cost = monthly_cost * 12 + offering['implementation_cost']
+                        
+                        st.metric("Monthly Cost", f"${monthly_cost:,.0f}")
+                        st.metric("Annual Cost (incl. setup)", f"${annual_cost:,.0f}")
+                        
+                    elif 'price_per_user_monthly' in tier_info:
+                        st.write(f"**💰 Pricing:** ${tier_info['price_per_user_monthly']}/user/month")
+                        st.write(f"**📊 Minimum:** {tier_info['min_users']} users")
+                        
+                        num_users = st.number_input(f"Number of Users ({tier_name})", 
+                                                   min_value=tier_info['min_users'], 
+                                                   value=tier_info['min_users'],
+                                                   key=f"calc_{idx}_{tier_name}_user")
+                        monthly_cost = num_users * tier_info['price_per_user_monthly']
+                        annual_cost = monthly_cost * 12 + offering['implementation_cost']
+                        
+                        st.metric("Monthly Cost", f"${monthly_cost:,.0f}")
+                        st.metric("Annual Cost (incl. setup)", f"${annual_cost:,.0f}")
+                        
+                    elif 'price_percentage' in tier_info:
+                        st.write(f"**💰 Pricing:** {tier_info['price_percentage']}% of procurement spend")
+                        st.write(f"**📊 Minimum Spend:** ${tier_info['spend_threshold']:,.0f}/year")
+                        
+                        annual_spend = st.number_input(f"Annual Procurement Spend ({tier_name})", 
+                                                      min_value=tier_info['spend_threshold'], 
+                                                      value=tier_info['spend_threshold'],
+                                                      key=f"calc_{idx}_{tier_name}_spend")
+                        service_cost = annual_spend * (tier_info['price_percentage'] / 100)
+                        total_cost = service_cost + offering['implementation_cost']
+                        
+                        st.metric("Annual Service Cost", f"${service_cost:,.0f}")
+                        st.metric("Total Cost (incl. setup)", f"${total_cost:,.0f}")
+                        
+                    elif 'price_per_sqft_monthly' in tier_info:
+                        st.write(f"**💰 Pricing:** ${tier_info['price_per_sqft_monthly']}/sq ft/month")
+                        st.write(f"**📊 Minimum:** {tier_info['min_sqft']:,.0f} sq ft")
+                        
+                        sqft = st.number_input(f"Square Footage ({tier_name})", 
+                                              min_value=tier_info['min_sqft'], 
+                                              value=tier_info['min_sqft'],
+                                              key=f"calc_{idx}_{tier_name}_sqft")
+                        monthly_cost = sqft * tier_info['price_per_sqft_monthly']
+                        annual_cost = monthly_cost * 12 + offering['implementation_cost']
+                        
+                        st.metric("Monthly Cost", f"${monthly_cost:,.0f}")
+                        st.metric("Annual Cost (incl. setup)", f"${annual_cost:,.0f}")
+                        
+                    elif 'price_fixed' in tier_info:
+                        st.write(f"**💰 Pricing:** ${tier_info['price_fixed']:,.0f} fixed")
+                        st.write(f"**⏱️ Duration:** {tier_info.get('duration', 'As specified')}")
+                        annual_cost = tier_info['price_fixed']
+                        st.metric("Project Cost", f"${annual_cost:,.0f}")
+                        
+                    elif 'price_per_month' in tier_info:
+                        st.write(f"**💰 Pricing:** ${tier_info['price_per_month']:,.0f}/month")
+                        st.write(f"**⏱️ Duration:** {tier_info.get('duration', 'Ongoing')}")
+                        
+                        months = st.number_input(f"Project Duration (months) ({tier_name})", 
+                                                min_value=1, value=12,
+                                                key=f"calc_{idx}_{tier_name}_months")
+                        total_cost = tier_info['price_per_month'] * months
+                        st.metric("Total Project Cost", f"${total_cost:,.0f}")
+                        annual_cost = total_cost
+                
+                with col2:
+                    # Add to budget button
+                    if st.button(f"➕ Add {tier_name} to Budget", key=f"add_{idx}_{tier_name}"):
+                        service_key = f"{offering['service_name']}_{tier_name}"
+                        st.session_state.selected_services[service_key] = {
+                            'service': offering['service_name'],
+                            'tier': tier_name,
+                            'department': department,
+                            'annual_cost': annual_cost,
+                            'features': tier_info['features'],
+                            'selected_date': datetime.now()
+                        }
+                        st.success(f"✅ Added {tier_name} tier to your budget!")
+                
+                with col3:
+                    # Request consultation
+                    if st.button(f"📞 Request Consultation", key=f"consult_{idx}_{tier_name}"):
+                        st.info(f"""
+                        **Consultation Requested for {tier_name}**
+                        
+                        Our specialist will contact you within 24 hours to discuss:
+                        • Detailed requirements assessment
+                        • Custom pricing options
+                        • Implementation timeline
+                        • Success metrics and ROI projections
+                        """)
 
-def show_enhanced_analytics(department_name, df):
-    """Enhanced analytics with governance KPIs"""
+def show_offerings_catalog(department_name):
+    """Show service offerings for a specific department"""
     
-    st.subheader("📈 Service Analytics & KPIs")
-    
-    # Key Performance Indicators
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        avg_satisfaction = df['satisfaction_score'].mean()
-        st.metric("Avg Satisfaction Score", f"{avg_satisfaction:.1f}/5.0", 
-                 delta=f"+{(avg_satisfaction-4.0)*100:.0f}% vs target")
-    
-    with col2:
-        total_monthly_volume = df['request_volume_monthly'].sum()
-        st.metric("Monthly Service Volume", total_monthly_volume, 
-                 delta="+12% vs last month")
-    
-    with col3:
-        high_priority_services = len(df[df['priority'].isin(['High', 'Critical'])])
-        st.metric("High Priority Services", high_priority_services,
-                 delta=f"{(high_priority_services/len(df)*100):.0f}% of total")
-    
-    with col4:
-        avg_sla = df['sla_hours'].mean()
-        st.metric("Avg SLA (hours)", f"{avg_sla:.0f}h",
-                 delta="Within target")
-    
-    # Visualizations
-    tab1, tab2, tab3 = st.tabs(["📊 Service Volume", "⭐ Satisfaction Trends", "⏱️ SLA Performance"])
-    
-    with tab1:
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # Service requests by category
-            category_volume = df.groupby('category')['request_volume_monthly'].sum().reset_index()
-            fig1 = px.bar(category_volume, x='category', y='request_volume_monthly',
-                         title="Monthly Requests by Category",
-                         color='request_volume_monthly',
-                         color_continuous_scale='Blues')
-            fig1.update_layout(xaxis_tickangle=-45)
-            st.plotly_chart(fig1, use_container_width=True)
-        
-        with col2:
-            # Service priority distribution
-            priority_dist = df['priority'].value_counts().reset_index()
-            fig2 = px.pie(priority_dist, values='count', names='priority',
-                         title="Service Distribution by Priority",
-                         color_discrete_map={
-                             'Critical': '#dc3545',
-                             'High': '#fd7e14', 
-                             'Medium': '#ffc107',
-                             'Low': '#28a745'
-                         })
-            st.plotly_chart(fig2, use_container_width=True)
-    
-    with tab2:
-        # Satisfaction by service
-        satisfaction_data = df[['service_name', 'satisfaction_score', 'category']].copy()
-        satisfaction_data['service_short'] = satisfaction_data['service_name'].str[:20] + '...'
-        
-        fig3 = px.bar(satisfaction_data, x='service_short', y='satisfaction_score',
-                     color='category', title="Service Satisfaction Scores",
-                     hover_data=['service_name'])
-        fig3.add_hline(y=4.0, line_dash="dash", line_color="red", 
-                      annotation_text="Target: 4.0")
-        fig3.update_layout(xaxis_tickangle=-45)
-        st.plotly_chart(fig3, use_container_width=True)
-    
-    with tab3:
-        # SLA vs Volume analysis
-        fig4 = px.scatter(df, x='sla_hours', y='request_volume_monthly',
-                         size='satisfaction_score', color='priority',
-                         hover_data=['service_name'],
-                         title="SLA vs Request Volume Analysis")
-        fig4.update_layout(xaxis_title="SLA (hours)", yaxis_title="Monthly Requests")
-        st.plotly_chart(fig4, use_container_width=True)
-
-def show_enhanced_request_form(department_name):
-    """Enhanced service request form with workflow"""
-    
-    st.subheader("📝 Service Request Submission")
-    
-    # Service selection
-    dept_key = department_name.lower().replace(" ", "_")
-    if f'{dept_key}_services' in service_data:
-        available_services = service_data[f'{dept_key}_services']['service_name'].tolist()
-    else:
-        available_services = []
-    
-    with st.form("enhanced_service_request_form"):
-        # Service selection
-        service_requested = st.selectbox("🔧 Select Service*", 
-            ["Select a service..."] + available_services)
-        
-        if service_requested != "Select a service...":
-            # Get service details
-            service_info = service_data[f'{dept_key}_services'][
-                service_data[f'{dept_key}_services']['service_name'] == service_requested
-            ].iloc[0]
-            
-            # Show service info
-            st.info(f"**SLA:** {service_info['sla_description']} | **Owner:** {service_info['service_owner']}")
-            
-            if service_info['prerequisites'] != "None":
-                st.warning(f"**Prerequisites:** {service_info['prerequisites']}")
-        
-        # Requestor information
-        st.markdown("### 👤 Requestor Information")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            requester_name = st.text_input("Your Name*")
-            requester_email = st.text_input("Email Address*")
-            employee_id = st.text_input("Employee ID*")
-            department = st.selectbox("Your Department*", 
-                ["Select...", "Engineering", "Finance", "HR", "Marketing", "Operations", "Other"])
-        
-        with col2:
-            manager_name = st.text_input("Direct Manager")
-            cost_center = st.text_input("Cost Center")
-            phone = st.text_input("Phone Number")
-            location = st.text_input("Office Location")
-        
-        # Request details
-        st.markdown("### 📋 Request Details")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            urgency = st.selectbox("Urgency Level*", ["Low", "Medium", "High", "Critical"])
-            preferred_date = st.date_input("Preferred Completion Date")
-        
-        with col2:
-            business_justification = st.selectbox("Business Justification*", 
-                ["Operational Requirement", "New Employee", "System Upgrade", 
-                 "Compliance", "Cost Optimization", "Other"])
-            
-            if business_justification == "Other":
-                other_justification = st.text_input("Please specify:")
-        
-        description = st.text_area("Detailed Description*", 
-            placeholder="Please provide comprehensive details about your request, including specific requirements, timelines, and any relevant context...")
-        
-        # File attachments
-        attachments = st.file_uploader("📎 Attach Supporting Documents", 
-            accept_multiple_files=True, 
-            type=['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'zip'],
-            help="Upload any relevant documents, specifications, or approvals")
-        
-        # Approval workflow
-        if urgency in ["High", "Critical"]:
-            st.warning("⚠️ High/Critical priority requests require manager approval.")
-            manager_approval = st.checkbox("I have manager approval for this urgent request")
-        else:
-            manager_approval = True
-        
-        # Submit button
-        submitted = st.form_submit_button("🚀 Submit Request", 
-                                        type="primary", 
-                                        use_container_width=True)
-        
-        if submitted:
-            # Validation
-            required_fields = [requester_name, requester_email, employee_id, 
-                             department != "Select...", description, 
-                             service_requested != "Select a service..."]
-            
-            if all(required_fields) and manager_approval:
-                # Generate request ID
-                request_id = f"SR-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-                
-                # Store request
-                request_data = {
-                    'request_id': request_id,
-                    'service': service_requested,
-                    'requester': requester_name,
-                    'email': requester_email,
-                    'department': department,
-                    'urgency': urgency,
-                    'status': 'Submitted',
-                    'submit_date': datetime.now(),
-                    'description': description
-                }
-                st.session_state.service_requests.append(request_data)
-                
-                # Success message with workflow info
-                if urgency == "Critical":
-                    next_step = "Request escalated to management - expect contact within 2 hours"
-                elif urgency == "High":
-                    next_step = "Request prioritized - initial response within 4 hours"
-                else:
-                    next_step = f"Request queued - response within {service_info.get('sla_description', '2 business days')}"
-                
-                st.success(f"""
-                ✅ **Service Request Submitted Successfully!**
-                
-                **Request ID:** {request_id}
-                **Service:** {service_requested}
-                **Next Step:** {next_step}
-                **Service Owner:** {service_info.get('service_owner', 'N/A')}
-                
-                📧 Confirmation email sent to {requester_email}
-                📱 SMS notification sent (if enabled)
-                """)
-                
-                # Show tracking info
-                st.info(f"🔍 Track your request status at: portal.company.com/requests/{request_id}")
-                
-            else:
-                missing_fields = []
-                if not requester_name: missing_fields.append("Name")
-                if not requester_email: missing_fields.append("Email")
-                if not employee_id: missing_fields.append("Employee ID")
-                if department == "Select...": missing_fields.append("Department")
-                if not description: missing_fields.append("Description")
-                if service_requested == "Select a service...": missing_fields.append("Service")
-                if not manager_approval: missing_fields.append("Manager Approval")
-                
-                st.error(f"❌ Please complete the following required fields: {', '.join(missing_fields)}")
-
-def show_department_page(department_name):
-    """Enhanced department page with comprehensive information"""
-    
-    dept_info = departments[department_name]
+    dept_info = service_departments[department_name]
     
     # Back button
     col1, col2 = st.columns([1, 6])
     with col1:
-        if st.button("← Back to Main", key="back_button"):
+        if st.button("← Back to Catalog", key="back_button"):
             st.session_state.selected_department = None
             st.rerun()
     
@@ -995,202 +744,178 @@ def show_department_page(department_name):
         else:
             st.markdown(f"<div style='font-size: 4rem; color: {dept_info['color']};'>{dept_info['icon']}</div>", unsafe_allow_html=True)
     with col2:
-        st.markdown(f"<h1 style='color: {dept_info['color']};'>{department_name} Department</h1>", unsafe_allow_html=True)
+        st.markdown(f"<h1 style='color: {dept_info['color']};'>{department_name} Services</h1>", unsafe_allow_html=True)
 
     st.markdown(dept_info["description"])
-
-    # Enhanced department metrics
-    if not dept_info.get("soon", False):
-        st.markdown("<div class='metric-row'>", unsafe_allow_html=True)
-        col1, col2, col3, col4, col5 = st.columns(5)
-        with col1:
-            st.metric("Available Services", dept_info["services_count"])
-        with col2:
-            st.metric("Avg Response Time", dept_info["avg_resolution_time"])
-        with col3:
-            st.metric("Satisfaction Score", f"{dept_info.get('satisfaction_score', 'N/A')}/5.0")
-        with col4:
-            st.metric("Service Availability", dept_info.get('availability', 'N/A'))
-        with col5:
-            st.metric("Status", "🟢 Active")
-        st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Department value metrics
+    st.markdown("<div class='metric-row'>", unsafe_allow_html=True)
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Available Offerings", dept_info["offerings_count"])
+    with col2:
+        st.metric("Avg Implementation", dept_info["avg_implementation"])
+    with col3:
+        st.metric("Pricing Model", dept_info["pricing_model"])
+    with col4:
+        st.metric("Avg Cost Savings", dept_info["avg_cost_savings"])
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("---")
-
-    # Coming soon departments
-    if dept_info.get("soon", False):
-        st.markdown(f"""
-        <div class='coming-soon'>
-            <h2>🚧 Coming Soon</h2>
-            <p>This service catalogue is currently being developed and will be available soon.</p>
-            <p>Expected launch: <strong>Q3 2025</strong></p>
-            <p>For immediate assistance, please contact: <strong>{dept_info["contact"]}</strong></p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    else:
-        # Enhanced tabs
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 Service Catalogue", "📈 Analytics & KPIs", "📝 Request Service", "ℹ️ Department Info", "💬 Feedback"])
-        
-        with tab1:
-            dept_key = department_name.lower().replace(" ", "_")
-            if f'{dept_key}_services' in service_data:
-                df = service_data[f'{dept_key}_services']
-                show_enhanced_service_catalogue(department_name, df)
-        
-        with tab2:
-            dept_key = department_name.lower().replace(" ", "_")
-            if f'{dept_key}_services' in service_data:
-                df = service_data[f'{dept_key}_services']
-                show_enhanced_analytics(department_name, df)
-        
-        with tab3:
-            show_enhanced_request_form(department_name)
-        
-        with tab4:
-            show_department_info(dept_info)
-        
-        with tab5:
-            show_feedback_section(department_name)
-
-def show_department_info(dept_info):
-    """Enhanced department information with governance details"""
     
-    col1, col2 = st.columns(2)
+    # Show selected services summary
+    if st.session_state.selected_services:
+        dept_selections = {k: v for k, v in st.session_state.selected_services.items() if v['department'] == department_name}
+        if dept_selections:
+            st.markdown("### 🛒 Your Current Selections")
+            total_cost = sum([item['annual_cost'] for item in dept_selections.values()])
+            st.success(f"**{len(dept_selections)} services selected** | **Annual Cost: ${total_cost:,.0f}**")
+    
+    # Service offerings tabs
+    tab1, tab2, tab3 = st.tabs(["🛍️ Browse Services", "📊 Compare Options", "💰 Budget Summary"])
+    
+    with tab1:
+        # Get offerings for this department
+        dept_key = department_name.lower().replace(" ", "_")
+        if f'{dept_key}_offerings' in service_offerings:
+            df = service_offerings[f'{dept_key}_offerings']
+            
+            # Category-based display
+            categories = df['category'].unique()
+            
+            for category in categories:
+                st.markdown(f"### 📂 {category}")
+                category_offerings = df[df['category'] == category]
+                
+                for idx, offering in category_offerings.iterrows():
+                    show_service_offering_details(offering, idx, department_name)
+    
+    with tab2:
+        st.subheader("📊 Service Comparison")
+        
+        if f'{dept_key}_offerings' in service_offerings:
+            df = service_offerings[f'{dept_key}_offerings']
+            
+            # Create comparison table
+            comparison_data = []
+            for idx, offering in df.iterrows():
+                tiers = offering['service_tiers']
+                for tier_name, tier_info in tiers.items():
+                    comparison_data.append({
+                        'Service': offering['service_name'],
+                        'Tier': tier_name,
+                        'Features': tier_info['features'],
+                        'ROI Timeline': offering['roi_timeline'],
+                        'Implementation': offering['ongoing_support']
+                    })
+            
+            comparison_df = pd.DataFrame(comparison_data)
+            st.dataframe(comparison_df, use_container_width=True)
+    
+    with tab3:
+        show_budget_summary()
+
+def show_budget_summary():
+    """Show budget summary and export options"""
+    
+    st.subheader("💰 Budget Planning Summary")
+    
+    if not st.session_state.selected_services:
+        st.info("No services selected yet. Browse our offerings and add services to your budget.")
+        return
+    
+    # Budget overview
+    total_annual_cost = sum([item['annual_cost'] for item in st.session_state.selected_services.values()])
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total Selected Services", len(st.session_state.selected_services))
+    with col2:
+        st.metric("Total Annual Cost", f"${total_annual_cost:,.0f}")
+    with col3:
+        estimated_savings = total_annual_cost * 0.25  # 25% average savings
+        st.metric("Estimated Annual Savings", f"${estimated_savings:,.0f}", "vs building in-house")
+    
+    # Detailed breakdown
+    st.markdown("### 📋 Selected Services Breakdown")
+    
+    budget_data = []
+    for service_key, details in st.session_state.selected_services.items():
+        budget_data.append({
+            'Department': details['department'],
+            'Service': details['service'],
+            'Tier': details['tier'],
+            'Features': details['features'],
+            'Annual Cost': f"${details['annual_cost']:,.0f}",
+            'Selected Date': details['selected_date'].strftime('%Y-%m-%d')
+        })
+    
+    budget_df = pd.DataFrame(budget_data)
+    st.dataframe(budget_df, use_container_width=True)
+    
+    # Department breakdown chart
+    if len(st.session_state.selected_services) > 0:
+        dept_costs = {}
+        for details in st.session_state.selected_services.values():
+            dept = details['department']
+            dept_costs[dept] = dept_costs.get(dept, 0) + details['annual_cost']
+        
+        dept_df = pd.DataFrame(list(dept_costs.items()), columns=['Department', 'Annual Cost'])
+        fig = px.pie(dept_df, values='Annual Cost', names='Department', 
+                     title="Budget Allocation by Department")
+        st.plotly_chart(fig, use_container_width=True)
+    
+    # Action buttons
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.markdown("### 📞 Contact Information")
-        st.write(f"**Email:** {dept_info['contact']}")
-        st.write("**Phone:** +966-11-XXX-XXXX")
-        st.write("**Location:** Building A, Floor 3")
-        st.write("**Manager:** John Smith")
-        
-        st.markdown("### ⏰ Service Hours")
-        st.write("**Monday - Thursday:** 8:00 AM - 5:00 PM")
-        st.write("**Sunday:** 8:00 AM - 4:00 PM")
-        st.write("**Emergency Support:** 24/7 for critical issues")
-        st.write("**Response Time:** Within 2 hours during business hours")
-        
-        st.markdown("### 📋 Governance & Quality")
-        st.write("**ISO Certification:** ISO 20000 (IT Service Management)")
-        st.write("**Quality Reviews:** Monthly")
-        st.write("**Service Catalog Updates:** Quarterly")
-        st.write("**SLA Compliance:** 98.5% average")
+        if st.button("📧 Request Detailed Proposal", use_container_width=True):
+            st.success("""
+            ✅ **Proposal Request Submitted!**
+            
+            Our team will prepare a detailed proposal including:
+            • Customized pricing based on your requirements
+            • Implementation timeline and milestones  
+            • ROI projections and business case
+            • Contract terms and SLA details
+            
+            **Expected delivery:** 3-5 business days
+            """)
     
     with col2:
-        st.markdown("### 📊 Service Level Agreements")
-        st.write(f"**Standard Response:** {dept_info['avg_resolution_time']}")
-        st.write("**Critical Issues:** 1-2 hours")
-        st.write("**High Priority:** 4-8 hours") 
-        st.write("**Medium Priority:** 1-2 business days")
-        st.write("**Low Priority:** 3-5 business days")
-        
-        st.markdown("### 📈 Performance Metrics")
-        st.write(f"**Service Availability:** {dept_info.get('availability', '99.5%')}")
-        st.write(f"**Customer Satisfaction:** {dept_info.get('satisfaction_score', 4.2)}/5.0")
-        st.write("**First Call Resolution:** 75%")
-        st.write("**Service Adoption Rate:** 85%")
-        
-        st.markdown("### 🏆 Continuous Improvement")
-        st.write("**Monthly Service Reviews:** First Monday of each month")
-        st.write("**Annual Service Survey:** December")
-        st.write("**Process Improvement:** Quarterly initiatives")
-        st.write("**Knowledge Base Updates:** Weekly")
-
-def show_feedback_section(department_name):
-    """Feedback collection for continuous improvement"""
+        if st.button("💰 Submit Budget Request", use_container_width=True):
+            st.success(f"""
+            ✅ **Budget Request Submitted for {st.session_state.budget_year}!**
+            
+            **Total Annual Investment:** ${total_annual_cost:,.0f}
+            **Services Selected:** {len(st.session_state.selected_services)}
+            **Request ID:** BGT-{datetime.now().strftime('%Y%m%d%H%M%S')}
+            
+            Your request has been forwarded to the Group CFO for approval.
+            """)
     
-    st.subheader("💬 Your Feedback Matters")
+    with col3:
+        if st.button("📊 Export to Excel", use_container_width=True):
+            st.info("Excel export functionality will download a detailed budget worksheet with all selected services, pricing, and business cases.")
     
-    # Recent feedback summary
-    if st.session_state.feedback_data:
-        recent_feedback = [f for f in st.session_state.feedback_data if f['department'] == department_name]
-        if recent_feedback:
-            avg_rating = sum(f['rating'] for f in recent_feedback) / len(recent_feedback)
-            st.metric("Department Feedback Score", f"{avg_rating:.1f}/5.0", 
-                     delta=f"{len(recent_feedback)} responses")
-    
-    # Feedback form
-    with st.form("feedback_form"):
-        st.markdown("### Rate Your Experience")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            overall_rating = st.select_slider(
-                "Overall Department Rating",
-                options=[1, 2, 3, 4, 5],
-                value=4,
-                format_func=lambda x: "⭐" * x
-            )
-            
-            service_used = st.selectbox(
-                "Which service did you use recently?",
-                ["General Inquiry"] + list(service_data.get(f'{department_name.lower().replace(" ", "_")}_services', pd.DataFrame()).get('service_name', []))
-            )
-        
-        with col2:
-            response_time_rating = st.select_slider(
-                "Response Time Rating",
-                options=[1, 2, 3, 4, 5],
-                value=4,
-                format_func=lambda x: "⭐" * x
-            )
-            
-            ease_of_request = st.select_slider(
-                "Ease of Requesting Service",
-                options=[1, 2, 3, 4, 5],
-                value=4,
-                format_func=lambda x: "⭐" * x
-            )
-        
-        feedback_comments = st.text_area(
-            "Comments & Suggestions",
-            placeholder="Tell us about your experience and how we can improve..."
-        )
-        
-        improvement_suggestions = st.text_area(
-            "Specific Improvement Ideas",
-            placeholder="What specific changes would make our services better?"
-        )
-        
-        submitted_feedback = st.form_submit_button("Submit Feedback", type="primary")
-        
-        if submitted_feedback:
-            feedback_entry = {
-                'department': department_name,
-                'service': service_used,
-                'rating': overall_rating,
-                'response_time': response_time_rating,
-                'ease_of_request': ease_of_request,
-                'comments': feedback_comments,
-                'suggestions': improvement_suggestions,
-                'timestamp': datetime.now(),
-                'feedback_id': f"FB-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-            }
-            
-            st.session_state.feedback_data.append(feedback_entry)
-            
-            st.success("""
-            ✅ **Thank you for your feedback!**
-            
-            Your input helps us continuously improve our services.
-            **Feedback ID:** {feedback_id}
-            **Next:** Our team reviews all feedback monthly and implements improvements quarterly.
-            """.format(feedback_id=feedback_entry['feedback_id']))
+    with col4:
+        if st.button("🗑️ Clear Selections", use_container_width=True):
+            st.session_state.selected_services = {}
+            st.rerun()
 
 # Main app logic
 if st.session_state.selected_department is None:
-    show_main_page()
+    show_main_catalog_page()
 else:
-    show_department_page(st.session_state.selected_department)
+    show_offerings_catalog(st.session_state.selected_department)
 
-# Enhanced footer with governance information
+# Enhanced footer for B2B catalog
 st.markdown("---")
 st.markdown("""
-<div style='text-align: center; color: #666666; padding: 20px;'>
-    <p><strong>Shared Services Digital Catalogue</strong> • Version 2.0 • Last Updated: July 2025</p>
-    <p>📊 <strong>Service Governance:</strong> Monthly reviews • Quarterly updates • Annual satisfaction survey</p>
-    <p>🔧 <strong>Technical Support:</strong> it-support@company.com • 📱 <strong>Mobile App:</strong> Available on App Store & Google Play</p>
-    <p>📋 <strong>Quality Standards:</strong> ISO 20000 Certified • SLA Compliance: 98.5% • Customer Satisfaction: 4.2/5.0</p>
+<div style='text-align: center; color: #666666; padding: 20px; background: #f8f9fa; border-radius: 10px;'>
+    <p><strong>Group Shared Services Catalog</strong> • Subsidiary Portal • Version 2.0</p>
+    <p>🌍 <strong>Global Reach:</strong> 50+ countries • 📞 <strong>24/7 Support:</strong> support@groupservices.com</p>
+    <p>💼 <strong>Account Management:</strong> subsidiary.relations@group.com • 📱 <strong>Mobile Portal:</strong> Available on all devices</p>
+    <p>📈 <strong>Proven Results:</strong> $50M+ in subsidiary savings • 500+ successful implementations • 95% client satisfaction</p>
 </div>
 """, unsafe_allow_html=True)
