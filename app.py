@@ -108,6 +108,197 @@ if 'current_section' not in st.session_state:
     st.session_state.current_section = 'Operations'
 if 'company_info' not in st.session_state:
     st.session_state.company_info = {}
+if 'language' not in st.session_state:
+    st.session_state.language = 'English'
+
+# Translation dictionary
+translations = {
+    'English': {
+        'title': 'AIC 2025 IT Budget Questionnaire',
+        'subtitle': 'Annual Technology Budget Planning & Requirements Assessment',
+        'budget_year': 'Budget Year',
+        'version': 'Version',
+        'company_info': 'Company Information',
+        'company': 'Company',
+        'business_unit': 'Business Unit',
+        'date': 'Date',
+        'representative': 'Company Representative',
+        'budget_summary': 'Budget Summary',
+        'selected_items': 'Selected Items',
+        'total_users': 'Total Users',
+        'total_budget': 'Total Annual Budget',
+        'custom_services': 'Custom Services',
+        'operations': 'Operations',
+        'support': 'Support',
+        'implementation': 'Implementation',
+        'summary': 'Summary',
+        'select_section': 'Select Questionnaire Section:',
+        'operations_title': 'Operations - Recurring Licenses & Software',
+        'operations_desc': 'Day-to-day operational software licenses and subscriptions required for business operations.',
+        'operations_tip': 'Tip: Can\'t find a service you need? Use the "Add Custom Service" options to include additional Oracle or Microsoft services.',
+        'support_title': 'Support - Maintenance & Support Services',
+        'support_desc': 'Ongoing support packages and maintenance services for your IT infrastructure and applications.',
+        'support_tip': 'Tip: Need specialized support not covered by standard packages? Use "Add Custom Support Service" to include additional support requirements.',
+        'implementation_title': 'Implementation - New Projects & Initiatives',
+        'implementation_desc': 'New technology implementations, custom development projects, and strategic digital initiatives.',
+        'implementation_tip': 'Tip: Have a unique project not listed? Use "Add Custom Implementation Project" to include your specific requirements and budget estimates.',
+        'oracle_licensing': 'Oracle Fusion Licensing',
+        'microsoft_software': 'Microsoft Software & Subscriptions',
+        'add_custom_oracle': 'Add Custom Oracle Service',
+        'add_custom_microsoft': 'Add Custom Microsoft Service',
+        'add_custom_support': 'Add Custom Support Service',
+        'add_custom_implementation': 'Add Custom Implementation Project',
+        'service_name': 'Service Name',
+        'price_per_user': 'Price per User per Month (SAR)',
+        'setup_cost': 'Setup Cost (SAR)',
+        'service_description': 'Service Description',
+        'monthly_cost': 'Monthly Cost (SAR)',
+        'annual_cost': 'Annual Cost',
+        'total_annual_cost': 'Total Annual Cost',
+        'include_service': 'Include',
+        'power_system_users': 'Power System Users',
+        'shared_users': 'Shared Users (ACC & PS)',
+        'aic_users': 'AIC without PS',
+        'acc_users': 'ACC Power System',
+        'language': 'Language'
+    },
+    'العربية': {
+        'title': 'استبيان ميزانية تقنية المعلومات لعام 2025 - شركة AIC',
+        'subtitle': 'تخطيط الميزانية السنوية لتقنية المعلومات وتقييم المتطلبات',
+        'budget_year': 'سنة الميزانية',
+        'version': 'الإصدار',
+        'company_info': 'معلومات الشركة',
+        'company': 'الشركة',
+        'business_unit': 'وحدة الأعمال',
+        'date': 'التاريخ',
+        'representative': 'ممثل الشركة',
+        'budget_summary': 'ملخص الميزانية',
+        'selected_items': 'العناصر المحددة',
+        'total_users': 'إجمالي المستخدمين',
+        'total_budget': 'إجمالي الميزانية السنوية',
+        'custom_services': 'الخدمات المخصصة',
+        'operations': 'العمليات',
+        'support': 'الدعم',
+        'implementation': 'التنفيذ',
+        'summary': 'الملخص',
+        'select_section': 'اختر قسم الاستبيان:',
+        'operations_title': 'العمليات - التراخيص والبرامج المتكررة',
+        'operations_desc': 'تراخيص البرامج التشغيلية اليومية والاشتراكات المطلوبة لعمليات الأعمال.',
+        'operations_tip': 'نصيحة: لا تجد الخدمة التي تحتاجها؟ استخدم خيارات "إضافة خدمة مخصصة" لتضمين خدمات Oracle أو Microsoft إضافية.',
+        'support_title': 'الدعم - خدمات الصيانة والدعم',
+        'support_desc': 'حزم الدعم المستمرة وخدمات الصيانة للبنية التحتية لتقنية المعلومات والتطبيقات.',
+        'support_tip': 'نصيحة: تحتاج دعماً متخصصاً غير مغطى بالحزم القياسية؟ استخدم "إضافة خدمة دعم مخصصة" لتضمين متطلبات الدعم الإضافية.',
+        'implementation_title': 'التنفيذ - المشاريع والمبادرات الجديدة',
+        'implementation_desc': 'تطبيقات التقنية الجديدة ومشاريع التطوير المخصصة والمبادرات الرقمية الاستراتيجية.',
+        'implementation_tip': 'نصيحة: لديك مشروع فريد غير مدرج؟ استخدم "إضافة مشروع تنفيذ مخصص" لتضمين متطلباتك المحددة وتقديرات الميزانية.',
+        'oracle_licensing': 'تراخيص Oracle Fusion',
+        'microsoft_software': 'برامج واشتراكات Microsoft',
+        'add_custom_oracle': 'إضافة خدمة Oracle مخصصة',
+        'add_custom_microsoft': 'إضافة خدمة Microsoft مخصصة',
+        'add_custom_support': 'إضافة خدمة دعم مخصصة',
+        'add_custom_implementation': 'إضافة مشروع تنفيذ مخصص',
+        'service_name': 'اسم الخدمة',
+        'price_per_user': 'السعر لكل مستخدم شهرياً (ريال سعودي)',
+        'setup_cost': 'تكلفة الإعداد (ريال سعودي)',
+        'service_description': 'وصف الخدمة',
+        'monthly_cost': 'التكلفة الشهرية (ريال سعودي)',
+        'annual_cost': 'التكلفة السنوية',
+        'total_annual_cost': 'إجمالي التكلفة السنوية',
+        'include_service': 'تضمين',
+        'power_system_users': 'مستخدمو أنظمة الطاقة',
+        'shared_users': 'المستخدمون المشتركون (ACC & PS)',
+        'aic_users': 'مستخدمو AIC بدون PS',
+        'acc_users': 'مستخدمو ACC لأنظمة الطاقة',
+        'language': 'اللغة'
+    }
+}
+
+def get_text(key):
+    """Get translated text based on selected language"""
+    return translations[st.session_state.language].get(key, key)
+
+def apply_rtl_css():
+    """Apply RTL CSS for Arabic language"""
+    if st.session_state.language == 'العربية':
+        st.markdown("""
+        <style>
+            .main .block-container {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            .stSelectbox > div > div {
+                direction: rtl;
+            }
+            
+            .stTextInput > div > div > input {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            .stTextArea > div > div > textarea {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            .stNumberInput > div > div > input {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            .main-header {
+                direction: rtl;
+                text-align: center;
+            }
+            
+            .category-header {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            .operations-card, .support-card, .implementation-card {
+                direction: rtl;
+                text-align: right;
+            }
+            
+            .pricing-box {
+                direction: rtl;
+                text-align: center;
+            }
+            
+            .total-cost {
+                direction: rtl;
+                text-align: center;
+            }
+            
+            .stRadio > div {
+                direction: rtl;
+            }
+            
+            .stCheckbox > div {
+                direction: rtl;
+            }
+            
+            .stColumns {
+                direction: rtl;
+            }
+            
+            /* Fix for buttons and metrics in RTL */
+            .stButton > button {
+                direction: ltr;
+            }
+            
+            .stMetric {
+                direction: rtl;
+                text-align: center;
+            }
+            
+            /* Sidebar adjustments for RTL */
+            .css-1d391kg {
+                direction: rtl;
+            }
+        </style>
+        """, unsafe_allow_html=True)
 
 # Pricing data (in SAR)
 oracle_pricing = {
@@ -230,22 +421,38 @@ def calculate_total_budget():
 
 def show_header():
     """Display the main header"""
-    st.markdown("""
+    # Apply RTL CSS if Arabic is selected
+    apply_rtl_css()
+    
+    # Language selector in top right
+    col1, col2, col3 = st.columns([2, 1, 1])
+    with col3:
+        language = st.selectbox(
+            get_text('language'),
+            ['English', 'العربية'],
+            index=0 if st.session_state.language == 'English' else 1,
+            key="language_selector"
+        )
+        if language != st.session_state.language:
+            st.session_state.language = language
+            st.rerun()
+    
+    st.markdown(f"""
     <div class='main-header'>
-        <h1>📋 AIC 2025 IT Budget Questionnaire</h1>
-        <p>Annual Technology Budget Planning & Requirements Assessment</p>
-        <p><strong>Budget Year:</strong> 2025 | <strong>Version:</strong> 1.0</p>
+        <h1>📋 {get_text('title')}</h1>
+        <p>{get_text('subtitle')}</p>
+        <p><strong>{get_text('budget_year')}:</strong> 2025 | <strong>{get_text('version')}:</strong> 1.0</p>
     </div>
     """, unsafe_allow_html=True)
 
 def show_company_info():
     """Display company information form"""
-    st.sidebar.markdown("### 🏢 Company Information")
+    st.sidebar.markdown(f"### 🏢 {get_text('company_info')}")
     
-    company = st.sidebar.text_input("Company", value="AIC & Power Systems", key="company")
-    business_unit = st.sidebar.text_input("Business Unit", value="AIC & Power Systems", key="business_unit")
-    date = st.sidebar.date_input("Date", value=datetime.now(), key="date")
-    representative = st.sidebar.text_input("Company Representative", key="representative")
+    company = st.sidebar.text_input(get_text('company'), value="AIC & Power Systems", key="company")
+    business_unit = st.sidebar.text_input(get_text('business_unit'), value="AIC & Power Systems", key="business_unit")
+    date = st.sidebar.date_input(get_text('date'), value=datetime.now(), key="date")
+    representative = st.sidebar.text_input(get_text('representative'), key="representative")
     
     st.session_state.company_info = {
         "company": company,
@@ -256,30 +463,34 @@ def show_company_info():
     
     # Budget summary in sidebar
     total_budget = calculate_total_budget()
-    st.sidebar.markdown("### 💰 Budget Summary")
+    st.sidebar.markdown(f"### 💰 {get_text('budget_summary')}")
     
     if st.session_state.questionnaire_data:
         total_users = sum([int(item.get('total_users', 0)) for item in st.session_state.questionnaire_data.values() if item.get('total_users')])
         total_items = len([item for item in st.session_state.questionnaire_data.values() if item.get('selected') or item.get('budget_estimate', 0) > 0])
         custom_count = len([item for item in st.session_state.questionnaire_data.values() if item.get('custom')])
         
-        st.sidebar.metric("Selected Items", total_items)
-        st.sidebar.metric("Total Users", total_users)
+        st.sidebar.metric(get_text('selected_items'), total_items)
+        st.sidebar.metric(get_text('total_users'), total_users)
         
         if custom_count > 0:
-            st.sidebar.metric("Custom Services", custom_count)
-            st.sidebar.success(f"✅ {custom_count} custom service(s) added")
+            st.sidebar.metric(get_text('custom_services'), custom_count)
+            st.sidebar.success(f"✅ {custom_count} {get_text('custom_services').lower()}")
+        
+        # Format currency based on language
+        currency_format = f"ريال {total_budget:,.0f}" if st.session_state.language == 'العربية' else f"SAR {total_budget:,.0f}"
         
         st.sidebar.markdown(f"""
         <div class='total-cost'>
-            💰 Total Annual Budget<br>
-            <span style='font-size: 1.5em; color: #dc2626;'>SAR {total_budget:,.0f}</span>
+            💰 {get_text('total_budget')}<br>
+            <span style='font-size: 1.5em; color: #dc2626;'>{currency_format}</span>
         </div>
         """, unsafe_allow_html=True)
     else:
-        st.sidebar.metric("Selected Items", 0)
-        st.sidebar.metric("Total Users", 0)
-        st.sidebar.metric("Total Budget", "SAR 0")
+        st.sidebar.metric(get_text('selected_items'), 0)
+        st.sidebar.metric(get_text('total_users'), 0)
+        currency_zero = "ريال 0" if st.session_state.language == 'العربية' else "SAR 0"
+        st.sidebar.metric(get_text('total_budget'), currency_zero)
 
 def add_custom_oracle_service():
     """Add custom Oracle service"""
@@ -397,16 +608,16 @@ def add_custom_microsoft_service():
 
 def show_operations_section():
     """Display Operations section - recurring licenses and software"""
-    st.markdown("""
+    st.markdown(f"""
     <div class='category-header'>
-        <h2>🔧 Operations - Recurring Licenses & Software</h2>
-        <p>Day-to-day operational software licenses and subscriptions required for business operations.</p>
-        <p><strong>💡 Tip:</strong> Can't find a service you need? Use the "Add Custom Service" options to include additional Oracle or Microsoft services.</p>
+        <h2>🔧 {get_text('operations_title')}</h2>
+        <p>{get_text('operations_desc')}</p>
+        <p><strong>💡 {get_text('operations_tip')}</strong></p>
     </div>
     """, unsafe_allow_html=True)
     
     # Oracle Fusion Licensing
-    st.markdown("### 🔶 Oracle Fusion Licensing")
+    st.markdown(f"### 🔶 {get_text('oracle_licensing')}")
     col1, col2 = st.columns([1, 1])
     
     for i, service in enumerate(oracle_services):
@@ -417,34 +628,37 @@ def show_operations_section():
                 price_per_user = pricing.get('price_per_user', 0)
                 setup_cost = pricing.get('setup_cost', 0)
                 
+                # Currency format based on language
+                currency_symbol = "ريال" if st.session_state.language == 'العربية' else "SAR"
+                
                 st.markdown(f"""
                 <div class='operations-card'>
                     <h4>{service['name']}</h4>
                     <p style='font-size: 0.9em; color: #64748b;'>{service['description']}</p>
                     <div class='pricing-box'>
-                        💰 SAR {price_per_user}/user/month + SAR {setup_cost:,} setup
+                        💰 {currency_symbol} {price_per_user}/user/month + {currency_symbol} {setup_cost:,} setup
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
                 
                 key = f"oracle_{service['name'].replace(' ', '_').replace('-', '_').lower()}"
                 
-                selected = st.checkbox(f"Include {service['name']}", key=f"{key}_selected")
+                selected = st.checkbox(f"{get_text('include_service')} {service['name']}", key=f"{key}_selected")
                 
                 if selected:
                     col_a, col_b = st.columns(2)
                     with col_a:
-                        ps_users = st.number_input(f"Power System Users", min_value=0, value=0, key=f"{key}_ps")
+                        ps_users = st.number_input(get_text('power_system_users'), min_value=0, value=0, key=f"{key}_ps")
                     with col_b:
-                        shared_users = st.number_input(f"Shared Users (ACC & PS)", min_value=0, value=0, key=f"{key}_shared")
+                        shared_users = st.number_input(get_text('shared_users'), min_value=0, value=0, key=f"{key}_shared")
                     
                     total_users = ps_users + shared_users
                     if total_users > 0:
                         annual_cost = (price_per_user * total_users * 12) + setup_cost
                         st.markdown(f"""
                         <div class='pricing-box' style='background: #dcfce7; border-color: #16a34a;'>
-                            📊 Total Annual Cost: <strong>SAR {annual_cost:,.0f}</strong><br>
-                            Monthly: SAR {price_per_user * total_users:,.0f} | Setup: SAR {setup_cost:,}
+                            📊 {get_text('total_annual_cost')}: <strong>{currency_symbol} {annual_cost:,.0f}</strong><br>
+                            Monthly: {currency_symbol} {price_per_user * total_users:,.0f} | Setup: {currency_symbol} {setup_cost:,}
                         </div>
                         """, unsafe_allow_html=True)
                     
