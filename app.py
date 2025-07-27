@@ -621,23 +621,25 @@ def show_operational_services():
         col1, col2 = st.columns(2)
         
         with col1:
-            custom_name = st.text_input("Service Name", placeholder="e.g., Custom CRM Solution")
-            custom_price = st.number_input("Price per User/Month (SAR)", min_value=0, value=50)
+            custom_name = st.text_input("Service Name", placeholder="e.g., Custom CRM Solution", key="custom_service_name_input")
+            custom_price = st.number_input("Price per User/Month (SAR)", min_value=0, value=50, key="custom_service_price_input")
         
         with col2:
-            custom_setup = st.number_input("Setup Cost (SAR)", min_value=0, value=5000)
-            custom_users = st.number_input("Number of Users", min_value=0, value=0)
+            custom_setup = st.number_input("Setup Cost (SAR)", min_value=0, value=5000, key="custom_service_setup_input")
+            custom_users = st.number_input("Number of Users", min_value=0, value=0, key="custom_service_users_input")
         
         custom_description = st.text_area("Service Description", 
-                                        placeholder="Describe what this service provides...")
+                                        placeholder="Describe what this service provides...", 
+                                        key="custom_service_description_input")
         
         custom_new_implementation = st.checkbox(
             "🆕 New Implementation (includes setup cost)", 
             value=True,
-            help="Check if this is a new implementation requiring setup cost"
+            help="Check if this is a new implementation requiring setup cost",
+            key="custom_service_new_impl_input"
         )
         
-        if st.button("Add Custom Service"):
+        if st.button("Add Custom Service", key="add_custom_operational_service_btn"):
             if custom_name and custom_description and custom_users > 0:
                 custom_service = {
                     'name': custom_name,
@@ -675,7 +677,7 @@ def show_operational_services():
             </div>
             """, unsafe_allow_html=True)
             
-            if st.button(f"Remove {service['name']}", key=f"remove_custom_{i}"):
+            if st.button(f"Remove {service['name']}", key=f"remove_custom_service_{i}"):
                 st.session_state.custom_operational.pop(i)
                 st.rerun()
 
@@ -703,25 +705,20 @@ def show_support_packages():
             border_color = "#dc2626" if is_selected else "#22c55e"
             bg_color = "#fef2f2" if is_selected else "#f0fdf4"
             
-            st.markdown(f"""
-            <div style='background: {bg_color}; border: 2px solid {border_color}; border-radius: 10px; padding: 1.5rem; margin: 1rem 0; min-height: 450px; display: flex; flex-direction: column;'>
-                <h3 style='color: {border_color}; margin-bottom: 1rem; text-align: center;'>{package_name}</h3>
-                <h2 style='color: #1f2937; margin-bottom: 1rem; text-align: center;'>SAR {details['price']:,.0f}</h2>
-                <hr style='margin: 1rem 0; border-color: {border_color};'>
-                
-                <div style='flex-grow: 1;'>
-                    <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Support Requests:</strong><br>{details['support_requests']}</p>
-                    <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Improvement Hours:</strong><br>{details['improvement_hours']}</p>
-                    <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Training Requests:</strong><br>{details['training_requests']}</p>
-                    <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Report Requests:</strong><br>{details['report_requests']}</p>
-                </div>
-                
-                <hr style='margin: 1rem 0; border-color: {border_color};'>
-                <p style='font-size: 0.85em; color: #6b7280; text-align: center; margin-bottom: 0;'>{details['description']}</p>
-            </div>
-            """, unsafe_allow_html=True)
+            # Create the card content without problematic HTML
+            st.markdown(f"### {package_name}")
+            st.markdown(f"**SAR {details['price']:,.0f}**")
             
-            if st.button(f"Select {package_name}", key=f"select_{package_name}"):
+            with st.container():
+                st.markdown("---")
+                st.write(f"**Support Requests:** {details['support_requests']}")
+                st.write(f"**Improvement Hours:** {details['improvement_hours']}")
+                st.write(f"**Training Requests:** {details['training_requests']}")
+                st.write(f"**Report Requests:** {details['report_requests']}")
+                st.markdown("---")
+                st.caption(details['description'])
+            
+            if st.button(f"Select {package_name}", key=f"select_package_{package_name.lower()}_btn"):
                 st.session_state.support_package = package_name
                 st.success(f"✅ Selected {package_name} Support Package")
                 st.rerun()
@@ -737,28 +734,21 @@ def show_support_packages():
             
             with cols2[col_index]:
                 is_selected = st.session_state.support_package == package_name
-                border_color = "#dc2626" if is_selected else "#22c55e"
-                bg_color = "#fef2f2" if is_selected else "#f0fdf4"
                 
-                st.markdown(f"""
-                <div style='background: {bg_color}; border: 2px solid {border_color}; border-radius: 10px; padding: 1.5rem; margin: 1rem 0; min-height: 450px; display: flex; flex-direction: column;'>
-                    <h3 style='color: {border_color}; margin-bottom: 1rem; text-align: center;'>{package_name}</h3>
-                    <h2 style='color: #1f2937; margin-bottom: 1rem; text-align: center;'>SAR {details['price']:,.0f}</h2>
-                    <hr style='margin: 1rem 0; border-color: {border_color};'>
-                    
-                    <div style='flex-grow: 1;'>
-                        <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Support Requests:</strong><br>{details['support_requests']}</p>
-                        <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Improvement Hours:</strong><br>{details['improvement_hours']}</p>
-                        <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Training Requests:</strong><br>{details['training_requests']}</p>
-                        <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Report Requests:</strong><br>{details['report_requests']}</p>
-                    </div>
-                    
-                    <hr style='margin: 1rem 0; border-color: {border_color};'>
-                    <p style='font-size: 0.85em; color: #6b7280; text-align: center; margin-bottom: 0;'>{details['description']}</p>
-                </div>
-                """, unsafe_allow_html=True)
+                # Create the card content without problematic HTML
+                st.markdown(f"### {package_name}")
+                st.markdown(f"**SAR {details['price']:,.0f}**")
                 
-                if st.button(f"Select {package_name}", key=f"select_{package_name}"):
+                with st.container():
+                    st.markdown("---")
+                    st.write(f"**Support Requests:** {details['support_requests']}")
+                    st.write(f"**Improvement Hours:** {details['improvement_hours']}")
+                    st.write(f"**Training Requests:** {details['training_requests']}")
+                    st.write(f"**Report Requests:** {details['report_requests']}")
+                    st.markdown("---")
+                    st.caption(details['description'])
+                
+                if st.button(f"Select {package_name}", key=f"select_package_{package_name.lower()}_btn_row2"):
                     st.session_state.support_package = package_name
                     st.success(f"✅ Selected {package_name} Support Package")
                     st.rerun()
@@ -781,14 +771,14 @@ def show_support_packages():
             extra_support = st.number_input("Extra Support Requests (SAR 1,800 each)", 
                                           min_value=0, 
                                           value=st.session_state.support_extras['support'],
-                                          key="extra_support_requests")
+                                          key="extra_support_requests_input")
             st.session_state.support_extras['support'] = extra_support
         
         with col2:
             extra_training = st.number_input("Extra Training/Reports (SAR 5,399 each)", 
                                            min_value=0, 
                                            value=st.session_state.support_extras['training'],
-                                           key="extra_training_reports")
+                                           key="extra_training_reports_input")
             st.session_state.support_extras['training'] = extra_training
         
         if extra_support > 0 or extra_training > 0:
@@ -825,22 +815,24 @@ def show_implementation_projects():
         col1, col2 = st.columns(2)
         
         with col1:
-            project_name = st.text_input("Project Name", placeholder="e.g., AI-Powered Analytics Platform")
-            project_type = st.selectbox("Project Type", PROJECT_TYPES)
-            timeline = st.selectbox("Timeline", ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Multi-quarter", "2+ years"])
-            priority = st.select_slider("Priority Level", ["Low", "Medium", "High", "Critical"], value="Medium")
+            project_name = st.text_input("Project Name", placeholder="e.g., AI-Powered Analytics Platform", key="project_name_input")
+            project_type = st.selectbox("Project Type", PROJECT_TYPES, key="project_type_input")
+            timeline = st.selectbox("Timeline", ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Multi-quarter", "2+ years"], key="project_timeline_input")
+            priority = st.select_slider("Priority Level", ["Low", "Medium", "High", "Critical"], value="Medium", key="project_priority_input")
         
         with col2:
-            budget = st.number_input("Budget Estimate (SAR)", min_value=0, value=100000, step=10000)
-            departments = st.multiselect("Departments Involved", DEPARTMENTS)
+            budget = st.number_input("Budget Estimate (SAR)", min_value=0, value=100000, step=10000, key="project_budget_input")
+            departments = st.multiselect("Departments Involved", DEPARTMENTS, key="project_departments_input")
             
         project_description = st.text_area("Project Description", 
-                                         placeholder="Describe the project scope, objectives, and expected outcomes...")
+                                         placeholder="Describe the project scope, objectives, and expected outcomes...", 
+                                         key="project_description_input")
         
         success_criteria = st.text_area("Success Criteria", 
-                                      placeholder="Define how success will be measured...")
+                                      placeholder="Define how success will be measured...", 
+                                      key="project_success_criteria_input")
         
-        if st.button("Add Project", type="primary"):
+        if st.button("Add Project", type="primary", key="add_implementation_project_btn"):
             if project_name and project_description and budget > 0:
                 new_project = {
                     'name': project_name,
@@ -899,7 +891,7 @@ def show_implementation_projects():
             
             col1, col2 = st.columns([3, 1])
             with col2:
-                if st.button(f"Remove", key=f"remove_project_{i}"):
+                if st.button(f"Remove", key=f"remove_implementation_project_{i}"):
                     st.session_state.implementation_projects.pop(i)
                     st.rerun()
         
@@ -970,7 +962,7 @@ def show_summary():
                 }
             )
             fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_pie, use_container_width=True, key="budget_pie_chart")
     
     # Charts
     col1, col2 = st.columns(2)
@@ -1054,7 +1046,7 @@ def show_summary():
             yaxis_title='Cost (SAR)',
             showlegend=True
         )
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, use_container_width=True, key="cash_flow_chart")
     
     # Cash flow explanation
     st.markdown("""
@@ -1178,19 +1170,19 @@ def show_summary():
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        if st.button("📊 Export to Excel", use_container_width=True):
+        if st.button("📊 Export to Excel", use_container_width=True, key="export_excel_btn"):
             st.success("📊 Excel export functionality would generate a comprehensive budget report including all selected services, costs, and projections.")
     
     with col2:
-        if st.button("💾 Save Draft", use_container_width=True):
+        if st.button("💾 Save Draft", use_container_width=True, key="save_draft_btn"):
             st.success("💾 Draft saved! Your selections have been preserved and you can continue editing later.")
     
     with col3:
-        if st.button("📧 Share Summary", use_container_width=True):
+        if st.button("📧 Share Summary", use_container_width=True, key="share_summary_btn"):
             st.success("📧 Budget summary prepared for sharing with stakeholders and finance team.")
     
     with col4:
-        if st.button("🚀 Submit Final Budget", type="primary", use_container_width=True):
+        if st.button("🚀 Submit Final Budget", type="primary", use_container_width=True, key="submit_final_budget_btn"):
             # Generate unique reference ID with company code
             company_code = st.session_state.company_info.get('company_code', 'ALK')
             reference_id = f"{company_code}-2025-{datetime.now().strftime('%Y%m%d%H%M%S')}-{str(uuid.uuid4())[:8].upper()}"
