@@ -3,1542 +3,1016 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
-import json
+import uuid
 
 # Page configuration
 st.set_page_config(
-    page_title="AIC 2025 IT Budget Questionnaire",
-    page_icon="📋",
+    page_title="Alkhorayef Group - 2025 IT Budget Planner",
+    page_icon="💼",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for professional questionnaire styling
+# Custom CSS for professional styling
 st.markdown("""
 <style>
     .main-header {
-        text-align: center;
-        padding: 2rem 0;
-        background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+        background: linear-gradient(90deg, #1e40af, #3b82f6);
         color: white;
-        margin: -1rem -1rem 2rem -1rem;
-        border-radius: 0 0 20px 20px;
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     
-    .category-header {
-        background: linear-gradient(90deg, #f8fafc, #e2e8f0);
-        padding: 1rem 2rem;
-        border-radius: 10px;
-        border-left: 5px solid #3b82f6;
+    .category-section {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
         margin: 1rem 0;
+        border-left: 5px solid #3b82f6;
     }
     
-    .service-item {
+    .service-card {
         background: white;
-        padding: 1rem;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #e5e7eb;
         border-radius: 8px;
+        padding: 1rem;
         margin: 0.5rem 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         transition: all 0.3s ease;
     }
     
-    .service-item:hover {
+    .service-card:hover {
         border-color: #3b82f6;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
     }
     
-    .budget-summary {
+    .cost-display {
         background: #f0f9ff;
         border: 2px solid #0ea5e9;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 1rem 0;
-    }
-    
-    .implementation-card {
-        background: #fef3c7;
-        border: 1px solid #f59e0b;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-    }
-    
-    .support-card {
-        background: #dcfce7;
-        border: 1px solid #16a34a;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-    }
-    
-    .operations-card {
-        background: #e0f2fe;
-        border: 1px solid #0891b2;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-    }
-    
-    .pricing-box {
-        background: #f1f5f9;
-        border: 2px solid #64748b;
         border-radius: 8px;
-        padding: 0.75rem;
-        margin: 0.5rem 0;
+        padding: 1rem;
         text-align: center;
+        margin: 0.5rem 0;
+        font-weight: bold;
     }
     
-    .total-cost {
+    .total-budget {
+        background: linear-gradient(45deg, #dc2626, #ef4444);
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        font-size: 1.2em;
+        font-weight: bold;
+        margin: 1rem 0;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+    
+    .support-package {
+        background: #f0fdf4;
+        border: 2px solid #22c55e;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        position: relative;
+    }
+    
+    .support-package.selected {
+        border-color: #dc2626;
         background: #fef2f2;
-        border: 2px solid #dc2626;
+    }
+    
+    .project-card {
+        background: #fffbeb;
+        border: 2px solid #f59e0b;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+    
+    .custom-service {
+        background: #f3e8ff;
+        border: 2px solid #8b5cf6;
         border-radius: 10px;
         padding: 1rem;
         margin: 1rem 0;
+    }
+    
+    .sidebar-budget {
+        position: sticky;
+        top: 1rem;
+    }
+    
+    .metric-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
         text-align: center;
-        font-weight: bold;
-        font-size: 1.2em;
+        border: 1px solid #e5e7eb;
+        margin: 0.5rem 0;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # Initialize session state
-if 'questionnaire_data' not in st.session_state:
-    st.session_state.questionnaire_data = {}
-if 'current_section' not in st.session_state:
-    st.session_state.current_section = 'Operations'
-if 'company_info' not in st.session_state:
-    st.session_state.company_info = {}
-if 'language' not in st.session_state:
-    st.session_state.language = 'English'
+def initialize_session_state():
+    if 'operational_services' not in st.session_state:
+        st.session_state.operational_services = {}
+    if 'custom_operational' not in st.session_state:
+        st.session_state.custom_operational = []
+    if 'support_package' not in st.session_state:
+        st.session_state.support_package = None
+    if 'support_extras' not in st.session_state:
+        st.session_state.support_extras = {'support': 0, 'training': 0}
+    if 'implementation_projects' not in st.session_state:
+        st.session_state.implementation_projects = []
+    if 'company_info' not in st.session_state:
+        st.session_state.company_info = {}
 
-# Translation dictionary
-translations = {
-    'English': {
-        'title': 'AIC 2025 IT Budget Questionnaire',
-        'subtitle': 'Annual Technology Budget Planning & Requirements Assessment',
-        'budget_year': 'Budget Year',
-        'version': 'Version',
-        'company_info': 'Company Information',
-        'company': 'Company',
-        'business_unit': 'Business Unit',
-        'date': 'Date',
-        'representative': 'Company Representative',
-        'budget_summary': 'Budget Summary',
-        'selected_items': 'Selected Items',
-        'total_users': 'Total Users',
-        'total_budget': 'Total Annual Budget',
-        'custom_services': 'Custom Services',
-        'operations': 'Operations',
-        'support': 'Support',
-        'implementation': 'Implementation',
-        'summary': 'Summary',
-        'select_section': 'Select Questionnaire Section:',
-        'operations_title': 'Operations - Recurring Licenses & Software',
-        'operations_desc': 'Day-to-day operational software licenses and subscriptions required for business operations.',
-        'operations_tip': 'Tip: Can\'t find a service you need? Use the "Add Custom Service" options to include additional Oracle or Microsoft services.',
-        'support_title': 'Support - Maintenance & Support Services',
-        'support_desc': 'Ongoing support packages and maintenance services for your IT infrastructure and applications.',
-        'support_tip': 'Tip: Need specialized support not covered by standard packages? Use "Add Custom Support Service" to include additional support requirements.',
-        'implementation_title': 'Implementation - New Projects & Initiatives',
-        'implementation_desc': 'New technology implementations, custom development projects, and strategic digital initiatives.',
-        'implementation_tip': 'Tip: Have a unique project not listed? Use "Add Custom Implementation Project" to include your specific requirements and budget estimates.',
-        'oracle_licensing': 'Oracle Fusion Licensing',
-        'microsoft_software': 'Microsoft Software & Subscriptions',
-        'add_custom_oracle': 'Add Custom Oracle Service',
-        'add_custom_microsoft': 'Add Custom Microsoft Service',
-        'add_custom_support': 'Add Custom Support Service',
-        'add_custom_implementation': 'Add Custom Implementation Project',
-        'service_name': 'Service Name',
-        'price_per_user': 'Price per User per Month (SAR)',
-        'setup_cost': 'Setup Cost (SAR)',
-        'service_description': 'Service Description',
-        'monthly_cost': 'Monthly Cost (SAR)',
-        'annual_cost': 'Annual Cost',
-        'total_annual_cost': 'Total Annual Cost',
-        'include_service': 'Include',
-        'power_system_users': 'Power System Users',
-        'shared_users': 'Shared Users (ACC & PS)',
-        'aic_users': 'AIC without PS',
-        'acc_users': 'ACC Power System',
-        'language': 'Language'
+initialize_session_state()
+
+# Predefined service data
+ORACLE_SERVICES = {
+    "Oracle ERP Cloud": {
+        "description": "Complete enterprise resource planning solution with financials, procurement, and project management",
+        "price_per_user": 180,
+        "setup_cost": 25000
     },
-    'العربية': {
-        'title': 'استبيان ميزانية تقنية المعلومات لعام 2025 - شركة AIC',
-        'subtitle': 'تخطيط الميزانية السنوية لتقنية المعلومات وتقييم المتطلبات',
-        'budget_year': 'سنة الميزانية',
-        'version': 'الإصدار',
-        'company_info': 'معلومات الشركة',
-        'company': 'الشركة',
-        'business_unit': 'وحدة الأعمال',
-        'date': 'التاريخ',
-        'representative': 'ممثل الشركة',
-        'budget_summary': 'ملخص الميزانية',
-        'selected_items': 'العناصر المحددة',
-        'total_users': 'إجمالي المستخدمين',
-        'total_budget': 'إجمالي الميزانية السنوية',
-        'custom_services': 'الخدمات المخصصة',
-        'operations': 'العمليات',
-        'support': 'الدعم',
-        'implementation': 'التنفيذ',
-        'summary': 'الملخص',
-        'select_section': 'اختر قسم الاستبيان:',
-        'operations_title': 'العمليات - التراخيص والبرامج المتكررة',
-        'operations_desc': 'تراخيص البرامج التشغيلية اليومية والاشتراكات المطلوبة لعمليات الأعمال.',
-        'operations_tip': 'نصيحة: لا تجد الخدمة التي تحتاجها؟ استخدم خيارات "إضافة خدمة مخصصة" لتضمين خدمات Oracle أو Microsoft إضافية.',
-        'support_title': 'الدعم - خدمات الصيانة والدعم',
-        'support_desc': 'حزم الدعم المستمرة وخدمات الصيانة للبنية التحتية لتقنية المعلومات والتطبيقات.',
-        'support_tip': 'نصيحة: تحتاج دعماً متخصصاً غير مغطى بالحزم القياسية؟ استخدم "إضافة خدمة دعم مخصصة" لتضمين متطلبات الدعم الإضافية.',
-        'implementation_title': 'التنفيذ - المشاريع والمبادرات الجديدة',
-        'implementation_desc': 'تطبيقات التقنية الجديدة ومشاريع التطوير المخصصة والمبادرات الرقمية الاستراتيجية.',
-        'implementation_tip': 'نصيحة: لديك مشروع فريد غير مدرج؟ استخدم "إضافة مشروع تنفيذ مخصص" لتضمين متطلباتك المحددة وتقديرات الميزانية.',
-        'oracle_licensing': 'تراخيص Oracle Fusion',
-        'microsoft_software': 'برامج واشتراكات Microsoft',
-        'add_custom_oracle': 'إضافة خدمة Oracle مخصصة',
-        'add_custom_microsoft': 'إضافة خدمة Microsoft مخصصة',
-        'add_custom_support': 'إضافة خدمة دعم مخصصة',
-        'add_custom_implementation': 'إضافة مشروع تنفيذ مخصص',
-        'service_name': 'اسم الخدمة',
-        'price_per_user': 'السعر لكل مستخدم شهرياً (ريال سعودي)',
-        'setup_cost': 'تكلفة الإعداد (ريال سعودي)',
-        'service_description': 'وصف الخدمة',
-        'monthly_cost': 'التكلفة الشهرية (ريال سعودي)',
-        'annual_cost': 'التكلفة السنوية',
-        'total_annual_cost': 'إجمالي التكلفة السنوية',
-        'include_service': 'تضمين',
-        'power_system_users': 'مستخدمو أنظمة الطاقة',
-        'shared_users': 'المستخدمون المشتركون (ACC & PS)',
-        'aic_users': 'مستخدمو AIC بدون PS',
-        'acc_users': 'مستخدمو ACC لأنظمة الطاقة',
-        'language': 'اللغة'
+    "Oracle HCM Cloud": {
+        "description": "Human capital management including payroll, talent management, and workforce planning",
+        "price_per_user": 75,
+        "setup_cost": 15000
+    },
+    "Oracle Supply Chain Management": {
+        "description": "End-to-end supply chain planning, inventory management, and logistics optimization",
+        "price_per_user": 120,
+        "setup_cost": 20000
+    },
+    "Oracle Fusion Analytics": {
+        "description": "Pre-built analytics and reporting for Oracle applications with real-time insights",
+        "price_per_user": 45,
+        "setup_cost": 8000
     }
 }
 
-def get_text(key):
-    """Get translated text based on selected language"""
-    return translations[st.session_state.language].get(key, key)
-
-def apply_rtl_css():
-    """Apply RTL CSS for Arabic language"""
-    if st.session_state.language == 'العربية':
-        st.markdown("""
-        <style>
-            .main .block-container {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            .stSelectbox > div > div {
-                direction: rtl;
-            }
-            
-            .stTextInput > div > div > input {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            .stTextArea > div > div > textarea {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            .stNumberInput > div > div > input {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            .main-header {
-                direction: rtl;
-                text-align: center;
-            }
-            
-            .category-header {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            .operations-card, .support-card, .implementation-card {
-                direction: rtl;
-                text-align: right;
-            }
-            
-            .pricing-box {
-                direction: rtl;
-                text-align: center;
-            }
-            
-            .total-cost {
-                direction: rtl;
-                text-align: center;
-            }
-            
-            .stRadio > div {
-                direction: rtl;
-            }
-            
-            .stCheckbox > div {
-                direction: rtl;
-            }
-            
-            .stColumns {
-                direction: rtl;
-            }
-            
-            /* Fix for buttons and metrics in RTL */
-            .stButton > button {
-                direction: ltr;
-            }
-            
-            .stMetric {
-                direction: rtl;
-                text-align: center;
-            }
-            
-            /* Sidebar adjustments for RTL */
-            .css-1d391kg {
-                direction: rtl;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-
-# Pricing data (in SAR)
-oracle_pricing = {
-    "Oracle Demand Management": {"price_per_user": 45, "setup_cost": 5000},
-    "ERP - Financial & PPM": {"price_per_user": 180, "setup_cost": 15000},
-    "HCM - Learning Management": {"price_per_user": 25, "setup_cost": 8000},
-    "ERP - Order Management": {"price_per_user": 120, "setup_cost": 12000},
-    "ERP - Procurement": {"price_per_user": 95, "setup_cost": 10000},
-    "ERP - Purchase Requisition": {"price_per_user": 35, "setup_cost": 3000},
-    "ERP - Product Management": {"price_per_user": 85, "setup_cost": 7000},
-    "ERP - Inventory, Maintenance, and Costing": {"price_per_user": 110, "setup_cost": 12000},
-    "ERP Supply Planning": {"price_per_user": 75, "setup_cost": 8000},
-    "HCM - Talent Management": {"price_per_user": 65, "setup_cost": 10000},
-    "HCM - Core HR": {"price_per_user": 55, "setup_cost": 8000},
-    "HCM - Payroll": {"price_per_user": 40, "setup_cost": 6000},
-    "ERP - Self Service": {"price_per_user": 25, "setup_cost": 2000},
-    "ERP - Planning & Budgeting": {"price_per_user": 90, "setup_cost": 9000}
+MICROSOFT_SERVICES = {
+    "Microsoft 365 E3": {
+        "description": "Premium productivity suite with advanced security, compliance, and analytics capabilities",
+        "price_per_user": 82,
+        "setup_cost": 5000
+    },
+    "Microsoft Teams Phone": {
+        "description": "Cloud-based phone system integrated with Teams for calling and conferencing",
+        "price_per_user": 28,
+        "setup_cost": 3000
+    },
+    "Power BI Premium": {
+        "description": "Advanced business intelligence with AI-powered insights and enterprise-grade capabilities",
+        "price_per_user": 75,
+        "setup_cost": 4000
+    },
+    "Project for the Web": {
+        "description": "Cloud-based project management with resource scheduling and portfolio management",
+        "price_per_user": 120,
+        "setup_cost": 6000
+    },
+    "Microsoft Dynamics 365": {
+        "description": "Customer relationship management and enterprise applications suite",
+        "price_per_user": 210,
+        "setup_cost": 30000
+    }
 }
 
-microsoft_pricing = {
-    "Exchange Online (Plan 1)": {"price_per_user": 18, "setup_cost": 1000},
-    "Enterprise Mobility + Security E3": {"price_per_user": 32, "setup_cost": 2000},
-    "Office 365 E3 Original": {"price_per_user": 82, "setup_cost": 3000},
-    "Office 365 E3 Unified": {"price_per_user": 90, "setup_cost": 3000},
-    "Microsoft Teams Phone Standard": {"price_per_user": 28, "setup_cost": 1500},
-    "Project Plan 3": {"price_per_user": 120, "setup_cost": 2000},
-    "Project Plan 5": {"price_per_user": 210, "setup_cost": 3000},
-    "Visio Plan 2": {"price_per_user": 56, "setup_cost": 1000},
-    "M365 Copilot Sub Add-on": {"price_per_user": 112, "setup_cost": 2500},
-    "Power BI Pro Per User": {"price_per_user": 38, "setup_cost": 1500},
-    "Power BI Premium Per User": {"price_per_user": 75, "setup_cost": 2500},
-    "Microsoft 365 F1": {"price_per_user": 15, "setup_cost": 800}
+SUPPORT_PACKAGES = {
+    "Basic": {
+        "price": 52000,
+        "support_requests": "Standard (5 per month)",
+        "improvement_hours": "10 hours",
+        "training_requests": "2 per quarter",
+        "report_requests": "1 per month",
+        "description": "Essential support for small teams with basic IT needs"
+    },
+    "Bronze": {
+        "price": 195975,
+        "support_requests": "Priority (15 per month)",
+        "improvement_hours": "25 hours",
+        "training_requests": "4 per quarter",
+        "report_requests": "3 per month",
+        "description": "Enhanced support for growing organizations"
+    },
+    "Silver": {
+        "price": 649498,
+        "support_requests": "Premium (35 per month)",
+        "improvement_hours": "50 hours",
+        "training_requests": "8 per quarter",
+        "report_requests": "6 per month",
+        "description": "Comprehensive support for medium enterprises"
+    },
+    "Gold": {
+        "price": 1578139,
+        "support_requests": "Premium Plus (75 per month)",
+        "improvement_hours": "100 hours",
+        "training_requests": "15 per quarter",
+        "report_requests": "12 per month",
+        "description": "Premium support for large organizations"
+    },
+    "Platinum": {
+        "price": 2500000,
+        "support_requests": "Unlimited",
+        "improvement_hours": "200 hours",
+        "training_requests": "Unlimited",
+        "report_requests": "Unlimited",
+        "description": "Enterprise-grade support with dedicated resources"
+    }
 }
 
-support_pricing = {
-    "Bronze Package": {"monthly_cost": 8000, "ticket_limit": 50, "response_time": "8 hours"},
-    "Silver Package": {"monthly_cost": 15000, "ticket_limit": 100, "response_time": "4 hours"},
-    "Gold Package": {"monthly_cost": 25000, "ticket_limit": 200, "response_time": "2 hours"},
-    "Platinum Package": {"monthly_cost": 40000, "ticket_limit": 500, "response_time": "1 hour"}
-}
-
-# Oracle Fusion Licensing Data with categories
-oracle_services = [
-    {"name": "Oracle Demand Management", "description": "Provides comprehensive capabilities to predict demand using advanced algorithms, enabling better forecasting and inventory management.", "category": "operations"},
-    {"name": "ERP - Financial & PPM", "description": "Supports financial management including accounting, project portfolio management, and real-time financial reporting.", "category": "operations"},
-    {"name": "HCM - Learning Management", "description": "Facilitates the creation, delivery, and management of learning programs for employees, tracking progress and compliance.", "category": "operations"},
-    {"name": "ERP - Order Management", "description": "Manages order processing from creation to fulfillment with integrated workflows.", "category": "operations"},
-    {"name": "ERP - Procurement", "description": "Manages the full procurement process, from supplier engagement to purchase orders and supplier performance tracking.", "category": "operations"},
-    {"name": "ERP - Purchase Requisition", "description": "Allows employees to create and submit purchase requests for approval, with seamless integration into procurement processes.", "category": "operations"},
-    {"name": "ERP - Product Management", "description": "Comprehensive product lifecycle management with inventory and catalog features.", "category": "operations"},
-    {"name": "ERP - Inventory, Maintenance, and Costing", "description": "Integrates the management of inventory, maintenance, and cost tracking for efficient operational workflows.", "category": "operations"},
-    {"name": "ERP Supply Planning", "description": "Optimizes supply chain planning with advanced algorithms to align inventory and supply with demand forecasts.", "category": "operations"},
-    {"name": "HCM - Talent Management", "description": "Manages the entire talent lifecycle including recruitment, development, performance evaluation, and succession planning.", "category": "operations"},
-    {"name": "HCM - Core HR", "description": "Centralized management of employee data, organizational structures, and HR processes, ensuring compliance and streamlined operations.", "category": "operations"},
-    {"name": "HCM - Payroll", "description": "Processes payroll efficiently and accurately, integrating with HR functions like time tracking, benefits, and taxation.", "category": "operations"},
-    {"name": "ERP - Self Service", "description": "Enables employees and managers to independently manage tasks like expense reporting, purchase requisitions, and time entry through a user-friendly interface.", "category": "operations"},
-    {"name": "ERP - Planning & Budgeting", "description": "Enables organizations to plan and manage their budgets with advanced forecasting and scenario analysis tools.", "category": "operations"}
+PROJECT_TYPES = [
+    "RPA (Robotic Process Automation)",
+    "AI & Machine Learning",
+    "IoT Implementation",
+    "Custom Application Development",
+    "Data Analytics & BI",
+    "Digital Transformation",
+    "Infrastructure Upgrade",
+    "Cybersecurity Enhancement",
+    "Cloud Migration",
+    "Integration Project"
 ]
 
-# Microsoft Software & Subscriptions
-microsoft_services = [
-    {"name": "Exchange Online (Plan 1)", "description": "Provides business-class email with 50 GB mailbox and Outlook support for web, desktop, and mobile devices.", "category": "operations"},
-    {"name": "Enterprise Mobility + Security E3", "description": "Comprehensive security suite offering identity and access management, device protection, and security analytics.", "category": "operations"},
-    {"name": "Office 365 E3 Original", "description": "Core productivity suite with cloud apps like Word, Excel, PowerPoint, and Teams, along with cloud services.", "category": "operations"},
-    {"name": "Office 365 E3 Unified", "description": "Unified version of Office 365 E3 offering collaboration tools and additional enterprise services.", "category": "operations"},
-    {"name": "Microsoft Teams Phone Standard", "description": "Provides calling capabilities within Microsoft Teams, including PSTN calling and audio conferencing features.", "category": "operations"},
-    {"name": "Project Plan 3", "description": "Project management tool with essential features for planning, resource management, and collaboration.", "category": "operations"},
-    {"name": "Project Plan 5", "description": "Advanced project management tool with portfolio management, resource optimization, and scheduling features.", "category": "operations"},
-    {"name": "Visio Plan 2", "description": "Advanced diagramming tool for creating professional diagrams, flowcharts, and organizational charts.", "category": "operations"},
-    {"name": "M365 Copilot Sub Add-on", "description": "Add-on feature for Microsoft 365 offering AI-based tools to assist with tasks and workflows within the suite.", "category": "operations"},
-    {"name": "Power BI Pro Per User", "description": "Per-user subscription for Power BI Pro, offering self-service business intelligence tools and report sharing.", "category": "operations"},
-    {"name": "Power BI Premium Per User", "description": "Per-user subscription for Power BI Premium, offering advanced data analytics features and larger dataset capacity.", "category": "operations"},
-    {"name": "Microsoft 365 F1", "description": "Entry-level Microsoft 365 plan offering core productivity tools for frontline workers.", "category": "operations"}
+DEPARTMENTS = [
+    "Finance", "Human Resources", "Operations", "Sales", "Marketing", 
+    "IT", "Customer Service", "Supply Chain", "Manufacturing", "Executive"
 ]
 
-# RPA Packages with exact pricing from Excel
-rpa_packages = [
-    {"name": "Bronze (1 Credit)", "discovery": 33110, "pm": 3080, "infrastructure": 9350, "year1": 43230, "year2": 10098, "year3": 10906, "processes": "Covers up to 2 processes", "implementation": "Covers 1 process"},
-    {"name": "Silver (3 Credits)", "discovery": 94364, "pm": 8778, "infrastructure": 57310, "year1": 124608, "year2": 30294, "year3": 32718, "processes": "Covers up to 5 processes", "implementation": "Covers up to 3 processes"},
-    {"name": "Gold (5 Credits)", "discovery": 148995, "pm": 13860, "infrastructure": 92950, "year1": 199210, "year2": 50490, "year3": 54529, "processes": "Covers up to 10 processes", "implementation": "Covers up to 5 processes"},
-    {"name": "Platinum (10 Credits)", "discovery": 281435, "pm": 26180, "infrastructure": 180766, "year1": 381480, "year2": 100980, "year3": 109058, "processes": "Covers up to 20 processes", "implementation": "Covers up to 10 processes"}
-]
-
-def calculate_total_budget():
-    """Calculate total budget from all selected items"""
+# Utility functions
+def calculate_operational_total():
     total = 0
     
-    for key, item in st.session_state.questionnaire_data.items():
-        if item.get('category') == 'operations':
-            if item.get('type') == 'oracle':
-                service_name = item.get('service')
-                pricing = oracle_pricing.get(service_name, {})
-                total_users = item.get('total_users', 0)
-                if total_users > 0:
-                    annual_cost = (pricing.get('price_per_user', 0) * total_users * 12) + pricing.get('setup_cost', 0)
-                    total += annual_cost
-            elif item.get('type') == 'microsoft':
-                service_name = item.get('service')
-                pricing = microsoft_pricing.get(service_name, {})
-                total_users = item.get('total_users', 0)
-                if total_users > 0:
-                    annual_cost = (pricing.get('price_per_user', 0) * total_users * 12) + pricing.get('setup_cost', 0)
-                    total += annual_cost
-        
-        elif item.get('category') == 'support':
-            if item.get('type') == 'support_package':
-                level = item.get('level', '')
-                pricing = support_pricing.get(level, {})
-                annual_cost = pricing.get('monthly_cost', 0) * 12
-                total += annual_cost
-        
-        elif item.get('category') == 'implementation':
-            if item.get('type') == 'rpa_package':
-                package_details = item.get('package_details', {})
-                total += package_details.get('year1', 0)
-            else:
-                total += item.get('budget_estimate', 0)
+    # Predefined services
+    for service_key, data in st.session_state.operational_services.items():
+        if data.get('selected', False):
+            users = data.get('users', 0)
+            if service_key.startswith('oracle_'):
+                service_name = service_key.replace('oracle_', '').replace('_', ' ').title()
+                if service_name in ORACLE_SERVICES:
+                    monthly_cost = ORACLE_SERVICES[service_name]['price_per_user'] * users
+                    setup_cost = ORACLE_SERVICES[service_name]['setup_cost']
+                    total += (monthly_cost * 12) + setup_cost
+            elif service_key.startswith('microsoft_'):
+                service_name = service_key.replace('microsoft_', '').replace('_', ' ').title()
+                # Handle special cases for matching
+                if service_name == 'Microsoft 365 E3':
+                    service_name = 'Microsoft 365 E3'
+                elif service_name == 'Microsoft Teams Phone':
+                    service_name = 'Microsoft Teams Phone'
+                elif service_name == 'Power Bi Premium':
+                    service_name = 'Power BI Premium'
+                elif service_name == 'Project For The Web':
+                    service_name = 'Project for the Web'
+                elif service_name == 'Microsoft Dynamics 365':
+                    service_name = 'Microsoft Dynamics 365'
+                    
+                if service_name in MICROSOFT_SERVICES:
+                    monthly_cost = MICROSOFT_SERVICES[service_name]['price_per_user'] * users
+                    setup_cost = MICROSOFT_SERVICES[service_name]['setup_cost']
+                    total += (monthly_cost * 12) + setup_cost
+    
+    # Custom services
+    for custom_service in st.session_state.custom_operational:
+        users = custom_service.get('users', 0)
+        monthly_cost = custom_service.get('price_per_user', 0) * users
+        setup_cost = custom_service.get('setup_cost', 0)
+        total += (monthly_cost * 12) + setup_cost
     
     return total
 
+def calculate_support_total():
+    total = 0
+    
+    if st.session_state.support_package:
+        total += SUPPORT_PACKAGES[st.session_state.support_package]['price']
+    
+    # Add extras
+    total += st.session_state.support_extras['support'] * 1800
+    total += st.session_state.support_extras['training'] * 5399
+    
+    return total
+
+def calculate_implementation_total():
+    return sum(project.get('budget', 0) for project in st.session_state.implementation_projects)
+
+def calculate_total_budget():
+    return calculate_operational_total() + calculate_support_total() + calculate_implementation_total()
+
+# Header
 def show_header():
-    """Display the main header"""
-    # Apply RTL CSS if Arabic is selected
-    apply_rtl_css()
-    
-    # Language selector in top right
-    col1, col2, col3 = st.columns([2, 1, 1])
-    with col3:
-        language = st.selectbox(
-            get_text('language'),
-            ['English', 'العربية'],
-            index=0 if st.session_state.language == 'English' else 1,
-            key="language_selector"
-        )
-        if language != st.session_state.language:
-            st.session_state.language = language
-            st.rerun()
-    
-    st.markdown(f"""
+    st.markdown("""
     <div class='main-header'>
-        <h1>📋 {get_text('title')}</h1>
-        <p>{get_text('subtitle')}</p>
-        <p><strong>{get_text('budget_year')}:</strong> 2025 | <strong>{get_text('version')}:</strong> 1.0</p>
+        <h1>💼 Alkhorayef Group</h1>
+        <h2>2025 IT Budget Planning Tool</h2>
+        <p>Strategic Technology Investment Planning & Cost Analysis</p>
+        <p><strong>Budget Year:</strong> 2025 | <strong>Version:</strong> 2.0</p>
     </div>
     """, unsafe_allow_html=True)
 
-def show_company_info():
-    """Display company information form"""
-    st.sidebar.markdown(f"### 🏢 {get_text('company_info')}")
-    
-    company = st.sidebar.text_input(get_text('company'), value="AIC & Power Systems", key="company")
-    business_unit = st.sidebar.text_input(get_text('business_unit'), value="AIC & Power Systems", key="business_unit")
-    date = st.sidebar.date_input(get_text('date'), value=datetime.now(), key="date")
-    representative = st.sidebar.text_input(get_text('representative'), key="representative")
-    
-    st.session_state.company_info = {
-        "company": company,
-        "business_unit": business_unit,
-        "date": date,
-        "representative": representative
-    }
-    
-    # Budget summary in sidebar
-    total_budget = calculate_total_budget()
-    st.sidebar.markdown(f"### 💰 {get_text('budget_summary')}")
-    
-    if st.session_state.questionnaire_data:
-        total_users = sum([int(item.get('total_users', 0)) for item in st.session_state.questionnaire_data.values() if item.get('total_users')])
-        total_items = len([item for item in st.session_state.questionnaire_data.values() if item.get('selected') or item.get('budget_estimate', 0) > 0])
-        custom_count = len([item for item in st.session_state.questionnaire_data.values() if item.get('custom')])
+# Sidebar for company info and budget summary
+def show_sidebar():
+    with st.sidebar:
+        st.markdown("### 🏢 Company Information")
         
-        st.sidebar.metric(get_text('selected_items'), total_items)
-        st.sidebar.metric(get_text('total_users'), total_users)
+        company = st.text_input("Company/Division", value="Alkhorayef Group", key="company")
+        department = st.text_input("Department", key="department")
+        contact_person = st.text_input("Contact Person", key="contact_person")
+        email = st.text_input("Email", key="email")
         
-        if custom_count > 0:
-            st.sidebar.metric(get_text('custom_services'), custom_count)
-            st.sidebar.success(f"✅ {custom_count} {get_text('custom_services').lower()}")
+        st.session_state.company_info = {
+            'company': company,
+            'department': department,
+            'contact_person': contact_person,
+            'email': email,
+            'date': datetime.now().strftime("%Y-%m-%d")
+        }
         
-        # Format currency based on language
-        currency_format = f"ريال {total_budget:,.0f}" if st.session_state.language == 'العربية' else f"SAR {total_budget:,.0f}"
+        st.markdown("---")
         
-        st.sidebar.markdown(f"""
-        <div class='total-cost'>
-            💰 {get_text('total_budget')}<br>
-            <span style='font-size: 1.5em; color: #dc2626;'>{currency_format}</span>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.sidebar.metric(get_text('selected_items'), 0)
-        st.sidebar.metric(get_text('total_users'), 0)
-        currency_zero = "ريال 0" if st.session_state.language == 'العربية' else "SAR 0"
-        st.sidebar.metric(get_text('total_budget'), currency_zero)
-
-def add_custom_oracle_service():
-    """Add custom Oracle service"""
-    with st.expander("➕ Add Custom Oracle Service", expanded=False):
-        st.markdown("**Add your own Oracle service not listed above**")
+        # Budget summary
+        st.markdown("### 💰 Budget Summary")
         
-        col1, col2 = st.columns(2)
-        with col1:
-            custom_name = st.text_input("Service Name", key="custom_oracle_name", placeholder="e.g., Oracle CX Sales")
-            custom_price = st.number_input("Price per User per Month (SAR)", min_value=0, value=50, key="custom_oracle_price")
+        operational_total = calculate_operational_total()
+        support_total = calculate_support_total()
+        implementation_total = calculate_implementation_total()
+        total_budget = operational_total + support_total + implementation_total
         
-        with col2:
-            custom_setup = st.number_input("Setup Cost (SAR)", min_value=0, value=5000, key="custom_oracle_setup")
-            
-        custom_description = st.text_area("Service Description", key="custom_oracle_desc", placeholder="Describe what this service does...")
-        
-        if st.button("Add Custom Oracle Service", key="add_custom_oracle"):
-            if custom_name and custom_description:
-                key = f"custom_oracle_{custom_name.replace(' ', '_').lower()}"
-                
-                # Add to session state for immediate use
-                st.session_state[f"{key}_selected"] = True
-                
-                col_a, col_b = st.columns(2)
-                with col_a:
-                    ps_users = st.number_input(f"Power System Users", min_value=0, value=0, key=f"{key}_ps")
-                with col_b:
-                    shared_users = st.number_input(f"Shared Users (ACC & PS)", min_value=0, value=0, key=f"{key}_shared")
-                
-                total_users = ps_users + shared_users
-                if total_users > 0:
-                    annual_cost = (custom_price * total_users * 12) + custom_setup
-                    st.markdown(f"""
-                    <div class='pricing-box' style='background: #dcfce7; border-color: #16a34a;'>
-                        📊 Total Annual Cost: <strong>SAR {annual_cost:,.0f}</strong><br>
-                        Monthly: SAR {custom_price * total_users:,.0f} | Setup: SAR {custom_setup:,}
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                st.session_state.questionnaire_data[key] = {
-                    'service': custom_name,
-                    'category': 'operations',
-                    'type': 'oracle',
-                    'custom': True,
-                    'description': custom_description,
-                    'selected': True,
-                    'ps_users': ps_users,
-                    'shared_users': shared_users,
-                    'total_users': total_users,
-                    'price_per_user': custom_price,
-                    'setup_cost': custom_setup,
-                    'annual_cost': (custom_price * total_users * 12) + custom_setup if total_users > 0 else 0
-                }
-                
-                st.success(f"✅ Added custom Oracle service: {custom_name}")
-            else:
-                st.error("Please fill in service name and description")
-
-def add_custom_microsoft_service():
-    """Add custom Microsoft service"""
-    with st.expander("➕ Add Custom Microsoft Service", expanded=False):
-        st.markdown("**Add your own Microsoft service not listed above**")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            custom_name = st.text_input("Service Name", key="custom_microsoft_name", placeholder="e.g., Microsoft Dynamics 365")
-            custom_price = st.number_input("Price per User per Month (SAR)", min_value=0, value=30, key="custom_microsoft_price")
-        
-        with col2:
-            custom_setup = st.number_input("Setup Cost (SAR)", min_value=0, value=2000, key="custom_microsoft_setup")
-            
-        custom_description = st.text_area("Service Description", key="custom_microsoft_desc", placeholder="Describe what this service does...")
-        
-        if st.button("Add Custom Microsoft Service", key="add_custom_microsoft"):
-            if custom_name and custom_description:
-                key = f"custom_microsoft_{custom_name.replace(' ', '_').lower()}"
-                
-                col_a, col_b, col_c = st.columns(3)
-                with col_a:
-                    aic_users = st.number_input(f"AIC without PS", min_value=0, value=0, key=f"{key}_aic")
-                with col_b:
-                    ps_users = st.number_input(f"Power System", min_value=0, value=0, key=f"{key}_ps")
-                with col_c:
-                    acc_users = st.number_input(f"ACC Power System", min_value=0, value=0, key=f"{key}_acc")
-                
-                total_users = aic_users + ps_users + acc_users
-                if total_users > 0:
-                    annual_cost = (custom_price * total_users * 12) + custom_setup
-                    st.markdown(f"""
-                    <div class='pricing-box' style='background: #dcfce7; border-color: #16a34a;'>
-                        📊 Total Annual Cost: <strong>SAR {annual_cost:,.0f}</strong><br>
-                        Monthly: SAR {custom_price * total_users:,.0f} | Setup: SAR {custom_setup:,}
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                st.session_state.questionnaire_data[key] = {
-                    'service': custom_name,
-                    'category': 'operations',
-                    'type': 'microsoft',
-                    'custom': True,
-                    'description': custom_description,
-                    'selected': True,
-                    'aic_users': aic_users,
-                    'ps_users': ps_users,
-                    'acc_users': acc_users,
-                    'total_users': total_users,
-                    'price_per_user': custom_price,
-                    'setup_cost': custom_setup,
-                    'annual_cost': (custom_price * total_users * 12) + custom_setup if total_users > 0 else 0
-                }
-                
-                st.success(f"✅ Added custom Microsoft service: {custom_name}")
-            else:
-                st.error("Please fill in service name and description")
-
-def show_operations_section():
-    """Display Operations section - recurring licenses and software"""
-    st.markdown(f"""
-    <div class='category-header'>
-        <h2>🔧 {get_text('operations_title')}</h2>
-        <p>{get_text('operations_desc')}</p>
-        <p><strong>💡 {get_text('operations_tip')}</strong></p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Oracle Fusion Licensing
-    st.markdown(f"### 🔶 {get_text('oracle_licensing')}")
-    col1, col2 = st.columns([1, 1])
-    
-    for i, service in enumerate(oracle_services):
-        col = col1 if i % 2 == 0 else col2
-        with col:
-            with st.container():
-                pricing = oracle_pricing.get(service['name'], {})
-                price_per_user = pricing.get('price_per_user', 0)
-                setup_cost = pricing.get('setup_cost', 0)
-                
-                # Currency format based on language
-                currency_symbol = "ريال" if st.session_state.language == 'العربية' else "SAR"
-                
-                st.markdown(f"""
-                <div class='operations-card'>
-                    <h4>{service['name']}</h4>
-                    <p style='font-size: 0.9em; color: #64748b;'>{service['description']}</p>
-                    <div class='pricing-box'>
-                        💰 {currency_symbol} {price_per_user}/user/month + {currency_symbol} {setup_cost:,} setup
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                key = f"oracle_{service['name'].replace(' ', '_').replace('-', '_').lower()}"
-                
-                selected = st.checkbox(f"{get_text('include_service')} {service['name']}", key=f"{key}_selected")
-                
-                if selected:
-                    col_a, col_b = st.columns(2)
-                    with col_a:
-                        ps_users = st.number_input(get_text('power_system_users'), min_value=0, value=0, key=f"{key}_ps")
-                    with col_b:
-                        shared_users = st.number_input(get_text('shared_users'), min_value=0, value=0, key=f"{key}_shared")
-                    
-                    total_users = ps_users + shared_users
-                    if total_users > 0:
-                        annual_cost = (price_per_user * total_users * 12) + setup_cost
-                        st.markdown(f"""
-                        <div class='pricing-box' style='background: #dcfce7; border-color: #16a34a;'>
-                            📊 {get_text('total_annual_cost')}: <strong>{currency_symbol} {annual_cost:,.0f}</strong><br>
-                            Monthly: {currency_symbol} {price_per_user * total_users:,.0f} | Setup: {currency_symbol} {setup_cost:,}
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
-                    st.session_state.questionnaire_data[key] = {
-                        'service': service['name'],
-                        'category': 'operations',
-                        'type': 'oracle',
-                        'selected': selected,
-                        'ps_users': ps_users,
-                        'shared_users': shared_users,
-                        'total_users': total_users,
-                        'price_per_user': price_per_user,
-                        'setup_cost': setup_cost,
-                        'annual_cost': (price_per_user * total_users * 12) + setup_cost if total_users > 0 else 0
-                    }
-                else:
-                    if key in st.session_state.questionnaire_data:
-                        del st.session_state.questionnaire_data[key]
-    
-    # Add custom Microsoft service functionality
-    add_custom_microsoft_service()
-    
-    # Add custom Oracle service functionality
-    add_custom_oracle_service()
-    
-    st.markdown("---")
-    
-    # Microsoft Software & Subscriptions
-    st.markdown("### 🏢 Microsoft Software & Subscriptions")
-    
-    col1, col2 = st.columns([1, 1])
-    
-    for i, service in enumerate(microsoft_services):
-        col = col1 if i % 2 == 0 else col2
-        with col:
-            with st.container():
-                pricing = microsoft_pricing.get(service['name'], {})
-                price_per_user = pricing.get('price_per_user', 0)
-                setup_cost = pricing.get('setup_cost', 0)
-                
-                st.markdown(f"""
-                <div class='operations-card'>
-                    <h4>{service['name']}</h4>
-                    <p style='font-size: 0.9em; color: #64748b;'>{service['description']}</p>
-                    <div class='pricing-box'>
-                        💰 SAR {price_per_user}/user/month + SAR {setup_cost:,} setup
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                key = f"microsoft_{service['name'].replace(' ', '_').replace('-', '_').replace('(', '').replace(')', '').replace('+', 'plus').lower()}"
-                
-                selected = st.checkbox(f"Include {service['name']}", key=f"{key}_selected")
-                
-                if selected:
-                    col_a, col_b, col_c = st.columns(3)
-                    with col_a:
-                        aic_users = st.number_input(f"AIC without PS", min_value=0, value=0, key=f"{key}_aic")
-                    with col_b:
-                        ps_users = st.number_input(f"Power System", min_value=0, value=0, key=f"{key}_ps")
-                    with col_c:
-                        acc_users = st.number_input(f"ACC Power System", min_value=0, value=0, key=f"{key}_acc")
-                    
-                    total_users = aic_users + ps_users + acc_users
-                    if total_users > 0:
-                        annual_cost = (price_per_user * total_users * 12) + setup_cost
-                        st.markdown(f"""
-                        <div class='pricing-box' style='background: #dcfce7; border-color: #16a34a;'>
-                            📊 Total Annual Cost: <strong>SAR {annual_cost:,.0f}</strong><br>
-                            Monthly: SAR {price_per_user * total_users:,.0f} | Setup: SAR {setup_cost:,}
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
-                    st.session_state.questionnaire_data[key] = {
-                        'service': service['name'],
-                        'category': 'operations',
-                        'type': 'microsoft',
-                        'selected': selected,
-                        'aic_users': aic_users,
-                        'ps_users': ps_users,
-                        'acc_users': acc_users,
-                        'total_users': total_users,
-                        'price_per_user': price_per_user,
-                        'setup_cost': setup_cost,
-                        'annual_cost': (price_per_user * total_users * 12) + setup_cost if total_users > 0 else 0
-                    }
-                else:
-                    if key in st.session_state.questionnaire_data:
-                        del st.session_state.questionnaire_data[key]
-
-def add_custom_support_service():
-    """Add custom support service"""
-    with st.expander("➕ Add Custom Support Service", expanded=False):
-        st.markdown("**Add additional support services beyond the standard IT support package**")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            custom_name = st.text_input("Support Service Name", key="custom_support_name", placeholder="e.g., Database Administration Support")
-            custom_monthly_cost = st.number_input("Monthly Cost (SAR)", min_value=0, value=5000, key="custom_support_monthly")
-        
-        with col2:
-            custom_setup = st.number_input("Setup/Onboarding Cost (SAR)", min_value=0, value=2000, key="custom_support_setup")
-            service_level = st.selectbox("Service Level", ["Business Hours", "Extended Hours", "24x7"], key="custom_support_level")
-            
-        custom_description = st.text_area("Service Description", key="custom_support_desc", placeholder="Describe what this support service includes...")
-        
-        custom_features = st.text_area("Key Features/Deliverables", key="custom_support_features", placeholder="List the main features and deliverables...")
-        
-        if st.button("Add Custom Support Service", key="add_custom_support"):
-            if custom_name and custom_description:
-                key = f"custom_support_{custom_name.replace(' ', '_').lower()}"
-                
-                annual_cost = (custom_monthly_cost * 12) + custom_setup
-                
-                st.markdown(f"""
-                <div class='pricing-box' style='background: #dcfce7; border-color: #16a34a;'>
-                    📊 Total Annual Cost: <strong>SAR {annual_cost:,.0f}</strong><br>
-                    Monthly: SAR {custom_monthly_cost:,} | Setup: SAR {custom_setup:,}
-                </div>
-                """, unsafe_allow_html=True)
-                
-                st.session_state.questionnaire_data[key] = {
-                    'service': f'Custom Support - {custom_name}',
-                    'category': 'support',
-                    'type': 'custom_support',
-                    'custom': True,
-                    'description': custom_description,
-                    'selected': True,
-                    'monthly_cost': custom_monthly_cost,
-                    'setup_cost': custom_setup,
-                    'annual_cost': annual_cost,
-                    'service_level': service_level,
-                    'features': custom_features
-                }
-                
-                st.success(f"✅ Added custom support service: {custom_name}")
-            else:
-                st.error("Please fill in service name and description")
-
-def add_custom_implementation_project():
-    """Add custom implementation project"""
-    with st.expander("➕ Add Custom Implementation Project", expanded=False):
-        st.markdown("**Add additional projects or initiatives not listed above**")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            custom_name = st.text_input("Project Name", key="custom_impl_name", placeholder="e.g., Custom CRM Integration")
-            project_type = st.selectbox(
-                "Project Type", 
-                ["Software Development", "System Integration", "Infrastructure", "Digital Transformation", "Data Migration", "Other"],
-                key="custom_impl_type"
-            )
-        
-        with col2:
-            budget_estimate = st.number_input("Budget Estimate (SAR)", min_value=0, value=50000, key="custom_impl_budget")
-            timeline = st.selectbox(
-                "Expected Timeline",
-                ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Multi-quarter", "2+ years"],
-                key="custom_impl_timeline"
-            )
-            
-        custom_description = st.text_area("Project Description", key="custom_impl_desc", placeholder="Describe the project scope, objectives, and requirements...")
-        
-        col3, col4 = st.columns(2)
-        with col3:
-            priority = st.select_slider(
-                "Priority Level",
-                options=["Low", "Medium", "High", "Critical"],
-                value="Medium",
-                key="custom_impl_priority"
-            )
-        
-        with col4:
-            departments = st.multiselect(
-                "Departments Involved",
-                ["Finance", "HR", "Operations", "Sales", "Marketing", "IT", "Customer Service", "Supply Chain", "Management"],
-                key="custom_impl_departments"
-            )
-        
-        success_criteria = st.text_area("Success Criteria/Expected Outcomes", key="custom_impl_success", placeholder="What defines success for this project?")
-        
-        if st.button("Add Custom Implementation Project", key="add_custom_impl"):
-            if custom_name and custom_description and budget_estimate > 0:
-                key = f"custom_impl_{custom_name.replace(' ', '_').lower()}"
-                
-                st.markdown(f"""
-                <div class='pricing-box' style='background: #fef3c7; border-color: #f59e0b;'>
-                    💰 Project Budget: <strong>SAR {budget_estimate:,.0f}</strong><br>
-                    Priority: {priority} | Timeline: {timeline}
-                </div>
-                """, unsafe_allow_html=True)
-                
-                st.session_state.questionnaire_data[key] = {
-                    'service': f'Custom Project - {custom_name}',
-                    'category': 'implementation',
-                    'type': 'custom_project',
-                    'custom': True,
-                    'project_type': project_type,
-                    'description': custom_description,
-                    'budget_estimate': budget_estimate,
-                    'timeline': timeline,
-                    'priority': priority,
-                    'departments': departments,
-                    'success_criteria': success_criteria
-                }
-                
-                st.success(f"✅ Added custom implementation project: {custom_name}")
-            else:
-                st.error("Please fill in project name, description, and budget estimate")
-
-def show_support_section():
-    """Display Support section"""
-    st.markdown("""
-    <div class='category-header'>
-        <h2>🛠️ Support - Maintenance & Support Services</h2>
-        <p>Ongoing support packages and maintenance services for your IT infrastructure and applications.</p>
-        <p><strong>💡 Tip:</strong> Need specialized support not covered by standard packages? Use "Add Custom Support Service" to include additional support requirements.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Support Package Selection
-    st.markdown("### 📞 IT Support Packages")
-    
-    support_selected = st.checkbox("Include IT Support Package", key="support_selected")
-    
-    if support_selected:
-        st.markdown("#### Choose Your Support Level")
-        
-        # Display all support packages with pricing
-        for package_name, details in support_pricing.items():
-            with st.expander(f"📦 {package_name} - SAR {details['monthly_cost']:,}/month", expanded=False):
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    st.metric("Monthly Cost", f"SAR {details['monthly_cost']:,}")
-                    st.metric("Annual Cost", f"SAR {details['monthly_cost'] * 12:,}")
-                
-                with col2:
-                    st.metric("Monthly Ticket Limit", details['ticket_limit'])
-                    st.metric("Response Time", details['response_time'])
-                
-                with col3:
-                    st.write("**Includes:**")
-                    st.write("- Help Desk Support")
-                    st.write("- System Administration")
-                    st.write("- Application Support")
-                    st.write("- Infrastructure Monitoring")
-                    if package_name in ["Gold Package", "Platinum Package"]:
-                        st.write("- 24x7 Support")
-                        st.write("- Dedicated Account Manager")
-                
-                if st.button(f"Select {package_name}", key=f"select_{package_name.replace(' ', '_').lower()}"):
-                    estimated_tickets = st.number_input(
-                        "Estimated Monthly Support Tickets",
-                        min_value=0,
-                        value=min(details['ticket_limit']//2, 25),
-                        max_value=details['ticket_limit'],
-                        help=f"Maximum {details['ticket_limit']} tickets per month for this package",
-                        key="support_tickets"
-                    )
-                    
-                    st.session_state.questionnaire_data['support_package'] = {
-                        'service': f'IT Support Package - {package_name}',
-                        'category': 'support',
-                        'type': 'support_package',
-                        'selected': support_selected,
-                        'level': package_name,
-                        'monthly_cost': details['monthly_cost'],
-                        'annual_cost': details['monthly_cost'] * 12,
-                        'monthly_tickets': estimated_tickets,
-                        'ticket_limit': details['ticket_limit'],
-                        'response_time': details['response_time']
-                    }
-                    st.success(f"✅ Selected {package_name}")
-                    st.markdown(f"""
-                    <div class='total-cost'>
-                        💰 Annual Support Cost: SAR {details['monthly_cost'] * 12:,}
-                    </div>
-                    """, unsafe_allow_html=True)
-    else:
-        if 'support_package' in st.session_state.questionnaire_data:
-            del st.session_state.questionnaire_data['support_package']
-    
-    st.markdown("---")
-    
-    # Support Package Comparison
-    st.markdown("### 📊 Support Package Comparison")
-    
-    comparison_data = []
-    for package_name, details in support_pricing.items():
-        comparison_data.append({
-            'Package': package_name,
-            'Monthly Cost (SAR)': f"{details['monthly_cost']:,}",
-            'Annual Cost (SAR)': f"{details['monthly_cost'] * 12:,}",
-            'Ticket Limit': details['ticket_limit'],
-            'Response Time': details['response_time'],
-            'Coverage': "Business Hours" if package_name in ["Bronze Package", "Silver Package"] else "24x7"
-        })
-    
-    comparison_df = pd.DataFrame(comparison_data)
-    st.dataframe(comparison_df, use_container_width=True)
-    
-    st.markdown("---")
-    
-    # Add custom support service functionality
-    add_custom_support_service()
-
-def show_implementation_section():
-    """Display Implementation section"""
-    st.markdown("""
-    <div class='category-header'>
-        <h2>🚀 Implementation - New Projects & Initiatives</h2>
-        <p>New technology implementations, custom development projects, and strategic digital initiatives.</p>
-        <p><strong>💡 Tip:</strong> Have a unique project not listed? Use "Add Custom Implementation Project" to include your specific requirements and budget estimates.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # RPA Packages - Featured prominently with exact pricing
-    st.markdown("### 🤖 RPA (Robotic Process Automation) Packages")
-    
-    rpa_selected = st.checkbox("Include RPA Package for 2025", key="rpa_selected")
-    
-    if rpa_selected:
-        st.markdown("#### Current RPA Utilization")
-        col1, col2 = st.columns(2)
-        with col1:
-            current_package = st.selectbox("2024 Package", ["None", "Bronze", "Silver", "Gold", "Platinum"], key="current_rpa")
-        with col2:
-            current_utilization = st.slider("Current Package Utilization (%)", 0, 100, 0, key="current_rpa_util")
-        
-        current_processes = st.text_input("Current RPA Processes", value="None", key="current_rpa_processes")
-        
-        st.markdown("#### 2025 RPA Package Selection")
-        
-        # Display RPA packages with exact pricing from Excel
-        for package in rpa_packages:
-            with st.expander(f"📦 {package['name']} - SAR {package['year1']:,} (Year 1)", expanded=False):
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    st.markdown("**Discovery & Analysis**")
-                    st.metric("Cost", f"SAR {package['discovery']:,}")
-                    st.markdown("**Project Management**")
-                    st.metric("Cost", f"SAR {package['pm']:,}")
-                
-                with col2:
-                    st.markdown("**Infrastructure & License (Annual)**")
-                    st.metric("Cost", f"SAR {package['infrastructure']:,}")
-                    st.write(f"**Process Coverage:** {package['processes']}")
-                    st.write(f"**Implementation:** {package['implementation']}")
-                
-                with col3:
-                    st.markdown("**Multi-Year Investment**")
-                    st.metric("Year 1 Total", f"SAR {package['year1']:,}")
-                    st.metric("Year 2 Total", f"SAR {package['year2']:,}")
-                    st.metric("Year 3 Total", f"SAR {package['year3']:,}")
-                
-                # 3-year total
-                three_year_total = package['year1'] + package['year2'] + package['year3']
-                st.markdown(f"""
-                <div class='total-cost'>
-                    💰 3-Year Total Investment: SAR {three_year_total:,}
-                </div>
-                """, unsafe_allow_html=True)
-                
-                if st.button(f"Select {package['name']}", key=f"select_{package['name'].replace(' ', '_').replace('(', '').replace(')', '').lower()}"):
-                    st.session_state.questionnaire_data['rpa_package'] = {
-                        'service': f"RPA Package - {package['name']}",
-                        'category': 'implementation',
-                        'type': 'rpa_package',
-                        'package_details': package,
-                        'current_package': current_package,
-                        'current_utilization': current_utilization,
-                        'current_processes': current_processes,
-                        'annual_cost': package['year1'],
-                        'three_year_total': three_year_total
-                    }
-                    st.success(f"✅ Selected {package['name']} RPA Package")
-                    st.balloons()
-    else:
-        if 'rpa_package' in st.session_state.questionnaire_data:
-            del st.session_state.questionnaire_data['rpa_package']
-    
-    st.markdown("---")
-    
-    # Digital Initiatives with budget estimates
-    st.markdown("### 💡 Digital Initiatives")
-    
-    digital_initiatives = [
-        {"name": "Automation / RPA", "description": "Using Robotic Process Automation to automate repetitive tasks.", "question": "Are there any planned or ongoing RPA initiatives for 2025? If yes, please describe.", "typical_budget": "50000-200000"},
-        {"name": "IoT", "description": "IoT systems for real-time monitoring and data collection.", "question": "Are there any planned or ongoing IoT initiatives for 2025? If yes, please describe.", "typical_budget": "75000-300000"},
-        {"name": "eCommerce", "description": "New features or upgrades to online eCommerce platform.", "question": "Are there any new eCommerce initiatives or feature enhancements planned for 2025?", "typical_budget": "100000-500000"},
-        {"name": "Data Analytics & BI", "description": "Expanding data-driven decision-making capabilities.", "question": "Are there any data analytics or business intelligence projects planned for 2025?", "typical_budget": "80000-250000"},
-        {"name": "Customer Experience & Digital Channels", "description": "Improving customer-facing platforms such as websites, mobile apps, or customer portals.", "question": "Are there any planned initiatives for improving customer experience or digital channels in 2025?", "typical_budget": "120000-400000"},
-        {"name": "Custom System & App Development", "description": "Developing custom software or mobile apps for internal or external use.", "question": "Are there any planned custom systems or app developments for 2025?", "typical_budget": "100000-600000"},
-        {"name": "SharePoint Development", "description": "Developing or enhancing SharePoint systems for document management and collaboration.", "question": "Are there any SharePoint development needs for 2025? If yes, please describe.", "typical_budget": "30000-150000"}
-    ]
-    
-    for service in digital_initiatives:
-        with st.expander(f"📊 {service['name']}", expanded=False):
-            st.markdown(f"**Description:** {service['description']}")
-            st.info(f"💰 **Typical Budget Range:** SAR {service['typical_budget']}")
-            
-            key = f"digital_{service['name'].replace(' ', '_').replace('/', '_').replace('&', 'and').lower()}"
-            
-            planned = st.radio(
-                service['question'],
-                ["No", "Yes", "Under Consideration"],
-                key=f"{key}_planned"
-            )
-            
-            if planned in ["Yes", "Under Consideration"]:
-                description = st.text_area(
-                    "Please provide details:",
-                    key=f"{key}_description",
-                    help="Describe the scope, timeline, and requirements"
-                )
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    priority = st.select_slider(
-                        "Priority Level",
-                        options=["Low", "Medium", "High", "Critical"],
-                        value="Medium",
-                        key=f"{key}_priority"
-                    )
-                
-                with col2:
-                    timeline = st.selectbox(
-                        "Expected Timeline",
-                        ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Multi-quarter"],
-                        key=f"{key}_timeline"
-                    )
-                
-                budget_estimate = st.number_input(
-                    "Budget Estimate (SAR)",
-                    min_value=0,
-                    value=0,
-                    key=f"{key}_budget",
-                    help=f"Typical range: SAR {service['typical_budget']}"
-                )
-                
-                if budget_estimate > 0:
-                    st.markdown(f"""
-                    <div class='pricing-box' style='background: #fef3c7; border-color: #f59e0b;'>
-                        💰 Estimated Project Cost: <strong>SAR {budget_estimate:,.0f}</strong>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                st.session_state.questionnaire_data[key] = {
-                    'service': service['name'],
-                    'category': 'implementation',
-                    'type': 'digital_initiative',
-                    'planned': planned,
-                    'description': description,
-                    'priority': priority,
-                    'timeline': timeline,
-                    'budget_estimate': budget_estimate
-                }
-            else:
-                if key in st.session_state.questionnaire_data:
-                    del st.session_state.questionnaire_data[key]
-    
-    st.markdown("---")
-    
-    # Add custom implementation project functionality
-    add_custom_implementation_project()
-    
-    st.markdown("---")
-    
-    # AI, ML & LLM Initiatives
-    st.markdown("### 🤖 AI, ML & LLM Initiatives")
-    
-    ai_initiatives = [
-        {"name": "AI Use Cases", "description": "Include details about AI-powered automation, machine learning models, and tools like Azure AI, etc.", "question": "Are there any AI projects planned for 2025? If yes, please describe.", "typical_budget": "75000-400000"},
-        {"name": "Predictive Analytics", "description": "Specify departments or projects that will leverage AI models for forecasting and predictive analysis.", "question": "Do you plan to use AI for predictive analytics in 2025? If yes, please describe.", "typical_budget": "60000-250000"},
-        {"name": "Large Language Models (LLM)", "description": "Specify if any departments plan to use LLMs for content creation, customer service, or internal knowledge management.", "question": "Are there any planned initiatives for using LLMs (e.g., GPT models) for content generation or support in 2025?", "typical_budget": "40000-200000"}
-    ]
-    
-    for service in ai_initiatives:
-        with st.expander(f"🧠 {service['name']}", expanded=False):
-            st.markdown(f"**Description:** {service['description']}")
-            st.info(f"💰 **Typical Budget Range:** SAR {service['typical_budget']}")
-            
-            key = f"ai_{service['name'].replace(' ', '_').replace('(', '').replace(')', '').replace(',', '').lower()}"
-            
-            planned = st.radio(
-                service['question'],
-                ["No", "Yes", "Under Consideration"],
-                key=f"{key}_planned"
-            )
-            
-            if planned in ["Yes", "Under Consideration"]:
-                description = st.text_area(
-                    "Please provide details:",
-                    key=f"{key}_description"
-                )
-                
-                departments = st.multiselect(
-                    "Departments/Areas Involved",
-                    ["Finance", "HR", "Operations", "Sales", "Marketing", "IT", "Customer Service", "Supply Chain"],
-                    key=f"{key}_departments"
-                )
-                
-                budget_estimate = st.number_input(
-                    "Budget Estimate (SAR)",
-                    min_value=0,
-                    value=0,
-                    key=f"{key}_budget",
-                    help=f"Typical range: SAR {service['typical_budget']}"
-                )
-                
-                if budget_estimate > 0:
-                    st.markdown(f"""
-                    <div class='pricing-box' style='background: #fef3c7; border-color: #f59e0b;'>
-                        💰 Estimated AI Project Cost: <strong>SAR {budget_estimate:,.0f}</strong>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                st.session_state.questionnaire_data[key] = {
-                    'service': service['name'],
-                    'category': 'implementation',
-                    'type': 'ai_initiative',
-                    'planned': planned,
-                    'description': description,
-                    'departments': departments,
-                    'budget_estimate': budget_estimate
-                }
-            else:
-                if key in st.session_state.questionnaire_data:
-                    del st.session_state.questionnaire_data[key]
-    
-    # General AI Budget
-    st.markdown("#### 💰 General AI Exploration Budget")
-    general_ai_budget = st.number_input(
-        "If you do not have specific AI use cases, you can budget some funds to start exploring AI opportunities:",
-        min_value=0,
-        value=0,
-        key="general_ai_budget",
-        help="General AI exploration budget (SAR) - Typical range: SAR 25,000-100,000"
-    )
-    
-    if general_ai_budget > 0:
         st.markdown(f"""
-        <div class='pricing-box' style='background: #e0f2fe; border-color: #0891b2;'>
-            💰 General AI Exploration Budget: <strong>SAR {general_ai_budget:,.0f}</strong>
+        <div class='metric-card'>
+            <h4>Operational Services</h4>
+            <h3>SAR {operational_total:,.0f}</h3>
         </div>
         """, unsafe_allow_html=True)
         
-        st.session_state.questionnaire_data['general_ai_budget'] = {
-            'service': 'General AI Budget',
-            'category': 'implementation',
-            'type': 'ai_budget',
-            'budget_estimate': general_ai_budget
-        }
-    else:
-        if 'general_ai_budget' in st.session_state.questionnaire_data:
-            del st.session_state.questionnaire_data['general_ai_budget']
-    
-    st.markdown("---")
-    
-    # Infrastructure & Network Requirements
-    st.markdown("### 🌐 Network & Infrastructure Requirements")
-    
-    infrastructure_needs = [
-        {
-            "name": "Existing Branch Infrastructure Expansion",
-            "description": "Expand Infrastructure Services of Existing Branch or Building (Network, WiFi, Security Services, New Points in same Branch)",
-            "question": "Do you require any Existing Branch Infrastructure upgrades for 2025?",
-            "typical_budget": "20000-100000"
-        },
-        {
-            "name": "New Branch Infrastructure Implementation", 
-            "description": "Implement New Branch or Building Infrastructure (Network, WiFi, Internet, Security Services...)",
-            "question": "Do you require any New Branch Infrastructure for 2025?",
-            "typical_budget": "50000-300000"
-        },
-        {
-            "name": "Enterprise Telephony Expansion",
-            "description": "Enable New or Existing Users for Enterprise Telephony Features",
-            "question": "Do you require to Enable New or Existing Users for Enterprise Telephony for 2025?",
-            "typical_budget": "15000-75000"
-        }
-    ]
-    
-    for infra in infrastructure_needs:
-        with st.expander(f"🏗️ {infra['name']}", expanded=False):
-            st.markdown(f"**Description:** {infra['description']}")
-            st.info(f"💰 **Typical Budget Range:** SAR {infra['typical_budget']}")
-            
-            key = f"infra_{infra['name'].replace(' ', '_').lower()}"
-            
-            required = st.radio(
-                infra['question'],
-                ["No", "Yes"],
-                key=f"{key}_required"
-            )
-            
-            if required == "Yes":
-                locations = st.text_area(
-                    "Specify departments, locations and number of users:",
-                    key=f"{key}_details",
-                    help="Provide detailed requirements including locations, departments, and user counts"
-                )
-                
-                estimated_users = st.number_input(
-                    "Estimated Number of Users",
-                    min_value=0,
-                    value=0,
-                    key=f"{key}_users"
-                )
-                
-                budget_estimate = st.number_input(
-                    "Budget Estimate (SAR)",
-                    min_value=0,
-                    value=0,
-                    key=f"{key}_budget",
-                    help=f"Typical range: SAR {infra['typical_budget']}"
-                )
-                
-                if budget_estimate > 0:
-                    st.markdown(f"""
-                    <div class='pricing-box' style='background: #fef3c7; border-color: #f59e0b;'>
-                        💰 Infrastructure Investment: <strong>SAR {budget_estimate:,.0f}</strong><br>
-                        Users: {estimated_users} | Cost per user: SAR {budget_estimate/max(estimated_users,1):,.0f}
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                st.session_state.questionnaire_data[key] = {
-                    'service': infra['name'],
-                    'category': 'implementation',
-                    'type': 'infrastructure',
-                    'required': required,
-                    'details': locations,
-                    'estimated_users': estimated_users,
-                    'budget_estimate': budget_estimate
-                }
-            else:
-                if key in st.session_state.questionnaire_data:
-                    del st.session_state.questionnaire_data[key]
+        st.markdown(f"""
+        <div class='metric-card'>
+            <h4>Support Packages</h4>
+            <h3>SAR {support_total:,.0f}</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+        <div class='metric-card'>
+            <h4>Custom Implementations</h4>
+            <h3>SAR {implementation_total:,.0f}</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+        <div class='total-budget'>
+            💰 Total 2025 Budget<br>
+            <span style='font-size: 1.5em'>SAR {total_budget:,.0f}</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Progress indicators
+        operational_count = len([k for k, v in st.session_state.operational_services.items() if v.get('selected', False)]) + len(st.session_state.custom_operational)
+        support_selected = 1 if st.session_state.support_package else 0
+        implementation_count = len(st.session_state.implementation_projects)
+        
+        st.markdown("### 📊 Selection Progress")
+        st.metric("Operational Services", operational_count)
+        st.metric("Support Package", "Selected" if support_selected else "Not Selected")
+        st.metric("Implementation Projects", implementation_count)
 
-def show_summary():
-    """Display questionnaire summary with comprehensive budget breakdown"""
+# Operational Services Section
+def show_operational_services():
     st.markdown("""
-    <div class='category-header'>
-        <h2>📊 Questionnaire Summary & Budget Analysis</h2>
-        <p>Review your 2025 IT Budget requirements and comprehensive cost analysis.</p>
+    <div class='category-section'>
+        <h2>🔧 Operational Services</h2>
+        <p>Select recurring licenses and software subscriptions for daily operations.</p>
     </div>
     """, unsafe_allow_html=True)
     
-    if not st.session_state.questionnaire_data:
-        st.info("No items selected yet. Please fill out the questionnaire sections to see your summary.")
+    # Oracle Services
+    st.markdown("### 🟠 Oracle Cloud Services")
+    
+    col1, col2 = st.columns(2)
+    oracle_services = list(ORACLE_SERVICES.items())
+    
+    for i, (service_name, details) in enumerate(oracle_services):
+        col = col1 if i % 2 == 0 else col2
+        service_key = f"oracle_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
+        
+        with col:
+            st.markdown(f"""
+            <div class='service-card'>
+                <h4>{service_name}</h4>
+                <p style='color: #6b7280; font-size: 0.9em;'>{details['description']}</p>
+                <div style='background: #f3f4f6; padding: 0.5rem; border-radius: 5px; margin: 0.5rem 0;'>
+                    💰 SAR {details['price_per_user']}/user/month + SAR {details['setup_cost']:,} setup
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Initialize service data if not exists
+            if service_key not in st.session_state.operational_services:
+                st.session_state.operational_services[service_key] = {'selected': False, 'users': 0}
+            
+            selected = st.checkbox(f"Include {service_name}", 
+                                 key=f"{service_key}_selected",
+                                 value=st.session_state.operational_services[service_key]['selected'])
+            
+            if selected:
+                users = st.number_input(f"Number of users for {service_name}", 
+                                      min_value=0, 
+                                      value=st.session_state.operational_services[service_key]['users'],
+                                      key=f"{service_key}_users")
+                
+                if users > 0:
+                    monthly_cost = details['price_per_user'] * users
+                    annual_cost = monthly_cost * 12 + details['setup_cost']
+                    
+                    st.markdown(f"""
+                    <div class='cost-display'>
+                        📊 Monthly: SAR {monthly_cost:,.0f} | Annual: SAR {annual_cost:,.0f}
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                st.session_state.operational_services[service_key] = {
+                    'selected': True,
+                    'users': users,
+                    'service_name': service_name
+                }
+            else:
+                st.session_state.operational_services[service_key]['selected'] = False
+    
+    st.markdown("---")
+    
+    # Microsoft Services
+    st.markdown("### 🟦 Microsoft Cloud Services")
+    
+    col1, col2 = st.columns(2)
+    microsoft_services = list(MICROSOFT_SERVICES.items())
+    
+    for i, (service_name, details) in enumerate(microsoft_services):
+        col = col1 if i % 2 == 0 else col2
+        service_key = f"microsoft_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
+        
+        with col:
+            st.markdown(f"""
+            <div class='service-card'>
+                <h4>{service_name}</h4>
+                <p style='color: #6b7280; font-size: 0.9em;'>{details['description']}</p>
+                <div style='background: #f3f4f6; padding: 0.5rem; border-radius: 5px; margin: 0.5rem 0;'>
+                    💰 SAR {details['price_per_user']}/user/month + SAR {details['setup_cost']:,} setup
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Initialize service data if not exists
+            if service_key not in st.session_state.operational_services:
+                st.session_state.operational_services[service_key] = {'selected': False, 'users': 0}
+            
+            selected = st.checkbox(f"Include {service_name}", 
+                                 key=f"{service_key}_selected",
+                                 value=st.session_state.operational_services[service_key]['selected'])
+            
+            if selected:
+                users = st.number_input(f"Number of users for {service_name}", 
+                                      min_value=0, 
+                                      value=st.session_state.operational_services[service_key]['users'],
+                                      key=f"{service_key}_users")
+                
+                if users > 0:
+                    monthly_cost = details['price_per_user'] * users
+                    annual_cost = monthly_cost * 12 + details['setup_cost']
+                    
+                    st.markdown(f"""
+                    <div class='cost-display'>
+                        📊 Monthly: SAR {monthly_cost:,.0f} | Annual: SAR {annual_cost:,.0f}
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                st.session_state.operational_services[service_key] = {
+                    'selected': True,
+                    'users': users,
+                    'service_name': service_name
+                }
+            else:
+                st.session_state.operational_services[service_key]['selected'] = False
+    
+    st.markdown("---")
+    
+    # Custom Services
+    st.markdown("### ➕ Add Custom Services")
+    
+    with st.expander("Add Custom Operational Service", expanded=False):
+        st.markdown("""
+        <div class='custom-service'>
+            <h4>Define Your Custom Service</h4>
+            <p>Add any additional operational software or service not listed above.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            custom_name = st.text_input("Service Name", placeholder="e.g., Custom CRM Solution")
+            custom_price = st.number_input("Price per User/Month (SAR)", min_value=0, value=50)
+        
+        with col2:
+            custom_setup = st.number_input("Setup Cost (SAR)", min_value=0, value=5000)
+            custom_users = st.number_input("Number of Users", min_value=0, value=0)
+        
+        custom_description = st.text_area("Service Description", 
+                                        placeholder="Describe what this service provides...")
+        
+        if st.button("Add Custom Service"):
+            if custom_name and custom_description and custom_users > 0:
+                custom_service = {
+                    'name': custom_name,
+                    'description': custom_description,
+                    'price_per_user': custom_price,
+                    'setup_cost': custom_setup,
+                    'users': custom_users
+                }
+                
+                st.session_state.custom_operational.append(custom_service)
+                st.success(f"✅ Added custom service: {custom_name}")
+                st.rerun()
+            else:
+                st.error("Please fill in all required fields and specify at least 1 user.")
+    
+    # Display custom services
+    if st.session_state.custom_operational:
+        st.markdown("### 📋 Your Custom Services")
+        
+        for i, service in enumerate(st.session_state.custom_operational):
+            monthly_cost = service['price_per_user'] * service['users']
+            annual_cost = monthly_cost * 12 + service['setup_cost']
+            
+            st.markdown(f"""
+            <div class='service-card' style='border-left: 4px solid #8b5cf6;'>
+                <h4>{service['name']} (Custom)</h4>
+                <p style='color: #6b7280;'>{service['description']}</p>
+                <p><strong>Users:</strong> {service['users']} | <strong>Monthly:</strong> SAR {monthly_cost:,.0f} | <strong>Annual:</strong> SAR {annual_cost:,.0f}</p>
+                <button onclick="window.location.reload()">Remove</button>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button(f"Remove {service['name']}", key=f"remove_custom_{i}"):
+                st.session_state.custom_operational.pop(i)
+                st.rerun()
+
+# Support Packages Section
+def show_support_packages():
+    st.markdown("""
+    <div class='category-section'>
+        <h2>🛠️ Support Packages</h2>
+        <p>Choose the support level that best fits your organization's needs.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("### 📞 Available Support Packages")
+    
+    # Display packages in a grid
+    cols = st.columns(3)
+    packages_list = list(SUPPORT_PACKAGES.items())
+    
+    for i, (package_name, details) in enumerate(packages_list):
+        col_index = i % 3
+        
+        with cols[col_index]:
+            is_selected = st.session_state.support_package == package_name
+            border_color = "#dc2626" if is_selected else "#22c55e"
+            bg_color = "#fef2f2" if is_selected else "#f0fdf4"
+            
+            st.markdown(f"""
+            <div style='background: {bg_color}; border: 2px solid {border_color}; border-radius: 10px; padding: 1.5rem; margin: 1rem 0; height: 400px;'>
+                <h3 style='color: {border_color}; margin-bottom: 1rem;'>{package_name}</h3>
+                <h2 style='color: #1f2937; margin-bottom: 1rem;'>SAR {details['price']:,.0f}</h2>
+                <hr style='margin: 1rem 0;'>
+                <p style='margin: 0.5rem 0;'><strong>Support Requests:</strong><br>{details['support_requests']}</p>
+                <p style='margin: 0.5rem 0;'><strong>Improvement Hours:</strong><br>{details['improvement_hours']}</p>
+                <p style='margin: 0.5rem 0;'><strong>Training Requests:</strong><br>{details['training_requests']}</p>
+                <p style='margin: 0.5rem 0;'><strong>Report Requests:</strong><br>{details['report_requests']}</p>
+                <hr style='margin: 1rem 0;'>
+                <p style='font-size: 0.9em; color: #6b7280;'>{details['description']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button(f"Select {package_name}", key=f"select_{package_name}"):
+                st.session_state.support_package = package_name
+                st.success(f"✅ Selected {package_name} Support Package")
+                st.rerun()
+    
+    # Show selected package
+    if st.session_state.support_package:
+        selected_package = SUPPORT_PACKAGES[st.session_state.support_package]
+        st.markdown(f"""
+        <div class='cost-display' style='background: #dcfce7; border-color: #16a34a;'>
+            ✅ Selected: <strong>{st.session_state.support_package}</strong> - SAR {selected_package['price']:,.0f}
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Additional services
+        st.markdown("### ➕ Additional Support Services")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            extra_support = st.number_input("Extra Support Requests (SAR 1,800 each)", 
+                                          min_value=0, 
+                                          value=st.session_state.support_extras['support'],
+                                          key="extra_support_requests")
+            st.session_state.support_extras['support'] = extra_support
+        
+        with col2:
+            extra_training = st.number_input("Extra Training/Reports (SAR 5,399 each)", 
+                                           min_value=0, 
+                                           value=st.session_state.support_extras['training'],
+                                           key="extra_training_reports")
+            st.session_state.support_extras['training'] = extra_training
+        
+        if extra_support > 0 or extra_training > 0:
+            extra_cost = (extra_support * 1800) + (extra_training * 5399)
+            total_support_cost = selected_package['price'] + extra_cost
+            
+            st.markdown(f"""
+            <div class='cost-display'>
+                💰 Additional Services: SAR {extra_cost:,.0f}<br>
+                <strong>Total Support Cost: SAR {total_support_cost:,.0f}</strong>
+            </div>
+            """, unsafe_allow_html=True)
+
+# Implementation Projects Section
+def show_implementation_projects():
+    st.markdown("""
+    <div class='category-section'>
+        <h2>🚀 Custom Implementation Projects</h2>
+        <p>Define your strategic technology initiatives and custom development projects.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Add new project form
+    st.markdown("### ➕ Add New Implementation Project")
+    
+    with st.expander("Define New Project", expanded=True):
+        st.markdown("""
+        <div class='project-card'>
+            <h4>Project Details</h4>
+            <p>Provide comprehensive information about your implementation project.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            project_name = st.text_input("Project Name", placeholder="e.g., AI-Powered Analytics Platform")
+            project_type = st.selectbox("Project Type", PROJECT_TYPES)
+            timeline = st.selectbox("Timeline", ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Multi-quarter", "2+ years"])
+            priority = st.select_slider("Priority Level", ["Low", "Medium", "High", "Critical"], value="Medium")
+        
+        with col2:
+            budget = st.number_input("Budget Estimate (SAR)", min_value=0, value=100000, step=10000)
+            departments = st.multiselect("Departments Involved", DEPARTMENTS)
+            
+        project_description = st.text_area("Project Description", 
+                                         placeholder="Describe the project scope, objectives, and expected outcomes...")
+        
+        success_criteria = st.text_area("Success Criteria", 
+                                      placeholder="Define how success will be measured...")
+        
+        if st.button("Add Project", type="primary"):
+            if project_name and project_description and budget > 0:
+                new_project = {
+                    'name': project_name,
+                    'type': project_type,
+                    'description': project_description,
+                    'timeline': timeline,
+                    'priority': priority,
+                    'budget': budget,
+                    'departments': departments,
+                    'success_criteria': success_criteria,
+                    'created_date': datetime.now().strftime("%Y-%m-%d")
+                }
+                
+                st.session_state.implementation_projects.append(new_project)
+                st.success(f"✅ Added project: {project_name}")
+                st.rerun()
+            else:
+                st.error("Please fill in project name, description, and budget.")
+    
+    # Display existing projects
+    if st.session_state.implementation_projects:
+        st.markdown("### 📋 Your Implementation Projects")
+        
+        total_implementation_budget = 0
+        
+        for i, project in enumerate(st.session_state.implementation_projects):
+            total_implementation_budget += project['budget']
+            
+            # Color coding by priority
+            priority_colors = {
+                'Low': '#10b981',
+                'Medium': '#f59e0b', 
+                'High': '#ef4444',
+                'Critical': '#dc2626'
+            }
+            
+            priority_color = priority_colors.get(project['priority'], '#6b7280')
+            
+            st.markdown(f"""
+            <div class='project-card' style='border-left: 4px solid {priority_color};'>
+                <div style='display: flex; justify-content: space-between; align-items: start;'>
+                    <div style='flex: 1;'>
+                        <h4>{project['name']}</h4>
+                        <p style='color: #6b7280; margin: 0.5rem 0;'><strong>Type:</strong> {project['type']}</p>
+                        <p style='color: #6b7280; margin: 0.5rem 0;'><strong>Timeline:</strong> {project['timeline']}</p>
+                        <p style='color: {priority_color}; margin: 0.5rem 0;'><strong>Priority:</strong> {project['priority']}</p>
+                        <p style='margin: 0.5rem 0;'>{project['description']}</p>
+                        {f"<p style='margin: 0.5rem 0;'><strong>Departments:</strong> {', '.join(project['departments'])}</p>" if project['departments'] else ""}
+                    </div>
+                    <div style='text-align: right; margin-left: 1rem;'>
+                        <h3 style='color: #1f2937; margin: 0;'>SAR {project['budget']:,.0f}</h3>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            col1, col2 = st.columns([3, 1])
+            with col2:
+                if st.button(f"Remove", key=f"remove_project_{i}"):
+                    st.session_state.implementation_projects.pop(i)
+                    st.rerun()
+        
+        st.markdown(f"""
+        <div class='cost-display' style='background: #fef3c7; border-color: #f59e0b;'>
+            💰 Total Implementation Budget: <strong>SAR {total_implementation_budget:,.0f}</strong>
+        </div>
+        """, unsafe_allow_html=True)
+
+# Summary Section
+def show_summary():
+    st.markdown("""
+    <div class='category-section'>
+        <h2>📊 Budget Summary & Analysis</h2>
+        <p>Comprehensive overview of your 2025 IT budget and investment strategy.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Calculate totals
+    operational_total = calculate_operational_total()
+    support_total = calculate_support_total()
+    implementation_total = calculate_implementation_total()
+    total_budget = operational_total + support_total + implementation_total
+    
+    if total_budget == 0:
+        st.info("👋 No services or projects selected yet. Please visit the other sections to build your budget.")
         return
     
-    # Calculate comprehensive budget breakdown
-    operations_total = 0
-    support_total = 0
-    implementation_total = 0
-    
-    operations_items = []
-    support_items = []
-    implementation_items = []
-    
-    for key, item in st.session_state.questionnaire_data.items():
-        if item.get('category') == 'operations':
-            operations_items.append(item)
-            operations_total += item.get('annual_cost', 0)
-        elif item.get('category') == 'support':
-            support_items.append(item)
-            support_total += item.get('annual_cost', 0)
-        elif item.get('category') == 'implementation':
-            implementation_items.append(item)
-            implementation_total += item.get('budget_estimate', 0)
-            if item.get('type') == 'rpa_package':
-                implementation_total += item.get('package_details', {}).get('year1', 0) - item.get('budget_estimate', 0)
-    
-    total_budget = operations_total + support_total + implementation_total
-    
-    # Count custom services
-    custom_services = [item for item in st.session_state.questionnaire_data.values() if item.get('custom')]
-    custom_operations = len([item for item in custom_services if item.get('category') == 'operations'])
-    custom_support = len([item for item in custom_services if item.get('category') == 'support'])
-    custom_implementation = len([item for item in custom_services if item.get('category') == 'implementation'])
-    
-    # Budget overview
+    # Budget overview metrics
     st.markdown("### 💰 Budget Overview")
+    
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric("Operations (Annual)", f"SAR {operations_total:,.0f}", f"{operations_total/max(total_budget,1)*100:.1f}%")
+        st.metric("Operational Services", f"SAR {operational_total:,.0f}", 
+                 f"{operational_total/total_budget*100:.1f}%" if total_budget > 0 else "0%")
+    
     with col2:
-        st.metric("Support (Annual)", f"SAR {support_total:,.0f}", f"{support_total/max(total_budget,1)*100:.1f}%")
+        st.metric("Support Packages", f"SAR {support_total:,.0f}", 
+                 f"{support_total/total_budget*100:.1f}%" if total_budget > 0 else "0%")
+    
     with col3:
-        st.metric("Implementation", f"SAR {implementation_total:,.0f}", f"{implementation_total/max(total_budget,1)*100:.1f}%")
+        st.metric("Implementation", f"SAR {implementation_total:,.0f}", 
+                 f"{implementation_total/total_budget*100:.1f}%" if total_budget > 0 else "0%")
+    
     with col4:
         st.markdown(f"""
-        <div class='total-cost'>
+        <div class='total-budget'>
             💰 Total 2025 Budget<br>
-            <span style='font-size: 1.8em; color: #dc2626;'>SAR {total_budget:,.0f}</span>
+            <span style='font-size: 1.8em'>SAR {total_budget:,.0f}</span>
         </div>
         """, unsafe_allow_html=True)
     
-    # Budget distribution chart
-    if total_budget > 0:
-        fig = px.pie(
-            values=[operations_total, support_total, implementation_total],
-            names=['Operations', 'Support', 'Implementation'],
-            title="2025 IT Budget Distribution",
-            color_discrete_map={
-                'Operations': '#0891b2',
-                'Support': '#16a34a', 
-                'Implementation': '#f59e0b'
-            }
-        )
-        st.plotly_chart(fig, use_container_width=True)
+    # Charts
+    col1, col2 = st.columns(2)
     
-    # Custom services summary
-    if custom_services:
-        st.markdown("### ➕ Custom Services Added")
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric("Total Custom Services", len(custom_services))
-        with col2:
-            st.metric("Custom Operations", custom_operations)
-        with col3:
-            st.metric("Custom Support", custom_support)
-        with col4:
-            st.metric("Custom Implementation", custom_implementation)
-        
-        st.info("💡 Custom services are marked with '(Custom)' in the detailed breakdowns below.")
-    
-    # Detailed breakdown by category
-    if operations_items:
-        st.markdown("### 🔧 Operations Budget Breakdown")
-        operations_df = []
-        for item in operations_items:
-            service_name = item['service']
-            if item.get('custom'):
-                service_name += " (Custom)"
-            
-            operations_df.append({
-                'Service': service_name,
-                'Type': item.get('type', '').title(),
-                'Users': item.get('total_users', 0),
-                'Monthly Cost': f"SAR {item.get('annual_cost', 0)/12:,.0f}",
-                'Annual Cost': f"SAR {item.get('annual_cost', 0):,.0f}",
-                'Setup Cost': f"SAR {item.get('setup_cost', 0):,.0f}"
-            })
-        
-        if operations_df:
-            st.dataframe(pd.DataFrame(operations_df), use_container_width=True)
-    
-    if support_items:
-        st.markdown("### 🛠️ Support Budget Breakdown")
-        for item in support_items:
-            service_name = item['service']
-            if item.get('custom'):
-                service_name += " (Custom)"
-                
-            st.markdown(f"""
-            <div class='support-card'>
-                <h4>{service_name}</h4>
-                <p><strong>Monthly Cost:</strong> SAR {item.get('monthly_cost', 0):,}</p>
-                <p><strong>Annual Cost:</strong> SAR {item.get('annual_cost', 0):,}</p>
-                <p><strong>Response Time:</strong> {item.get('response_time', item.get('service_level', 'N/A'))}</p>
-                <p><strong>Features:</strong> {item.get('features', item.get('ticket_limit', 'N/A'))}</p>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    if implementation_items:
-        st.markdown("### 🚀 Implementation Projects Budget")
-        implementation_df = []
-        for item in implementation_items:
-            budget = item.get('budget_estimate', 0)
-            if item.get('type') == 'rpa_package':
-                budget = item.get('package_details', {}).get('year1', 0)
-            
-            service_name = item['service']
-            if item.get('custom'):
-                service_name += " (Custom)"
-            
-            implementation_df.append({
-                'Project': service_name,
-                'Type': item.get('project_type', item.get('type', '')).replace('_', ' ').title(),
-                'Priority': item.get('priority', 'N/A'),
-                'Timeline': item.get('timeline', 'N/A'),
-                'Budget Estimate': f"SAR {budget:,.0f}"
-            })
-        
-        if implementation_df:
-            st.dataframe(pd.DataFrame(implementation_df), use_container_width=True)
+    # Pie chart for budget distribution
+    with col1:
+        if total_budget > 0:
+            fig_pie = px.pie(
+                values=[operational_total, support_total, implementation_total],
+                names=['Operational Services', 'Support Packages', 'Implementation Projects'],
+                title="2025 IT Budget Distribution",
+                color_discrete_map={
+                    'Operational Services': '#3b82f6',
+                    'Support Packages': '#10b981',
+                    'Implementation Projects': '#f59e0b'
+                }
+            )
+            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+            st.plotly_chart(fig_pie, use_container_width=True)
     
     # Monthly cash flow projection
-    st.markdown("### 📈 Monthly Cash Flow Projection")
+    with col2:
+        months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        
+        # Assume operational and support costs are spread evenly
+        monthly_operational = operational_total / 12
+        monthly_support = support_total / 12
+        # Assume implementation costs are front-loaded in first 6 months
+        monthly_implementation = [implementation_total / 6 if i < 6 else 0 for i in range(12)]
+        
+        fig_bar = go.Figure()
+        fig_bar.add_trace(go.Bar(name='Operational', x=months, y=[monthly_operational]*12))
+        fig_bar.add_trace(go.Bar(name='Support', x=months, y=[monthly_support]*12))
+        fig_bar.add_trace(go.Bar(name='Implementation', x=months, y=monthly_implementation))
+        
+        fig_bar.update_layout(
+            title='Monthly Cash Flow Projection (SAR)',
+            barmode='stack',
+            xaxis_title='Month',
+            yaxis_title='Cost (SAR)'
+        )
+        st.plotly_chart(fig_bar, use_container_width=True)
     
-    monthly_operations = operations_total / 12
-    monthly_support = support_total / 12
-    # Assume implementation costs are spread over the year
-    monthly_implementation = implementation_total / 12
+    # Detailed breakdowns
+    st.markdown("### 📋 Detailed Budget Breakdown")
     
-    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    monthly_data = {
-        'Month': months,
-        'Operations': [monthly_operations] * 12,
-        'Support': [monthly_support] * 12,
-        'Implementation': [monthly_implementation] * 12,
-        'Total': [monthly_operations + monthly_support + monthly_implementation] * 12
-    }
+    # Operational Services Table
+    if operational_total > 0:
+        st.markdown("#### 🔧 Operational Services")
+        
+        operational_data = []
+        
+        # Predefined services
+        for service_key, data in st.session_state.operational_services.items():
+            if data.get('selected', False) and data.get('users', 0) > 0:
+                service_name = data.get('service_name', service_key)
+                users = data.get('users', 0)
+                
+                # Determine if Oracle or Microsoft
+                if service_key.startswith('oracle_'):
+                    clean_name = service_key.replace('oracle_', '').replace('_', ' ').title()
+                    if clean_name in ORACLE_SERVICES:
+                        service_info = ORACLE_SERVICES[clean_name]
+                        monthly_cost = service_info['price_per_user'] * users
+                        setup_cost = service_info['setup_cost']
+                        annual_cost = (monthly_cost * 12) + setup_cost
+                        
+                        operational_data.append({
+                            'Service': clean_name,
+                            'Provider': 'Oracle',
+                            'Users': users,
+                            'Monthly Cost': f"SAR {monthly_cost:,.0f}",
+                            'Setup Cost': f"SAR {setup_cost:,.0f}",
+                            'Annual Cost': f"SAR {annual_cost:,.0f}"
+                        })
+                
+                elif service_key.startswith('microsoft_'):
+                    clean_name = service_key.replace('microsoft_', '').replace('_', ' ').title()
+                    # Handle special naming cases
+                    name_mapping = {
+                        'Microsoft 365 E3': 'Microsoft 365 E3',
+                        'Microsoft Teams Phone': 'Microsoft Teams Phone',
+                        'Power Bi Premium': 'Power BI Premium',
+                        'Project For The Web': 'Project for the Web',
+                        'Microsoft Dynamics 365': 'Microsoft Dynamics 365'
+                    }
+                    clean_name = name_mapping.get(clean_name, clean_name)
+                    
+                    if clean_name in MICROSOFT_SERVICES:
+                        service_info = MICROSOFT_SERVICES[clean_name]
+                        monthly_cost = service_info['price_per_user'] * users
+                        setup_cost = service_info['setup_cost']
+                        annual_cost = (monthly_cost * 12) + setup_cost
+                        
+                        operational_data.append({
+                            'Service': clean_name,
+                            'Provider': 'Microsoft',
+                            'Users': users,
+                            'Monthly Cost': f"SAR {monthly_cost:,.0f}",
+                            'Setup Cost': f"SAR {setup_cost:,.0f}",
+                            'Annual Cost': f"SAR {annual_cost:,.0f}"
+                        })
+        
+        # Custom services
+        for custom_service in st.session_state.custom_operational:
+            users = custom_service['users']
+            monthly_cost = custom_service['price_per_user'] * users
+            setup_cost = custom_service['setup_cost']
+            annual_cost = (monthly_cost * 12) + setup_cost
+            
+            operational_data.append({
+                'Service': f"{custom_service['name']} (Custom)",
+                'Provider': 'Custom',
+                'Users': users,
+                'Monthly Cost': f"SAR {monthly_cost:,.0f}",
+                'Setup Cost': f"SAR {setup_cost:,.0f}",
+                'Annual Cost': f"SAR {annual_cost:,.0f}"
+            })
+        
+        if operational_data:
+            st.dataframe(pd.DataFrame(operational_data), use_container_width=True)
     
-    fig = px.bar(
-        monthly_data, 
-        x='Month', 
-        y=['Operations', 'Support', 'Implementation'],
-        title="Monthly IT Budget Projection (SAR)",
-        barmode='stack'
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    # Support Package Details
+    if support_total > 0:
+        st.markdown("#### 🛠️ Support Package")
+        
+        support_data = [{
+            'Package': st.session_state.support_package,
+            'Base Cost': f"SAR {SUPPORT_PACKAGES[st.session_state.support_package]['price']:,.0f}",
+            'Extra Support Requests': st.session_state.support_extras['support'],
+            'Extra Training/Reports': st.session_state.support_extras['training'],
+            'Additional Cost': f"SAR {(st.session_state.support_extras['support'] * 1800) + (st.session_state.support_extras['training'] * 5399):,.0f}",
+            'Total Cost': f"SAR {support_total:,.0f}"
+        }]
+        
+        st.dataframe(pd.DataFrame(support_data), use_container_width=True)
+    
+    # Implementation Projects Table
+    if implementation_total > 0:
+        st.markdown("#### 🚀 Implementation Projects")
+        
+        implementation_data = []
+        for project in st.session_state.implementation_projects:
+            implementation_data.append({
+                'Project Name': project['name'],
+                'Type': project['type'],
+                'Priority': project['priority'],
+                'Timeline': project['timeline'],
+                'Departments': ', '.join(project['departments']) if project['departments'] else 'N/A',
+                'Budget': f"SAR {project['budget']:,.0f}"
+            })
+        
+        st.dataframe(pd.DataFrame(implementation_data), use_container_width=True)
     
     # Export and submission options
-    st.markdown("### 📤 Export & Submission Options")
+    st.markdown("### 📤 Export & Submission")
+    
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         if st.button("📊 Export to Excel", use_container_width=True):
-            st.success("Excel export would include:\n• Detailed budget breakdown\n• Service specifications\n• Cost analysis\n• Monthly projections")
+            st.success("📊 Excel export functionality would generate a comprehensive budget report including all selected services, costs, and projections.")
     
     with col2:
-        if st.button("📧 Email Summary", use_container_width=True):
-            st.success("Email sent with comprehensive budget summary to IT team and finance department.")
+        if st.button("💾 Save Draft", use_container_width=True):
+            st.success("💾 Draft saved! Your selections have been preserved and you can continue editing later.")
     
     with col3:
-        if st.button("💾 Save Draft", use_container_width=True):
-            st.success("Draft saved successfully! You can continue editing later.")
+        if st.button("📧 Share Summary", use_container_width=True):
+            st.success("📧 Budget summary prepared for sharing with stakeholders and finance team.")
     
     with col4:
-        if st.button("🚀 Submit Final", type="primary", use_container_width=True):
+        if st.button("🚀 Submit Final Budget", type="primary", use_container_width=True):
+            # Generate unique reference ID
+            reference_id = f"ALK-2025-{datetime.now().strftime('%Y%m%d%H%M%S')}-{str(uuid.uuid4())[:8].upper()}"
+            
             st.balloons()
             st.success(f"""
-            ✅ **Budget Questionnaire Submitted Successfully!**
+            ✅ **2025 IT Budget Successfully Submitted!**
+            
+            **Reference ID:** {reference_id}
             
             **Submission Summary:**
             - Company: {st.session_state.company_info.get('company', 'N/A')}
-            - Representative: {st.session_state.company_info.get('representative', 'N/A')}
+            - Contact: {st.session_state.company_info.get('contact_person', 'N/A')}
             - Total Budget: SAR {total_budget:,.0f}
-            - Operations Items: {len(operations_items)}
-            - Support Items: {len(support_items)}
-            - Implementation Items: {len(implementation_items)}
-            - Reference ID: AIC-2025-{datetime.now().strftime('%Y%m%d%H%M%S')}
+            - Operational Services: SAR {operational_total:,.0f}
+            - Support Package: SAR {support_total:,.0f}
+            - Implementation Projects: SAR {implementation_total:,.0f}
             
             **Next Steps:**
-            1. IT team will review within 5 business days
-            2. Finance approval process initiated
-            3. Implementation planning begins Q4 2024
+            1. Finance team review (3-5 business days)
+            2. Executive approval process
+            3. Q4 2024: Implementation planning begins
+            4. Q1 2025: Budget execution starts
+            
+            A detailed budget report has been sent to your email and the finance team.
             """)
 
-# Main app
+# Main application
 def main():
     show_header()
-    show_company_info()
+    show_sidebar()
     
     # Navigation
-    sections = ["Operations", "Support", "Implementation", "Summary"]
-    selected_section = st.radio(
-        "📋 Select Questionnaire Section:",
-        sections,
-        horizontal=True,
-        key="section_nav"
-    )
+    tab1, tab2, tab3, tab4 = st.tabs(["🔧 Operational Services", "🛠️ Support Packages", "🚀 Implementation Projects", "📊 Summary"])
     
-    st.session_state.current_section = selected_section
+    with tab1:
+        show_operational_services()
     
-    # Display selected section
-    if selected_section == "Operations":
-        show_operations_section()
-    elif selected_section == "Support":
-        show_support_section()
-    elif selected_section == "Implementation":
-        show_implementation_section()
-    elif selected_section == "Summary":
+    with tab2:
+        show_support_packages()
+    
+    with tab3:
+        show_implementation_projects()
+    
+    with tab4:
         show_summary()
 
 if __name__ == "__main__":
