@@ -254,38 +254,28 @@ def calculate_operational_total():
     
     # Predefined services
     for service_key, data in st.session_state.operational_services.items():
-        if data.get('selected', False):
+        if data.get('selected', False) and data.get('users', 0) > 0:
             users = data.get('users', 0)
-            if service_key.startswith('oracle_'):
-                service_name = service_key.replace('oracle_', '').replace('_', ' ').title()
-                if service_name in ORACLE_SERVICES:
-                    monthly_cost = ORACLE_SERVICES[service_name]['price_per_user'] * users
-                    setup_cost = ORACLE_SERVICES[service_name]['setup_cost']
-                    total += (monthly_cost * 12) + setup_cost
-            elif service_key.startswith('microsoft_'):
-                service_name = service_key.replace('microsoft_', '').replace('_', ' ').title()
-                # Handle special cases for matching
-                if service_name == 'Microsoft 365 E3':
-                    service_name = 'Microsoft 365 E3'
-                elif service_name == 'Microsoft Teams Phone':
-                    service_name = 'Microsoft Teams Phone'
-                elif service_name == 'Power Bi Premium':
-                    service_name = 'Power BI Premium'
-                elif service_name == 'Project For The Web':
-                    service_name = 'Project for the Web'
-                elif service_name == 'Microsoft Dynamics 365':
-                    service_name = 'Microsoft Dynamics 365'
-                    
-                if service_name in MICROSOFT_SERVICES:
-                    monthly_cost = MICROSOFT_SERVICES[service_name]['price_per_user'] * users
-                    setup_cost = MICROSOFT_SERVICES[service_name]['setup_cost']
-                    total += (monthly_cost * 12) + setup_cost
+            actual_service_name = data.get('actual_service_name', '')
+            is_new_implementation = data.get('new_implementation', False)
+            
+            # Direct lookup using the actual service name stored in session state
+            if actual_service_name in ORACLE_SERVICES:
+                service_info = ORACLE_SERVICES[actual_service_name]
+                monthly_cost = service_info['price_per_user'] * users
+                setup_cost = service_info['setup_cost'] if is_new_implementation else 0
+                total += (monthly_cost * 12) + setup_cost
+            elif actual_service_name in MICROSOFT_SERVICES:
+                service_info = MICROSOFT_SERVICES[actual_service_name]
+                monthly_cost = service_info['price_per_user'] * users
+                setup_cost = service_info['setup_cost'] if is_new_implementation else 0
+                total += (monthly_cost * 12) + setup_cost
     
     # Custom services
     for custom_service in st.session_state.custom_operational:
         users = custom_service.get('users', 0)
         monthly_cost = custom_service.get('price_per_user', 0) * users
-        setup_cost = custom_service.get('setup_cost', 0)
+        setup_cost = custom_service.get('setup_cost', 0) if custom_service.get('new_implementation', False) else 0
         total += (monthly_cost * 12) + setup_cost
     
     return total
@@ -310,27 +300,71 @@ def calculate_total_budget():
 
 # Header
 def show_header():
-    st.markdown("""
+    # Get selected company for dynamic header
+    selected_company_info = st.session_state.company_info.get('company_code', 'Alkhorayef Group')
+    company_full_name = st.session_state.company_info.get('company_full_name', '')
+    
+    header_subtitle = f"Strategic Technology Investment Planning & Cost Analysis"
+    if selected_company_info != 'Alkhorayef Group':
+        header_subtitle = f"{selected_company_info} - {company_full_name}<br>Strategic Technology Investment Planning & Cost Analysis"
+    
+    st.markdown(f"""
     <div class='main-header'>
         <h1>💼 Alkhorayef Group</h1>
         <h2>2025 IT Budget Planning Tool</h2>
-        <p>Strategic Technology Investment Planning & Cost Analysis</p>
+        <p>{header_subtitle}</p>
         <p><strong>Budget Year:</strong> 2025 | <strong>Version:</strong> 2.0</p>
     </div>
     """, unsafe_allow_html=True)
+
+# Company list for Alkhorayef Group with full names
+ALKHORAYEF_COMPANIES = {
+    "APC": "Arabian Precast Concrete",
+    "AIC": "Alkhorayef Industries Company", 
+    "AGC": "Alkhorayef General Contracting",
+    "APS": "Alkhorayef Power Systems",
+    "PS": "Power Systems",
+    "AWPT": "Alkhorayef Water & Power Technologies",
+    "AMIC": "Alkhorayef Medical Industries Company",
+    "ACC": "Alkhorayef Construction Company",
+    "SPC": "Saudi Precast Company",
+    "Tom Egypt": "Tom Egypt"
+}
 
 # Sidebar for company info and budget summary
 def show_sidebar():
     with st.sidebar:
         st.markdown("### 🏢 Company Information")
         
-        company = st.text_input("Company/Division", value="Alkhorayef Group", key="company")
-        department = st.text_input("Department", key="department")
-        contact_person = st.text_input("Contact Person", key="contact_person")
-        email = st.text_input("Email", key="email")
+        st.markdown("**🏭 Alkhorayef Group**")
+        
+        # Company selection with full names
+        company_options = list(ALKHORAYEF_COMPANIES.keys())
+        selected_company = st.selectbox(
+            "Select Your Company", 
+            options=company_options,
+            index=0,
+            key="company_selection",
+            help="Choose which Alkhorayef Group company you represent",
+            format_func=lambda x: f"{x} - {ALKHORAYEF_COMPANIES[x]}"
+        )
+        
+        # Display selected company info
+        st.markdown(f"""
+        <div style='background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;'>
+            <strong>Selected:</strong> {selected_company}<br>
+            <small style='color: #6b7280;'>{ALKHORAYEF_COMPANIES[selected_company]}</small>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        department = st.text_input("Department", key="department", placeholder="e.g., IT, Finance, Operations")
+        contact_person = st.text_input("Contact Person", key="contact_person", placeholder="Your full name")
+        email = st.text_input("Email", key="email", placeholder="your.email@alkhorayef.com")
         
         st.session_state.company_info = {
-            'company': company,
+            'company': f"Alkhorayef Group - {selected_company}",
+            'company_code': selected_company,
+            'company_full_name': ALKHORAYEF_COMPANIES[selected_company],
             'department': department,
             'contact_person': contact_person,
             'email': email,
@@ -339,9 +373,10 @@ def show_sidebar():
         
         st.markdown("---")
         
-        # Budget summary
+        # Budget summary - force recalculation each time
         st.markdown("### 💰 Budget Summary")
         
+        # Force recalculation of all totals
         operational_total = calculate_operational_total()
         support_total = calculate_support_total()
         implementation_total = calculate_implementation_total()
@@ -376,7 +411,7 @@ def show_sidebar():
         """, unsafe_allow_html=True)
         
         # Progress indicators
-        operational_count = len([k for k, v in st.session_state.operational_services.items() if v.get('selected', False)]) + len(st.session_state.custom_operational)
+        operational_count = len([k for k, v in st.session_state.operational_services.items() if v.get('selected', False) and v.get('users', 0) > 0]) + len(st.session_state.custom_operational)
         support_selected = 1 if st.session_state.support_package else 0
         implementation_count = len(st.session_state.implementation_projects)
         
@@ -384,6 +419,17 @@ def show_sidebar():
         st.metric("Operational Services", operational_count)
         st.metric("Support Package", "Selected" if support_selected else "Not Selected")
         st.metric("Implementation Projects", implementation_count)
+        
+        # Debug info (can be removed in production)
+        if st.checkbox("Show Debug Info", value=False):
+            st.markdown("### 🔍 Debug Information")
+            st.write("Operational Services State:")
+            for key, value in st.session_state.operational_services.items():
+                if value.get('selected', False):
+                    st.write(f"- {key}: {value}")
+            st.write(f"Custom Services: {len(st.session_state.custom_operational)}")
+            st.write(f"Support Package: {st.session_state.support_package}")
+            st.write(f"Projects: {len(st.session_state.implementation_projects)}")
 
 # Operational Services Section
 def show_operational_services():
@@ -410,42 +456,77 @@ def show_operational_services():
                 <h4>{service_name}</h4>
                 <p style='color: #6b7280; font-size: 0.9em;'>{details['description']}</p>
                 <div style='background: #f3f4f6; padding: 0.5rem; border-radius: 5px; margin: 0.5rem 0;'>
-                    💰 SAR {details['price_per_user']}/user/month + SAR {details['setup_cost']:,} setup
+                    💰 SAR {details['price_per_user']}/user/month<br>
+                    🆕 Setup (new implementation): SAR {details['setup_cost']:,}
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
             # Initialize service data if not exists
             if service_key not in st.session_state.operational_services:
-                st.session_state.operational_services[service_key] = {'selected': False, 'users': 0}
+                st.session_state.operational_services[service_key] = {
+                    'selected': False, 
+                    'users': 0, 
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
+            
+            # Get current values from session state
+            current_selected = st.session_state.operational_services[service_key].get('selected', False)
+            current_users = st.session_state.operational_services[service_key].get('users', 0)
+            current_new_impl = st.session_state.operational_services[service_key].get('new_implementation', False)
             
             selected = st.checkbox(f"Include {service_name}", 
                                  key=f"{service_key}_selected",
-                                 value=st.session_state.operational_services[service_key]['selected'])
+                                 value=current_selected)
             
             if selected:
+                # New Implementation checkbox
+                new_implementation = st.checkbox(
+                    "🆕 New Implementation", 
+                    key=f"{service_key}_new_impl",
+                    value=current_new_impl,
+                    help="Check this if it's a new implementation requiring setup. Uncheck if adding users to existing system."
+                )
+                
                 users = st.number_input(f"Number of users for {service_name}", 
                                       min_value=0, 
-                                      value=st.session_state.operational_services[service_key]['users'],
-                                      key=f"{service_key}_users")
+                                      value=current_users,
+                                      key=f"{service_key}_users",
+                                      step=1)
                 
-                if users > 0:
-                    monthly_cost = details['price_per_user'] * users
-                    annual_cost = monthly_cost * 12 + details['setup_cost']
-                    
-                    st.markdown(f"""
-                    <div class='cost-display'>
-                        📊 Monthly: SAR {monthly_cost:,.0f} | Annual: SAR {annual_cost:,.0f}
-                    </div>
-                    """, unsafe_allow_html=True)
-                
+                # Update session state immediately
                 st.session_state.operational_services[service_key] = {
                     'selected': True,
                     'users': users,
-                    'service_name': service_name
+                    'actual_service_name': service_name,
+                    'new_implementation': new_implementation
                 }
+                
+                if users > 0:
+                    monthly_cost = details['price_per_user'] * users
+                    setup_cost = details['setup_cost'] if new_implementation else 0
+                    annual_cost = monthly_cost * 12 + setup_cost
+                    
+                    # Dynamic cost display
+                    setup_text = f" + SAR {setup_cost:,} setup" if new_implementation else " (no setup cost)"
+                    
+                    st.markdown(f"""
+                    <div class='cost-display'>
+                        📊 Monthly: SAR {monthly_cost:,.0f}{setup_text}<br>
+                        <strong>Annual Total: SAR {annual_cost:,.0f}</strong>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if not new_implementation and setup_cost > 0:
+                        st.info("💡 No setup cost - adding users to existing system")
             else:
-                st.session_state.operational_services[service_key]['selected'] = False
+                st.session_state.operational_services[service_key] = {
+                    'selected': False,
+                    'users': 0,
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
     
     st.markdown("---")
     
@@ -465,42 +546,77 @@ def show_operational_services():
                 <h4>{service_name}</h4>
                 <p style='color: #6b7280; font-size: 0.9em;'>{details['description']}</p>
                 <div style='background: #f3f4f6; padding: 0.5rem; border-radius: 5px; margin: 0.5rem 0;'>
-                    💰 SAR {details['price_per_user']}/user/month + SAR {details['setup_cost']:,} setup
+                    💰 SAR {details['price_per_user']}/user/month<br>
+                    🆕 Setup (new implementation): SAR {details['setup_cost']:,}
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
             # Initialize service data if not exists
             if service_key not in st.session_state.operational_services:
-                st.session_state.operational_services[service_key] = {'selected': False, 'users': 0}
+                st.session_state.operational_services[service_key] = {
+                    'selected': False, 
+                    'users': 0, 
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
+            
+            # Get current values from session state
+            current_selected = st.session_state.operational_services[service_key].get('selected', False)
+            current_users = st.session_state.operational_services[service_key].get('users', 0)
+            current_new_impl = st.session_state.operational_services[service_key].get('new_implementation', False)
             
             selected = st.checkbox(f"Include {service_name}", 
                                  key=f"{service_key}_selected",
-                                 value=st.session_state.operational_services[service_key]['selected'])
+                                 value=current_selected)
             
             if selected:
+                # New Implementation checkbox
+                new_implementation = st.checkbox(
+                    "🆕 New Implementation", 
+                    key=f"{service_key}_new_impl",
+                    value=current_new_impl,
+                    help="Check this if it's a new implementation requiring setup. Uncheck if adding users to existing system."
+                )
+                
                 users = st.number_input(f"Number of users for {service_name}", 
                                       min_value=0, 
-                                      value=st.session_state.operational_services[service_key]['users'],
-                                      key=f"{service_key}_users")
+                                      value=current_users,
+                                      key=f"{service_key}_users",
+                                      step=1)
                 
-                if users > 0:
-                    monthly_cost = details['price_per_user'] * users
-                    annual_cost = monthly_cost * 12 + details['setup_cost']
-                    
-                    st.markdown(f"""
-                    <div class='cost-display'>
-                        📊 Monthly: SAR {monthly_cost:,.0f} | Annual: SAR {annual_cost:,.0f}
-                    </div>
-                    """, unsafe_allow_html=True)
-                
+                # Update session state immediately
                 st.session_state.operational_services[service_key] = {
                     'selected': True,
                     'users': users,
-                    'service_name': service_name
+                    'actual_service_name': service_name,
+                    'new_implementation': new_implementation
                 }
+                
+                if users > 0:
+                    monthly_cost = details['price_per_user'] * users
+                    setup_cost = details['setup_cost'] if new_implementation else 0
+                    annual_cost = monthly_cost * 12 + setup_cost
+                    
+                    # Dynamic cost display
+                    setup_text = f" + SAR {setup_cost:,} setup" if new_implementation else " (no setup cost)"
+                    
+                    st.markdown(f"""
+                    <div class='cost-display'>
+                        📊 Monthly: SAR {monthly_cost:,.0f}{setup_text}<br>
+                        <strong>Annual Total: SAR {annual_cost:,.0f}</strong>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if not new_implementation and setup_cost > 0:
+                        st.info("💡 No setup cost - adding users to existing system")
             else:
-                st.session_state.operational_services[service_key]['selected'] = False
+                st.session_state.operational_services[service_key] = {
+                    'selected': False,
+                    'users': 0,
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
     
     st.markdown("---")
     
@@ -528,6 +644,12 @@ def show_operational_services():
         custom_description = st.text_area("Service Description", 
                                         placeholder="Describe what this service provides...")
         
+        custom_new_implementation = st.checkbox(
+            "🆕 New Implementation (includes setup cost)", 
+            value=True,
+            help="Check if this is a new implementation requiring setup cost"
+        )
+        
         if st.button("Add Custom Service"):
             if custom_name and custom_description and custom_users > 0:
                 custom_service = {
@@ -535,7 +657,8 @@ def show_operational_services():
                     'description': custom_description,
                     'price_per_user': custom_price,
                     'setup_cost': custom_setup,
-                    'users': custom_users
+                    'users': custom_users,
+                    'new_implementation': custom_new_implementation
                 }
                 
                 st.session_state.custom_operational.append(custom_service)
@@ -550,14 +673,18 @@ def show_operational_services():
         
         for i, service in enumerate(st.session_state.custom_operational):
             monthly_cost = service['price_per_user'] * service['users']
-            annual_cost = monthly_cost * 12 + service['setup_cost']
+            setup_cost = service['setup_cost'] if service.get('new_implementation', False) else 0
+            annual_cost = monthly_cost * 12 + setup_cost
+            
+            implementation_status = "New Implementation" if service.get('new_implementation', False) else "Adding to Existing"
+            setup_display = f"Setup: SAR {setup_cost:,}" if service.get('new_implementation', False) else "No Setup Cost"
             
             st.markdown(f"""
             <div class='service-card' style='border-left: 4px solid #8b5cf6;'>
                 <h4>{service['name']} (Custom)</h4>
                 <p style='color: #6b7280;'>{service['description']}</p>
-                <p><strong>Users:</strong> {service['users']} | <strong>Monthly:</strong> SAR {monthly_cost:,.0f} | <strong>Annual:</strong> SAR {annual_cost:,.0f}</p>
-                <button onclick="window.location.reload()">Remove</button>
+                <p><strong>Users:</strong> {service['users']} | <strong>Status:</strong> {implementation_status}</p>
+                <p><strong>Monthly:</strong> SAR {monthly_cost:,.0f} | <strong>{setup_display}</strong> | <strong>Annual:</strong> SAR {annual_cost:,.0f}</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -851,65 +978,62 @@ def show_summary():
         # Predefined services
         for service_key, data in st.session_state.operational_services.items():
             if data.get('selected', False) and data.get('users', 0) > 0:
-                service_name = data.get('service_name', service_key)
+                actual_service_name = data.get('actual_service_name', '')
                 users = data.get('users', 0)
+                is_new_implementation = data.get('new_implementation', False)
                 
-                # Determine if Oracle or Microsoft
-                if service_key.startswith('oracle_'):
-                    clean_name = service_key.replace('oracle_', '').replace('_', ' ').title()
-                    if clean_name in ORACLE_SERVICES:
-                        service_info = ORACLE_SERVICES[clean_name]
-                        monthly_cost = service_info['price_per_user'] * users
-                        setup_cost = service_info['setup_cost']
-                        annual_cost = (monthly_cost * 12) + setup_cost
-                        
-                        operational_data.append({
-                            'Service': clean_name,
-                            'Provider': 'Oracle',
-                            'Users': users,
-                            'Monthly Cost': f"SAR {monthly_cost:,.0f}",
-                            'Setup Cost': f"SAR {setup_cost:,.0f}",
-                            'Annual Cost': f"SAR {annual_cost:,.0f}"
-                        })
-                
-                elif service_key.startswith('microsoft_'):
-                    clean_name = service_key.replace('microsoft_', '').replace('_', ' ').title()
-                    # Handle special naming cases
-                    name_mapping = {
-                        'Microsoft 365 E3': 'Microsoft 365 E3',
-                        'Microsoft Teams Phone': 'Microsoft Teams Phone',
-                        'Power Bi Premium': 'Power BI Premium',
-                        'Project For The Web': 'Project for the Web',
-                        'Microsoft Dynamics 365': 'Microsoft Dynamics 365'
-                    }
-                    clean_name = name_mapping.get(clean_name, clean_name)
+                # Determine provider and get service info
+                if actual_service_name in ORACLE_SERVICES:
+                    service_info = ORACLE_SERVICES[actual_service_name]
+                    monthly_cost = service_info['price_per_user'] * users
+                    setup_cost = service_info['setup_cost'] if is_new_implementation else 0
+                    annual_cost = (monthly_cost * 12) + setup_cost
                     
-                    if clean_name in MICROSOFT_SERVICES:
-                        service_info = MICROSOFT_SERVICES[clean_name]
-                        monthly_cost = service_info['price_per_user'] * users
-                        setup_cost = service_info['setup_cost']
-                        annual_cost = (monthly_cost * 12) + setup_cost
-                        
-                        operational_data.append({
-                            'Service': clean_name,
-                            'Provider': 'Microsoft',
-                            'Users': users,
-                            'Monthly Cost': f"SAR {monthly_cost:,.0f}",
-                            'Setup Cost': f"SAR {setup_cost:,.0f}",
-                            'Annual Cost': f"SAR {annual_cost:,.0f}"
-                        })
+                    implementation_status = "New Implementation" if is_new_implementation else "Adding Users"
+                    
+                    operational_data.append({
+                        'Service': actual_service_name,
+                        'Provider': 'Oracle',
+                        'Users': users,
+                        'Status': implementation_status,
+                        'Monthly Cost': f"SAR {monthly_cost:,.0f}",
+                        'Setup Cost': f"SAR {setup_cost:,.0f}",
+                        'Annual Cost': f"SAR {annual_cost:,.0f}"
+                    })
+                
+                elif actual_service_name in MICROSOFT_SERVICES:
+                    service_info = MICROSOFT_SERVICES[actual_service_name]
+                    monthly_cost = service_info['price_per_user'] * users
+                    setup_cost = service_info['setup_cost'] if is_new_implementation else 0
+                    annual_cost = (monthly_cost * 12) + setup_cost
+                    
+                    implementation_status = "New Implementation" if is_new_implementation else "Adding Users"
+                    
+                    operational_data.append({
+                        'Service': actual_service_name,
+                        'Provider': 'Microsoft',
+                        'Users': users,
+                        'Status': implementation_status,
+                        'Monthly Cost': f"SAR {monthly_cost:,.0f}",
+                        'Setup Cost': f"SAR {setup_cost:,.0f}",
+                        'Annual Cost': f"SAR {annual_cost:,.0f}"
+                    })
         
         # Custom services
         for custom_service in st.session_state.custom_operational:
             users = custom_service['users']
             monthly_cost = custom_service['price_per_user'] * users
-            setup_cost = custom_service['setup_cost']
+            is_new_implementation = custom_service.get('new_implementation', False)
+            setup_cost = custom_service['setup_cost'] if is_new_implementation else 0
             annual_cost = (monthly_cost * 12) + setup_cost
+            
+            implementation_status = "New Implementation" if is_new_implementation else "Adding Users"
             
             operational_data.append({
                 'Service': f"{custom_service['name']} (Custom)",
                 'Provider': 'Custom',
                 'Users': users,
+                'Status': implementation_status,
                 'Monthly Cost': f"SAR {monthly_cost:,.0f}",
                 'Setup Cost': f"SAR {setup_cost:,.0f}",
                 'Annual Cost': f"SAR {annual_cost:,.0f}"
@@ -969,8 +1093,9 @@ def show_summary():
     
     with col4:
         if st.button("🚀 Submit Final Budget", type="primary", use_container_width=True):
-            # Generate unique reference ID
-            reference_id = f"ALK-2025-{datetime.now().strftime('%Y%m%d%H%M%S')}-{str(uuid.uuid4())[:8].upper()}"
+            # Generate unique reference ID with company code
+            company_code = st.session_state.company_info.get('company_code', 'ALK')
+            reference_id = f"{company_code}-2025-{datetime.now().strftime('%Y%m%d%H%M%S')}-{str(uuid.uuid4())[:8].upper()}"
             
             st.balloons()
             st.success(f"""
@@ -980,7 +1105,9 @@ def show_summary():
             
             **Submission Summary:**
             - Company: {st.session_state.company_info.get('company', 'N/A')}
+            - Department: {st.session_state.company_info.get('department', 'N/A')}
             - Contact: {st.session_state.company_info.get('contact_person', 'N/A')}
+            - Email: {st.session_state.company_info.get('email', 'N/A')}
             - Total Budget: SAR {total_budget:,.0f}
             - Operational Services: SAR {operational_total:,.0f}
             - Support Package: SAR {support_total:,.0f}
