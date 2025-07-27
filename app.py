@@ -301,12 +301,11 @@ def calculate_total_budget():
 # Header
 def show_header():
     # Get selected company for dynamic header
-    selected_company_info = st.session_state.company_info.get('company_code', 'Alkhorayef Group')
-    company_full_name = st.session_state.company_info.get('company_full_name', '')
+    selected_company_info = st.session_state.company_info.get('company_code', '')
     
     header_subtitle = f"Strategic Technology Investment Planning & Cost Analysis"
-    if selected_company_info != 'Alkhorayef Group':
-        header_subtitle = f"{selected_company_info} - {company_full_name}<br>Strategic Technology Investment Planning & Cost Analysis"
+    if selected_company_info:
+        header_subtitle = f"{selected_company_info} - Strategic Technology Investment Planning & Cost Analysis"
     
     st.markdown(f"""
     <div class='main-header'>
@@ -317,19 +316,10 @@ def show_header():
     </div>
     """, unsafe_allow_html=True)
 
-# Company list for Alkhorayef Group with full names
-ALKHORAYEF_COMPANIES = {
-    "APC": "Arabian Precast Concrete",
-    "AIC": "Alkhorayef Industries Company", 
-    "AGC": "Alkhorayef General Contracting",
-    "APS": "Alkhorayef Power Systems",
-    "PS": "Power Systems",
-    "AWPT": "Alkhorayef Water & Power Technologies",
-    "AMIC": "Alkhorayef Medical Industries Company",
-    "ACC": "Alkhorayef Construction Company",
-    "SPC": "Saudi Precast Company",
-    "Tom Egypt": "Tom Egypt"
-}
+# Company list for Alkhorayef Group
+ALKHORAYEF_COMPANIES = [
+    "APC", "AIC", "AGC", "APS", "PS", "AWPT", "AMIC", "ACC", "SPC", "Tom Egypt"
+]
 
 # Sidebar for company info and budget summary
 def show_sidebar():
@@ -339,20 +329,18 @@ def show_sidebar():
         st.markdown("**🏭 Alkhorayef Group**")
         
         # Company selection with abbreviations only
-        company_options = list(ALKHORAYEF_COMPANIES.keys())
         selected_company = st.selectbox(
             "Select Your Company", 
-            options=company_options,
+            options=ALKHORAYEF_COMPANIES,
             index=0,
             key="company_selection",
             help="Choose which Alkhorayef Group company you represent"
         )
         
-        # Display selected company info
+        # Display selected company info with abbreviation only
         st.markdown(f"""
         <div style='background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;'>
-            <strong>Selected:</strong> {selected_company}<br>
-            <small style='color: #6b7280;'>{ALKHORAYEF_COMPANIES[selected_company]}</small>
+            <strong>Selected:</strong> {selected_company}
         </div>
         """, unsafe_allow_html=True)
         
@@ -361,9 +349,8 @@ def show_sidebar():
         email = st.text_input("Email", key="email", placeholder="your.email@alkhorayef.com")
         
         st.session_state.company_info = {
-            'company': f"Alkhorayef Group - {selected_company}",
+            'company': selected_company,
             'company_code': selected_company,
-            'company_full_name': ALKHORAYEF_COMPANIES[selected_company],
             'department': department,
             'contact_person': contact_person,
             'email': email,
@@ -703,29 +690,34 @@ def show_support_packages():
     
     st.markdown("### 📞 Available Support Packages")
     
-    # Display packages in a grid
-    cols = st.columns(3)
+    # Display packages in rows to accommodate all 5 packages
     packages_list = list(SUPPORT_PACKAGES.items())
     
-    for i, (package_name, details) in enumerate(packages_list):
-        col_index = i % 3
+    # First row: Basic, Bronze, Silver
+    cols1 = st.columns(3)
+    for i in range(min(3, len(packages_list))):
+        package_name, details = packages_list[i]
         
-        with cols[col_index]:
+        with cols1[i]:
             is_selected = st.session_state.support_package == package_name
             border_color = "#dc2626" if is_selected else "#22c55e"
             bg_color = "#fef2f2" if is_selected else "#f0fdf4"
             
             st.markdown(f"""
-            <div style='background: {bg_color}; border: 2px solid {border_color}; border-radius: 10px; padding: 1.5rem; margin: 1rem 0; height: 400px;'>
-                <h3 style='color: {border_color}; margin-bottom: 1rem;'>{package_name}</h3>
-                <h2 style='color: #1f2937; margin-bottom: 1rem;'>SAR {details['price']:,.0f}</h2>
-                <hr style='margin: 1rem 0;'>
-                <p style='margin: 0.5rem 0;'><strong>Support Requests:</strong><br>{details['support_requests']}</p>
-                <p style='margin: 0.5rem 0;'><strong>Improvement Hours:</strong><br>{details['improvement_hours']}</p>
-                <p style='margin: 0.5rem 0;'><strong>Training Requests:</strong><br>{details['training_requests']}</p>
-                <p style='margin: 0.5rem 0;'><strong>Report Requests:</strong><br>{details['report_requests']}</p>
-                <hr style='margin: 1rem 0;'>
-                <p style='font-size: 0.9em; color: #6b7280;'>{details['description']}</p>
+            <div style='background: {bg_color}; border: 2px solid {border_color}; border-radius: 10px; padding: 1.5rem; margin: 1rem 0; min-height: 450px; display: flex; flex-direction: column;'>
+                <h3 style='color: {border_color}; margin-bottom: 1rem; text-align: center;'>{package_name}</h3>
+                <h2 style='color: #1f2937; margin-bottom: 1rem; text-align: center;'>SAR {details['price']:,.0f}</h2>
+                <hr style='margin: 1rem 0; border-color: {border_color};'>
+                
+                <div style='flex-grow: 1;'>
+                    <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Support Requests:</strong><br>{details['support_requests']}</p>
+                    <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Improvement Hours:</strong><br>{details['improvement_hours']}</p>
+                    <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Training Requests:</strong><br>{details['training_requests']}</p>
+                    <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Report Requests:</strong><br>{details['report_requests']}</p>
+                </div>
+                
+                <hr style='margin: 1rem 0; border-color: {border_color};'>
+                <p style='font-size: 0.85em; color: #6b7280; text-align: center; margin-bottom: 0;'>{details['description']}</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -733,6 +725,43 @@ def show_support_packages():
                 st.session_state.support_package = package_name
                 st.success(f"✅ Selected {package_name} Support Package")
                 st.rerun()
+    
+    # Second row: Gold, Platinum (centered)
+    if len(packages_list) > 3:
+        st.markdown("<br>", unsafe_allow_html=True)
+        cols2 = st.columns([1, 2, 2, 1])  # Center the remaining packages
+        
+        for i in range(3, len(packages_list)):
+            package_name, details = packages_list[i]
+            col_index = i - 3 + 1  # Start from column 1 for centering
+            
+            with cols2[col_index]:
+                is_selected = st.session_state.support_package == package_name
+                border_color = "#dc2626" if is_selected else "#22c55e"
+                bg_color = "#fef2f2" if is_selected else "#f0fdf4"
+                
+                st.markdown(f"""
+                <div style='background: {bg_color}; border: 2px solid {border_color}; border-radius: 10px; padding: 1.5rem; margin: 1rem 0; min-height: 450px; display: flex; flex-direction: column;'>
+                    <h3 style='color: {border_color}; margin-bottom: 1rem; text-align: center;'>{package_name}</h3>
+                    <h2 style='color: #1f2937; margin-bottom: 1rem; text-align: center;'>SAR {details['price']:,.0f}</h2>
+                    <hr style='margin: 1rem 0; border-color: {border_color};'>
+                    
+                    <div style='flex-grow: 1;'>
+                        <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Support Requests:</strong><br>{details['support_requests']}</p>
+                        <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Improvement Hours:</strong><br>{details['improvement_hours']}</p>
+                        <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Training Requests:</strong><br>{details['training_requests']}</p>
+                        <p style='margin: 0.8rem 0; font-size: 0.9em;'><strong>Report Requests:</strong><br>{details['report_requests']}</p>
+                    </div>
+                    
+                    <hr style='margin: 1rem 0; border-color: {border_color};'>
+                    <p style='font-size: 0.85em; color: #6b7280; text-align: center; margin-bottom: 0;'>{details['description']}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if st.button(f"Select {package_name}", key=f"select_{package_name}"):
+                    st.session_state.support_package = package_name
+                    st.success(f"✅ Selected {package_name} Support Package")
+                    st.rerun()
     
     # Show selected package
     if st.session_state.support_package:
@@ -943,28 +972,97 @@ def show_summary():
             fig_pie.update_traces(textposition='inside', textinfo='percent+label')
             st.plotly_chart(fig_pie, use_container_width=True)
     
-    # Monthly cash flow projection
+    # Charts
+    col1, col2 = st.columns(2)
+    
+    # Pie chart for budget distribution
+    with col1:
+        if total_budget > 0:
+            fig_pie = px.pie(
+                values=[operational_total, support_total, implementation_total],
+                names=['Operational Services', 'Support Packages', 'Implementation Projects'],
+                title="2025 IT Budget Distribution",
+                color_discrete_map={
+                    'Operational Services': '#3b82f6',
+                    'Support Packages': '#10b981',
+                    'Implementation Projects': '#f59e0b'
+                }
+            )
+            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+            st.plotly_chart(fig_pie, use_container_width=True)
+    
+    # Monthly cash flow projection with correct billing schedule
     with col2:
         months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         
-        # Assume operational and support costs are spread evenly
-        monthly_operational = operational_total / 12
-        monthly_support = support_total / 12
-        # Assume implementation costs are front-loaded in first 6 months
-        monthly_implementation = [implementation_total / 6 if i < 6 else 0 for i in range(12)]
+        # Initialize monthly arrays
+        monthly_operational = [0] * 12
+        monthly_support = [0] * 12
+        monthly_implementation = [0] * 12
+        
+        # Support and Operational costs are billed at year-end (December)
+        monthly_operational[11] = operational_total  # December (index 11)
+        monthly_support[11] = support_total  # December (index 11)
+        
+        # Implementation projects billed based on timeline/completion
+        if st.session_state.implementation_projects:
+            # Distribute implementation costs based on project timelines
+            q1_projects = []
+            q2_projects = []
+            q3_projects = []
+            q4_projects = []
+            multi_quarter_projects = []
+            
+            for project in st.session_state.implementation_projects:
+                timeline = project.get('timeline', 'Q4 2025')
+                budget = project.get('budget', 0)
+                
+                if 'Q1' in timeline:
+                    q1_projects.append(budget)
+                elif 'Q2' in timeline:
+                    q2_projects.append(budget)
+                elif 'Q3' in timeline:
+                    q3_projects.append(budget)
+                elif 'Q4' in timeline:
+                    q4_projects.append(budget)
+                else:  # Multi-quarter or 2+ years
+                    multi_quarter_projects.append(budget)
+            
+            # Assign project costs to completion months
+            if q1_projects:
+                monthly_implementation[2] = sum(q1_projects)  # March (end of Q1)
+            if q2_projects:
+                monthly_implementation[5] = sum(q2_projects)  # June (end of Q2)
+            if q3_projects:
+                monthly_implementation[8] = sum(q3_projects)  # September (end of Q3)
+            if q4_projects:
+                monthly_implementation[11] = sum(q4_projects)  # December (end of Q4)
+            if multi_quarter_projects:
+                # Spread multi-quarter projects across the year
+                monthly_amount = sum(multi_quarter_projects) / 12
+                monthly_implementation = [x + monthly_amount for x in monthly_implementation]
         
         fig_bar = go.Figure()
-        fig_bar.add_trace(go.Bar(name='Operational', x=months, y=[monthly_operational]*12))
-        fig_bar.add_trace(go.Bar(name='Support', x=months, y=[monthly_support]*12))
-        fig_bar.add_trace(go.Bar(name='Implementation', x=months, y=monthly_implementation))
+        fig_bar.add_trace(go.Bar(name='Operational (Year-end)', x=months, y=monthly_operational, marker_color='#3b82f6'))
+        fig_bar.add_trace(go.Bar(name='Support (Year-end)', x=months, y=monthly_support, marker_color='#10b981'))
+        fig_bar.add_trace(go.Bar(name='Implementation (On Completion)', x=months, y=monthly_implementation, marker_color='#f59e0b'))
         
         fig_bar.update_layout(
-            title='Monthly Cash Flow Projection (SAR)',
+            title='Monthly Cash Flow Projection (SAR)<br><sub>Support & Operations billed year-end | Projects billed on completion</sub>',
             barmode='stack',
             xaxis_title='Month',
-            yaxis_title='Cost (SAR)'
+            yaxis_title='Cost (SAR)',
+            showlegend=True
         )
         st.plotly_chart(fig_bar, use_container_width=True)
+    
+    # Cash flow explanation
+    st.markdown("""
+    ### 💳 Billing Schedule Information
+    - **📅 Operational & Support**: Billed at year-end (December)
+    - **🚀 Implementation Projects**: Billed upon project completion based on timeline
+    - **📊 Chart Above**: Shows actual payment timing based on your project schedules
+    """)
     
     # Detailed breakdowns
     st.markdown("### 📋 Detailed Budget Breakdown")
