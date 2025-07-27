@@ -338,15 +338,14 @@ def show_sidebar():
         
         st.markdown("**🏭 Alkhorayef Group**")
         
-        # Company selection with full names
+        # Company selection with abbreviations only
         company_options = list(ALKHORAYEF_COMPANIES.keys())
         selected_company = st.selectbox(
             "Select Your Company", 
             options=company_options,
             index=0,
             key="company_selection",
-            help="Choose which Alkhorayef Group company you represent",
-            format_func=lambda x: f"{x} - {ALKHORAYEF_COMPANIES[x]}"
+            help="Choose which Alkhorayef Group company you represent"
         )
         
         # Display selected company info
@@ -426,7 +425,8 @@ def show_sidebar():
             st.write("Operational Services State:")
             for key, value in st.session_state.operational_services.items():
                 if value.get('selected', False):
-                    st.write(f"- {key}: {value}")
+                    impl_status = "New" if value.get('new_implementation', False) else "Existing"
+                    st.write(f"- {key}: Users={value.get('users', 0)}, Implementation={impl_status}")
             st.write(f"Custom Services: {len(st.session_state.custom_operational)}")
             st.write(f"Support Package: {st.session_state.support_package}")
             st.write(f"Projects: {len(st.session_state.implementation_projects)}")
