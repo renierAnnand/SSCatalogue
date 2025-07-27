@@ -13,6 +13,172 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Company list for Alkhorayef Group
+ALKHORAYEF_COMPANIES = [
+    "APC", "AIC", "AGC", "APS", "PS", "AWPT", "AMIC", "ACC", "SPC", "Tom Egypt"
+]
+
+# Predefined service data
+ORACLE_SERVICES = {
+    "Oracle ERP Cloud": {
+        "description": "Complete enterprise resource planning solution with financials, procurement, and project management",
+        "price_per_user": 180,
+        "setup_cost": 25000
+    },
+    "Oracle HCM Cloud": {
+        "description": "Human capital management including payroll, talent management, and workforce planning",
+        "price_per_user": 75,
+        "setup_cost": 15000
+    },
+    "Oracle Supply Chain Management": {
+        "description": "End-to-end supply chain planning, inventory management, and logistics optimization",
+        "price_per_user": 120,
+        "setup_cost": 20000
+    },
+    "Oracle Fusion Analytics": {
+        "description": "Pre-built analytics and reporting for Oracle applications with real-time insights",
+        "price_per_user": 45,
+        "setup_cost": 8000
+    }
+}
+
+MICROSOFT_SERVICES = {
+    "Microsoft 365 E3": {
+        "description": "Premium productivity suite with advanced security, compliance, and analytics capabilities",
+        "price_per_user": 82,
+        "setup_cost": 5000
+    },
+    "Microsoft Teams Phone": {
+        "description": "Cloud-based phone system integrated with Teams for calling and conferencing",
+        "price_per_user": 28,
+        "setup_cost": 3000
+    },
+    "Power BI Premium": {
+        "description": "Advanced business intelligence with AI-powered insights and enterprise-grade capabilities",
+        "price_per_user": 75,
+        "setup_cost": 4000
+    },
+    "Project for the Web": {
+        "description": "Cloud-based project management with resource scheduling and portfolio management",
+        "price_per_user": 120,
+        "setup_cost": 6000
+    },
+    "Microsoft Dynamics 365": {
+        "description": "Customer relationship management and enterprise applications suite",
+        "price_per_user": 210,
+        "setup_cost": 30000
+    }
+}
+
+SUPPORT_PACKAGES = {
+    "Basic": {
+        "price": 52000,
+        "support_requests": "Standard (5 per month)",
+        "improvement_hours": "10 hours",
+        "training_requests": "2 per quarter",
+        "report_requests": "1 per month",
+        "description": "Essential support for small teams with basic IT needs"
+    },
+    "Bronze": {
+        "price": 195975,
+        "support_requests": "Priority (15 per month)",
+        "improvement_hours": "25 hours",
+        "training_requests": "4 per quarter",
+        "report_requests": "3 per month",
+        "description": "Enhanced support for growing organizations"
+    },
+    "Silver": {
+        "price": 649498,
+        "support_requests": "Premium (35 per month)",
+        "improvement_hours": "50 hours",
+        "training_requests": "8 per quarter",
+        "report_requests": "6 per month",
+        "description": "Comprehensive support for medium enterprises"
+    },
+    "Gold": {
+        "price": 1578139,
+        "support_requests": "Premium Plus (75 per month)",
+        "improvement_hours": "100 hours",
+        "training_requests": "15 per quarter",
+        "report_requests": "12 per month",
+        "description": "Premium support for large organizations"
+    },
+    "Platinum": {
+        "price": 2500000,
+        "support_requests": "Unlimited",
+        "improvement_hours": "200 hours",
+        "training_requests": "Unlimited",
+        "report_requests": "Unlimited",
+        "description": "Enterprise-grade support with dedicated resources"
+    }
+}
+
+# RPA Package data from the provided table
+RPA_PACKAGES = {
+    "Bronze (1 Credit)": {
+        "discovery_analysis": 33110,
+        "build_implementation": 3080,
+        "project_management": 9350,
+        "infrastructure_license": 43230,
+        "year_1_total": 88770,  # Sum of all Year 1 components
+        "year_2_cost": 10098,
+        "year_3_cost": 10906,
+        "processes_covered": "Covers up to 2 processes",
+        "implementation_processes": "Covers 1 process"
+    },
+    "Silver (3 Credits)": {
+        "discovery_analysis": 94964,
+        "build_implementation": 8778,
+        "project_management": 57310,
+        "infrastructure_license": 124608,
+        "year_1_total": 285660,  # Sum of all Year 1 components
+        "year_2_cost": 30294,
+        "year_3_cost": 32718,
+        "processes_covered": "Covers up to 5 processes",
+        "implementation_processes": "Covers up to 3 processes"
+    },
+    "Gold (5 Credits)": {
+        "discovery_analysis": 148995,
+        "build_implementation": 13860,
+        "project_management": 92950,
+        "infrastructure_license": 199210,
+        "year_1_total": 455015,  # Sum of all Year 1 components
+        "year_2_cost": 50490,
+        "year_3_cost": 54529,
+        "processes_covered": "Covers up to 10 processes",
+        "implementation_processes": "Covers up to 5 processes"
+    },
+    "Platinum (10 Credits)": {
+        "discovery_analysis": 281435,
+        "build_implementation": 26180,
+        "project_management": 180766,
+        "infrastructure_license": 381480,
+        "year_1_total": 869861,  # Sum of all Year 1 components
+        "year_2_cost": 100980,
+        "year_3_cost": 109058,
+        "processes_covered": "Covers up to 20 processes",
+        "implementation_processes": "Covers up to 10 processes"
+    }
+}
+
+PROJECT_TYPES = [
+    "RPA (Robotic Process Automation)",
+    "AI & Machine Learning",
+    "IoT Implementation",
+    "Custom Application Development",
+    "Data Analytics & BI",
+    "Digital Transformation",
+    "Infrastructure Upgrade",
+    "Cybersecurity Enhancement",
+    "Cloud Migration",
+    "Integration Project"
+]
+
+DEPARTMENTS = [
+    "Finance", "Human Resources", "Operations", "Sales", "Marketing", 
+    "IT", "Customer Service", "Supply Chain", "Manufacturing", "Executive"
+]
+
 # Custom CSS for professional styling
 st.markdown("""
 <style>
