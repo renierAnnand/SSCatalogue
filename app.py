@@ -7,7 +7,7 @@ import uuid
 
 # Page configuration
 st.set_page_config(
-    page_title="Alkhorayef Group - 2025 IT Budget Planner",
+    page_title="Alkhorayef Group - 2025 Shared Service Catalogue",
     page_icon="💼",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -25,6 +25,19 @@ st.markdown("""
         margin-bottom: 2rem;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
+
+PROJECT_TYPES = [
+    "RPA (Robotic Process Automation)",
+    "AI & Machine Learning",
+    "IoT Implementation",
+    "Custom Application Development",
+    "Data Analytics & BI",
+    "Digital Transformation",
+    "Infrastructure Upgrade",
+    "Cybersecurity Enhancement",
+    "Cloud Migration",
+    "Integration Project"
+]
     
     .category-section {
         background: #f8fafc;
@@ -230,18 +243,53 @@ SUPPORT_PACKAGES = {
     }
 }
 
-PROJECT_TYPES = [
-    "RPA (Robotic Process Automation)",
-    "AI & Machine Learning",
-    "IoT Implementation",
-    "Custom Application Development",
-    "Data Analytics & BI",
-    "Digital Transformation",
-    "Infrastructure Upgrade",
-    "Cybersecurity Enhancement",
-    "Cloud Migration",
-    "Integration Project"
-]
+# RPA Package data from the provided table
+RPA_PACKAGES = {
+    "Bronze (1 Credit)": {
+        "discovery_analysis": 33110,
+        "build_implementation": 3080,
+        "project_management": 9350,
+        "infrastructure_license": 43230,
+        "year_1_total": 88770,  # Sum of all Year 1 components
+        "year_2_cost": 10098,
+        "year_3_cost": 10906,
+        "processes_covered": "Covers up to 2 processes",
+        "implementation_processes": "Covers 1 process"
+    },
+    "Silver (3 Credits)": {
+        "discovery_analysis": 94964,
+        "build_implementation": 8778,
+        "project_management": 57310,
+        "infrastructure_license": 124608,
+        "year_1_total": 285660,  # Sum of all Year 1 components
+        "year_2_cost": 30294,
+        "year_3_cost": 32718,
+        "processes_covered": "Covers up to 5 processes",
+        "implementation_processes": "Covers up to 3 processes"
+    },
+    "Gold (5 Credits)": {
+        "discovery_analysis": 148995,
+        "build_implementation": 13860,
+        "project_management": 92950,
+        "infrastructure_license": 199210,
+        "year_1_total": 455015,  # Sum of all Year 1 components
+        "year_2_cost": 50490,
+        "year_3_cost": 54529,
+        "processes_covered": "Covers up to 10 processes",
+        "implementation_processes": "Covers up to 5 processes"
+    },
+    "Platinum (10 Credits)": {
+        "discovery_analysis": 281435,
+        "build_implementation": 26180,
+        "project_management": 180766,
+        "infrastructure_license": 381480,
+        "year_1_total": 869861,  # Sum of all Year 1 components
+        "year_2_cost": 100980,
+        "year_3_cost": 109058,
+        "processes_covered": "Covers up to 20 processes",
+        "implementation_processes": "Covers up to 10 processes"
+    }
+}
 
 DEPARTMENTS = [
     "Finance", "Human Resources", "Operations", "Sales", "Marketing", 
@@ -303,14 +351,14 @@ def show_header():
     # Get selected company for dynamic header
     selected_company_info = st.session_state.company_info.get('company_code', '')
     
-    header_subtitle = f"Strategic Technology Investment Planning & Cost Analysis"
+    header_subtitle = f"Shared Service Catalogue and Budgeting System"
     if selected_company_info:
-        header_subtitle = f"{selected_company_info} - Strategic Technology Investment Planning & Cost Analysis"
+        header_subtitle = f"{selected_company_info} - Shared Service Catalogue and Budgeting System"
     
     st.markdown(f"""
     <div class='main-header'>
         <h1>💼 Alkhorayef Group</h1>
-        <h2>2025 IT Budget Planning Tool</h2>
+        <h2>2025 Shared Service Catalogue</h2>
         <p>{header_subtitle}</p>
         <p><strong>Budget Year:</strong> 2025 | <strong>Version:</strong> 2.0</p>
     </div>
@@ -360,7 +408,7 @@ def show_sidebar():
         st.markdown("---")
         
         # Budget summary - force recalculation each time
-        st.markdown("### 💰 Budget Summary")
+        st.markdown("### 💰 Service Selection Summary")
         
         # Force recalculation of all totals
         operational_total = calculate_operational_total()
@@ -391,7 +439,7 @@ def show_sidebar():
         
         st.markdown(f"""
         <div class='total-budget'>
-            💰 Total 2025 Budget<br>
+            💰 Total 2025 Shared Services Budget<br>
             <span style='font-size: 1.5em'>SAR {total_budget:,.0f}</span>
         </div>
         """, unsafe_allow_html=True)
@@ -401,7 +449,7 @@ def show_sidebar():
         support_selected = 1 if st.session_state.support_package else 0
         implementation_count = len(st.session_state.implementation_projects)
         
-        st.markdown("### 📊 Selection Progress")
+        st.markdown("### 📊 Service Selection Progress")
         st.metric("Operational Services", operational_count)
         st.metric("Support Package", "Selected" if support_selected else "Not Selected")
         st.metric("Implementation Projects", implementation_count)
@@ -905,8 +953,8 @@ def show_implementation_projects():
 def show_summary():
     st.markdown("""
     <div class='category-section'>
-        <h2>📊 Budget Summary & Analysis</h2>
-        <p>Comprehensive overview of your 2025 IT budget and investment strategy.</p>
+        <h2>📊 Service Catalogue Summary & Budget Analysis</h2>
+        <p>Comprehensive overview of your 2025 shared services selection and investment strategy.</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -917,11 +965,11 @@ def show_summary():
     total_budget = operational_total + support_total + implementation_total
     
     if total_budget == 0:
-        st.info("👋 No services or projects selected yet. Please visit the other sections to build your budget.")
+        st.info("👋 No services selected yet. Please visit the other sections to build your shared services selection.")
         return
     
     # Budget overview metrics
-    st.markdown("### 💰 Budget Overview")
+    st.markdown("### 💰 Service Selection Overview")
     
     col1, col2, col3, col4 = st.columns(4)
     
@@ -940,7 +988,7 @@ def show_summary():
     with col4:
         st.markdown(f"""
         <div class='total-budget'>
-            💰 Total 2025 Budget<br>
+            💰 Total 2025 Shared Services Budget<br>
             <span style='font-size: 1.8em'>SAR {total_budget:,.0f}</span>
         </div>
         """, unsafe_allow_html=True)
@@ -954,7 +1002,7 @@ def show_summary():
             fig_pie = px.pie(
                 values=[operational_total, support_total, implementation_total],
                 names=['Operational Services', 'Support Packages', 'Implementation Projects'],
-                title="2025 IT Budget Distribution",
+                title="2025 Shared Services Budget Distribution",
                 color_discrete_map={
                     'Operational Services': '#3b82f6',
                     'Support Packages': '#10b981',
@@ -1009,7 +1057,10 @@ def show_summary():
                 timeline = project.get('timeline', 'Q4 2025')
                 budget = project.get('budget', 0)
                 
-                if 'Q1' in timeline:
+                # Special handling for RPA packages (multi-quarter by default)
+                if project.get('rpa_package', False):
+                    multi_quarter_projects.append(budget)
+                elif 'Q1' in timeline:
                     q1_projects.append(budget)
                 elif 'Q2' in timeline:
                     q2_projects.append(budget)
@@ -1040,7 +1091,7 @@ def show_summary():
         fig_bar.add_trace(go.Bar(name='Implementation (On Completion)', x=months, y=monthly_implementation, marker_color='#f59e0b'))
         
         fig_bar.update_layout(
-            title='Monthly Cash Flow Projection (SAR)<br><sub>Support & Operations billed year-end | Projects billed on completion</sub>',
+            title='Monthly Shared Services Cash Flow Projection (SAR)<br><sub>Support & Operations billed year-end | Projects billed on completion</sub>',
             barmode='stack',
             xaxis_title='Month',
             yaxis_title='Cost (SAR)',
@@ -1153,19 +1204,36 @@ def show_summary():
         
         implementation_data = []
         for project in st.session_state.implementation_projects:
-            implementation_data.append({
-                'Project Name': project['name'],
-                'Type': project['type'],
-                'Priority': project['priority'],
-                'Timeline': project['timeline'],
-                'Departments': ', '.join(project['departments']) if project['departments'] else 'N/A',
-                'Budget': f"SAR {project['budget']:,.0f}"
-            })
+            if project.get('rpa_package', False):
+                # Special handling for RPA packages
+                rpa_details = project.get('rpa_details', {})
+                three_year_total = rpa_details.get('year_1_total', 0) + rpa_details.get('year_2_cost', 0) + rpa_details.get('year_3_cost', 0)
+                
+                implementation_data.append({
+                    'Project Name': project['name'],
+                    'Type': project['type'],
+                    'Priority': project['priority'],
+                    'Timeline': project['timeline'],
+                    'Process Coverage': rpa_details.get('processes_covered', 'N/A'),
+                    'Year 1 Budget': f"SAR {project['budget']:,.0f}",
+                    '3-Year Total': f"SAR {three_year_total:,.0f}"
+                })
+            else:
+                # Regular projects
+                implementation_data.append({
+                    'Project Name': project['name'],
+                    'Type': project['type'],
+                    'Priority': project['priority'],
+                    'Timeline': project['timeline'],
+                    'Departments': ', '.join(project['departments']) if project['departments'] else 'N/A',
+                    'Budget': f"SAR {project['budget']:,.0f}",
+                    '3-Year Total': f"SAR {project['budget']:,.0f}"
+                })
         
         st.dataframe(pd.DataFrame(implementation_data), use_container_width=True)
     
     # Export and submission options
-    st.markdown("### 📤 Export & Submission")
+    st.markdown("### 📤 Export & Submit Selection")
     
     col1, col2, col3, col4 = st.columns(4)
     
@@ -1189,7 +1257,7 @@ def show_summary():
             
             st.balloons()
             st.success(f"""
-            ✅ **2025 IT Budget Successfully Submitted!**
+            ✅ **2025 Shared Service Selection Successfully Submitted!**
             
             **Reference ID:** {reference_id}
             
@@ -1204,12 +1272,12 @@ def show_summary():
             - Implementation Projects: SAR {implementation_total:,.0f}
             
             **Next Steps:**
-            1. Finance team review (3-5 business days)
-            2. Executive approval process
-            3. Q4 2024: Implementation planning begins
-            4. Q1 2025: Budget execution starts
+            1. Shared Services team review (3-5 business days)
+            2. Finance approval process
+            3. Q4 2024: Service implementation planning begins
+            4. Q1 2025: Service delivery starts
             
-            A detailed budget report has been sent to your email and the finance team.
+            A detailed service catalogue report has been sent to your email and the shared services team.
             """)
 
 # Main application
