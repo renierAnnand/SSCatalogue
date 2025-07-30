@@ -1042,7 +1042,7 @@ def show_operational_services():
                 st.session_state.custom_operational.pop(i)
                 st.rerun()
 
-# Support Packages Section with Comprehensive Comparison Table
+# Support Packages Section with Native Streamlit Components
 def show_support_packages():
     st.markdown("""
     <div class='category-section'>
@@ -1053,10 +1053,56 @@ def show_support_packages():
     
     st.markdown("### 📞 Support Packages Comparison")
     
-    # Create comprehensive comparison table
+    # Create comparison using Streamlit's native dataframe
     packages_list = list(SUPPORT_PACKAGES.items())
     
-    # Define package colors
+    # Create comparison data
+    comparison_data = {
+        'Features': [
+            '🔧 Systems Operation',
+            '🛠️ Support Requests (Standard)',
+            '🔥 Support Requests (Priority)', 
+            '⭐ Support Requests (Premium)',
+            '📊 Total Support Requests',
+            '🔧 System Improvement Hours',
+            '🎓 Training Requests',
+            '📋 New Reports Requests',
+            '💰 Total Package Cost (SAR)',
+        ]
+    }
+    
+    # Add data for each package
+    for package_name, details in packages_list:
+        comparison_data[package_name] = [
+            details['systems_operation'],
+            details['support_requests_standard'],
+            details['support_requests_priority'],
+            details['support_requests_premium'],
+            details['total_support_requests'],
+            details['improvement_hours'],
+            details['training_requests'],
+            details['report_requests'],
+            f"SAR {details['price']:,.0f}"
+        ]
+    
+    # Create and display the comparison dataframe
+    df = pd.DataFrame(comparison_data)
+    
+    # Style the dataframe to highlight selected package
+    def highlight_selected(col):
+        if st.session_state.support_package and col.name == st.session_state.support_package:
+            return ['background-color: #fef2f2; border: 2px solid #dc2626'] * len(col)
+        return [''] * len(col)
+    
+    styled_df = df.style.apply(highlight_selected, axis=0)
+    st.dataframe(styled_df, use_container_width=True)
+    
+    # Package selection section
+    st.markdown("### 🎯 Select Your Support Package")
+    
+    # Create selection cards using columns
+    cols = st.columns(len(packages_list))
+    
     package_colors = {
         "Basic": "#6b7280",
         "Bronze": "#92400e", 
@@ -1065,117 +1111,38 @@ def show_support_packages():
         "Platinum": "#1e293b"
     }
     
-    # Create the comparison table HTML
-    table_html = """
-    <table style='width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: 14px;'>
-        <thead>
-            <tr style='background: #f8fafc;'>
-                <th style='padding: 1rem; text-align: left; border: 1px solid #e5e7eb; font-weight: 600;'>Features</th>
-    """
-    
-    # Add package headers with colors
-    for package_name, _ in packages_list:
-        color = package_colors.get(package_name, "#6b7280")
-        table_html += f"""
-                <th style='padding: 1rem; text-align: center; border: 1px solid #e5e7eb; background: {color}; color: white; font-weight: 600;'>
-                    {package_name.upper()}
-                </th>
-        """
-    
-    table_html += """
-            </tr>
-        </thead>
-        <tbody>
-    """
-    
-    # Add rows for each feature
-    features = [
-        ("Systems Operation", "systems_operation"),
-        ("Support Requests (Standard)", "support_requests_standard"),
-        ("Support Requests (Priority)", "support_requests_priority"), 
-        ("Support Requests (Premium)", "support_requests_premium"),
-        ("Total Support Requests", "total_support_requests"),
-        ("System Improvement Hours", "improvement_hours"),
-        ("Training Requests", "training_requests"),
-        ("New Reports Requests", "report_requests"),
-        ("Total Package Cost (SAR)", "price"),
-    ]
-    
-    for i, (feature_name, feature_key) in enumerate(features):
-        bg_color = "#f9fafb" if i % 2 == 0 else "#ffffff"
-        table_html += f"""
-            <tr style='background: {bg_color};'>
-                <td style='padding: 0.75rem; border: 1px solid #e5e7eb; font-weight: 500;'>{feature_name}</td>
-        """
-        
-        for package_name, details in packages_list:
-            value = details.get(feature_key, "N/A")
-            
-            # Format the value based on feature type
-            if feature_key == "price":
-                formatted_value = f"SAR {value:,.0f}"
-                style = "font-weight: 700; color: #dc2626;"
-            elif feature_key == "systems_operation":
-                formatted_value = value
-                style = "color: #16a34a; font-weight: 600;"
-            elif isinstance(value, int):
-                if value == 0:
-                    formatted_value = "0"
-                    style = "color: #6b7280;"
-                else:
-                    formatted_value = str(value)
-                    style = "font-weight: 600; color: #1f2937;"
-            else:
-                formatted_value = str(value)
-                style = ""
-            
-            # Highlight selected package
-            is_selected = st.session_state.support_package == package_name
-            cell_bg = "#fef2f2" if is_selected else "inherit"
-            border_style = "border: 2px solid #dc2626;" if is_selected else "border: 1px solid #e5e7eb;"
-            
-            table_html += f"""
-                <td style='padding: 0.75rem; {border_style} text-align: center; {style} background: {cell_bg};'>
-                    {formatted_value}
-                </td>
-            """
-        
-        table_html += "</tr>"
-    
-    table_html += """
-        </tbody>
-    </table>
-    """
-    
-    st.markdown(table_html, unsafe_allow_html=True)
-    
-    # Package selection buttons
-    st.markdown("### 🎯 Select Your Support Package")
-    cols = st.columns(len(packages_list))
-    
     for i, (package_name, details) in enumerate(packages_list):
         with cols[i]:
             is_selected = st.session_state.support_package == package_name
+            color = package_colors.get(package_name, "#6b7280")
             
             # Package summary card
-            color = package_colors.get(package_name, "#6b7280")
             bg_color = "#fef2f2" if is_selected else "#f8fafc"
             border_color = "#dc2626" if is_selected else color
             
             st.markdown(f"""
             <div style='
                 background: {bg_color}; 
-                border: 2px solid {border_color}; 
+                border: 3px solid {border_color}; 
                 border-radius: 12px; 
                 padding: 1rem; 
                 text-align: center;
                 margin-bottom: 1rem;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             '>
                 <h4 style='color: {color}; margin: 0 0 0.5rem 0;'>{package_name}</h4>
-                <h3 style='color: #dc2626; margin: 0 0 0.5rem 0;'>SAR {details["price"]:,.0f}</h3>
-                <p style='font-size: 0.9em; color: #6b7280; margin: 0;'>{details["description"]}</p>
+                <h3 style='color: #dc2626; margin: 0 0 0.5rem 0; font-size: 1.5rem;'>SAR {details["price"]:,.0f}</h3>
+                <p style='font-size: 0.85em; color: #6b7280; margin: 0; line-height: 1.3;'>{details["description"]}</p>
             </div>
             """, unsafe_allow_html=True)
+            
+            # Key highlights
+            st.markdown(f"""
+            **📊 Total Requests:** {details['total_support_requests']}  
+            **🔧 Improvement Hours:** {details['improvement_hours']}  
+            **🎓 Training:** {details['training_requests']}  
+            **📋 Reports:** {details['report_requests']}
+            """)
             
             # Selection button
             button_text = "✅ Selected" if is_selected else f"Select {package_name}"
@@ -1192,40 +1159,22 @@ def show_support_packages():
     
     # Additional services section
     if st.session_state.support_package:
-        selected_package = SUPPORT_PACKAGES[st.session_state.support_package]
-        
+        st.markdown("---")
         st.markdown("### ➕ Additional Support Services")
         st.markdown("Enhance your selected package with additional services as needed.")
         
-        # Show additional service costs table
-        st.markdown("""
-        <table style='width: 100%; border-collapse: collapse; margin: 1rem 0;'>
-            <thead>
-                <tr style='background: #f8fafc;'>
-                    <th style='padding: 0.75rem; text-align: left; border: 1px solid #e5e7eb;'>Additional Service</th>
-                    <th style='padding: 0.75rem; text-align: center; border: 1px solid #e5e7eb;'>Cost (SAR)</th>
-                    <th style='padding: 0.75rem; text-align: center; border: 1px solid #e5e7eb;'>Available for All Packages</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style='padding: 0.75rem; border: 1px solid #e5e7eb;'>Additional Support Request</td>
-                    <td style='padding: 0.75rem; border: 1px solid #e5e7eb; text-align: center; font-weight: 600;'>1,800</td>
-                    <td style='padding: 0.75rem; border: 1px solid #e5e7eb; text-align: center; color: #16a34a;'>✓ Yes</td>
-                </tr>
-                <tr style='background: #f9fafb;'>
-                    <td style='padding: 0.75rem; border: 1px solid #e5e7eb;'>Additional Training Request</td>
-                    <td style='padding: 0.75rem; border: 1px solid #e5e7eb; text-align: center; font-weight: 600;'>5,399</td>
-                    <td style='padding: 0.75rem; border: 1px solid #e5e7eb; text-align: center; color: #16a34a;'>✓ Yes</td>
-                </tr>
-                <tr>
-                    <td style='padding: 0.75rem; border: 1px solid #e5e7eb;'>Additional New Reports Request</td>
-                    <td style='padding: 0.75rem; border: 1px solid #e5e7eb; text-align: center; font-weight: 600;'>5,399</td>
-                    <td style='padding: 0.75rem; border: 1px solid #e5e7eb; text-align: center; color: #16a34a;'>✓ Yes</td>
-                </tr>
-            </tbody>
-        </table>
-        """, unsafe_allow_html=True)
+        # Additional services pricing table
+        additional_services_data = {
+            'Additional Service': [
+                '🛠️ Extra Support Request',
+                '🎓 Extra Training Request', 
+                '📋 Extra Report Request'
+            ],
+            'Cost (SAR)': [1800, 5399, 5399],
+            'Available': ['✅ All Packages', '✅ All Packages', '✅ All Packages']
+        }
+        
+        st.dataframe(pd.DataFrame(additional_services_data), use_container_width=True)
         
         # Additional services input
         col1, col2, col3 = st.columns(3)
@@ -1250,16 +1199,15 @@ def show_support_packages():
         
         with col3:
             extra_reports = st.number_input(
-                "📊 Extra Report Requests", 
+                "📋 Extra Report Requests", 
                 min_value=0, 
                 value=st.session_state.support_extras.get('reports', 0),
                 key="extra_reports_requests_input"
             )
-            if 'reports' not in st.session_state.support_extras:
-                st.session_state.support_extras['reports'] = 0
             st.session_state.support_extras['reports'] = extra_reports
         
-        # Calculate total cost
+        # Calculate and display total cost
+        selected_package = SUPPORT_PACKAGES[st.session_state.support_package]
         base_cost = selected_package['price']
         extra_support_cost = extra_support * 1800
         extra_training_cost = extra_training * 5399
@@ -1267,42 +1215,42 @@ def show_support_packages():
         total_extra_cost = extra_support_cost + extra_training_cost + extra_reports_cost
         total_cost = base_cost + total_extra_cost
         
-        if total_extra_cost > 0:
-            st.markdown(f"""
-            <div style='background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 1.5rem; margin: 1rem 0;'>
-                <h4 style='margin: 0 0 1rem 0; color: #92400e;'>💰 Cost Summary</h4>
-                <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;'>
-                    <div>
-                        <strong>Base Package ({st.session_state.support_package}):</strong><br>
-                        SAR {base_cost:,.0f}
-                    </div>
-                    <div>
-                        <strong>Additional Services:</strong><br>
-                        SAR {total_extra_cost:,.0f}
-                    </div>
-                </div>
-                <hr style='margin: 1rem 0; border: 1px solid #f59e0b;'>
-                <div style='text-align: center;'>
-                    <h3 style='margin: 0; color: #dc2626;'>Total Support Cost: SAR {total_cost:,.0f}</h3>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Breakdown
+        # Cost summary
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.metric("Base Package Cost", f"SAR {base_cost:,.0f}")
             if extra_support > 0:
-                st.markdown(f"- **Extra Support:** {extra_support} × SAR 1,800 = SAR {extra_support_cost:,.0f}")
+                st.metric("Extra Support", f"SAR {extra_support_cost:,.0f}", f"{extra_support} × SAR 1,800")
+        
+        with col2:
+            st.metric("Additional Services", f"SAR {total_extra_cost:,.0f}")
             if extra_training > 0:
-                st.markdown(f"- **Extra Training:** {extra_training} × SAR 5,399 = SAR {extra_training_cost:,.0f}")
+                st.metric("Extra Training", f"SAR {extra_training_cost:,.0f}", f"{extra_training} × SAR 5,399")
             if extra_reports > 0:
-                st.markdown(f"- **Extra Reports:** {extra_reports} × SAR 5,399 = SAR {extra_reports_cost:,.0f}")
-        else:
-            st.markdown(f"""
-            <div style='background: #dcfce7; border: 2px solid #16a34a; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; text-align: center;'>
-                <h3 style='margin: 0; color: #16a34a;'>✅ Selected: {st.session_state.support_package} - SAR {base_cost:,.0f}</h3>
-            </div>
-            """, unsafe_allow_html=True)
+                st.metric("Extra Reports", f"SAR {extra_reports_cost:,.0f}", f"{extra_reports} × SAR 5,399")
+        
+        # Total cost display
+        st.markdown(f"""
+        <div style='
+            background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%); 
+            border: 3px solid #f59e0b; 
+            border-radius: 16px; 
+            padding: 2rem; 
+            text-align: center;
+            margin: 2rem 0;
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+        '>
+            <h2 style='margin: 0; color: #92400e;'>💰 Total Support Cost</h2>
+            <h1 style='margin: 0.5rem 0 0 0; color: #dc2626; font-size: 2.5rem;'>SAR {total_cost:,.0f}</h1>
+            <p style='margin: 0; color: #92400e; font-weight: 600;'>
+                {st.session_state.support_package} Package + Additional Services
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
     else:
-        st.info("👆 Please select a support package from the table above to continue.")
+        st.info("👆 Please select a support package from the comparison table above to continue.")
 
 # Implementation Projects Section with Enhanced Categories
 def show_implementation_projects():
