@@ -4,8 +4,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import uuid
-import xlsxwriter
-import io
 
 # Page configuration
 st.set_page_config(
@@ -597,228 +595,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Initialize session state
-def # Initialize session state
 def initialize_session_state():
-    if 'operational_services' not in st.session_state:
-        st.session_state.operational_services = {}
-    if 'custom_operational' not in st.session_state:
-        st.session_state.custom_operational = []
-    if 'support_package' not in st.session_state:
-        st.session_state.support_package = None
-    if 'support_extras' not in st.session_state:
-        st.session_state.support_extras = {'support': 0, 'training': 0, 'reports': 0}
-    if 'implementation_projects' not in st.session_state:
-        st.session_state.implementation_projects = []
-    if 'company_info' not in st.session_state:
-        st.session_state.company_info = {}
-
-# Initialize session state
-initialize_session_state()
-def create_excel_template():
-    """Creates a comprehensive Excel template for Alkhorayef Group Shared Service Catalogue"""
-    output = io.BytesIO()
-    workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-    
-    # Define formats
-    header_format = workbook.add_format({
-        'bold': True, 'font_size': 12, 'bg_color': '#3b82f6', 'font_color': 'white',
-        'border': 1, 'align': 'center', 'valign': 'vcenter'
-    })
-    subheader_format = workbook.add_format({
-        'bold': True, 'font_size': 11, 'bg_color': '#e2e8f0',
-        'border': 1, 'align': 'center', 'valign': 'vcenter'
-    })
-    instruction_format = workbook.add_format({
-        'font_size': 10, 'italic': True, 'bg_color': '#fef3c7',
-        'border': 1, 'text_wrap': True
-    })
-    data_format = workbook.add_format({
-        'border': 1, 'align': 'left', 'valign': 'vcenter'
-    })
-    number_format = workbook.add_format({
-        'border': 1, 'align': 'center', 'valign': 'vcenter', 'num_format': '#,##0'
-    })
-    
-    # Sheet 1: Instructions and Company Info
-    instructions_sheet = workbook.add_worksheet('1. Instructions & Company Info')
-    instructions_sheet.set_column('A:A', 25)
-    instructions_sheet.set_column('B:B', 40)
-    instructions_sheet.set_column('C:C', 30)
-    
-    instructions_sheet.merge_range('A1:C1', 'Alkhorayef Group - 2025 Shared Service Catalogue Template', header_format)
-    instructions_sheet.write('A3', 'Instructions:', subheader_format)
-    instructions_sheet.write('A4', '1. Fill in all required fields', instruction_format)
-    instructions_sheet.write('A5', '2. Use dropdown lists where provided', instruction_format)
-    instructions_sheet.write('A6', '3. Save and upload to the Streamlit app', instruction_format)
-    instructions_sheet.write('A7', '4. Required fields are marked with *', instruction_format)
-    
-    # Company Information
-    instructions_sheet.write('A10', 'Company Information *', subheader_format)
-    instructions_sheet.write('A11', 'Company Code *', data_format)
-    instructions_sheet.write('A12', 'Department *', data_format)
-    instructions_sheet.write('A13', 'Contact Person *', data_format)
-    instructions_sheet.write('A14', 'Email *', data_format)
-    instructions_sheet.write('A15', 'Date', data_format)
-    
-    instructions_sheet.data_validation('B11', {
-        'validate': 'list',
-        'source': ['APC', 'AIC', 'AGC', 'APS', 'PS', 'AWPT', 'AMIC', 'ACC', 'SPC', 'Tom Egypt']
-    })
-    instructions_sheet.write('B11', '', data_format)
-    instructions_sheet.write('B12', '', data_format)
-    instructions_sheet.write('B13', '', data_format)
-    instructions_sheet.write('B14', '', data_format)
-    instructions_sheet.write('B15', datetime.now().strftime('%Y-%m-%d'), data_format)
-    
-    # Sheet 2: Operational Services
-    operational_sheet = workbook.add_worksheet('2. Operational Services')
-    operational_sheet.set_column('A:F', 20)
-    
-    operational_sheet.merge_range('A1:F1', 'Operational Services Selection', header_format)
-    operational_sheet.write('A2', 'Service Name', subheader_format)
-    operational_sheet.write('B2', 'Description', subheader_format)
-    operational_sheet.write('C2', 'Include? (Y/N)', subheader_format)
-    operational_sheet.write('D2', 'Number of Users', subheader_format)
-    operational_sheet.write('E2', 'New Implementation?', subheader_format)
-    operational_sheet.write('F2', 'Monthly Cost/User', subheader_format)
-    
-    # Add services data
-    services_data = [
-        ('ORACLE SERVICES', '', '', '', '', ''),
-        ('Oracle ERP Cloud', 'Complete enterprise resource planning solution', '', '', '', 180),
-        ('Oracle HCM Cloud', 'Human capital management including payroll', '', '', '', 75),
-        ('Oracle Supply Chain Management', 'End-to-end supply chain planning', '', '', '', 120),
-        ('Oracle Fusion Analytics', 'Pre-built analytics and reporting', '', '', '', 45),
-        ('', '', '', '', '', ''),
-        ('MICROSOFT SERVICES', '', '', '', '', ''),
-        ('Microsoft 365 E3', 'Premium productivity suite', '', '', '', 82),
-        ('Microsoft Teams Phone', 'Cloud-based phone system', '', '', '', 28),
-        ('Power BI Premium', 'Advanced business intelligence', '', '', '', 75),
-        ('Project for the Web', 'Cloud-based project management', '', '', '', 120),
-        ('Microsoft Dynamics 365', 'Customer relationship management', '', '', '', 210)
-    ]
-    
-    for row, (name, desc, inc, users, new_impl, cost) in enumerate(services_data, start=3):
-        operational_sheet.write(f'A{row}', name, subheader_format if 'SERVICES' in name else data_format)
-        operational_sheet.write(f'B{row}', desc, data_format)
-        if name and 'SERVICES' not in name:
-            operational_sheet.data_validation(f'C{row}', {'validate': 'list', 'source': ['Y', 'N']})
-            operational_sheet.data_validation(f'E{row}', {'validate': 'list', 'source': ['Y', 'N']})
-        operational_sheet.write(f'C{row}', inc, data_format)
-        operational_sheet.write(f'D{row}', users, number_format if isinstance(users, int) else data_format)
-        operational_sheet.write(f'E{row}', new_impl, data_format)
-        operational_sheet.write(f'F{row}', cost, number_format if isinstance(cost, int) else data_format)
-    
-    # Sheet 3: Custom Services
-    custom_sheet = workbook.add_worksheet('3. Custom Services')
-    custom_sheet.set_column('A:F', 20)
-    
-    custom_sheet.merge_range('A1:F1', 'Custom Operational Services', header_format)
-    headers = ['Service Name', 'Description', 'Price/User/Month', 'Setup Cost', 'Number of Users', 'New Implementation?']
-    for col, header in enumerate(headers):
-        custom_sheet.write(1, col, header, subheader_format)
-    
-    for row in range(2, 12):
-        for col in range(6):
-            if col == 5:  # New Implementation column
-                custom_sheet.data_validation(row, col, {'validate': 'list', 'source': ['Y', 'N']})
-            custom_sheet.write(row, col, '', data_format)
-    
-    # Sheet 4: Support Package
-    support_sheet = workbook.add_worksheet('4. Support Package')
-    support_sheet.set_column('A:C', 25)
-    
-    support_sheet.merge_range('A1:C1', 'Support Package Selection', header_format)
-    support_sheet.write('A3', 'Selected Package *', subheader_format)
-    support_sheet.data_validation('B3', {
-        'validate': 'list',
-        'source': ['Basic', 'Bronze', 'Silver', 'Gold', 'Platinum']
-    })
-    support_sheet.write('B3', '', data_format)
-    
-    support_sheet.write('A5', 'Additional Services', subheader_format)
-    additional_services = [
-        ('Extra Support Requests', 'SAR 1,800 each'),
-        ('Extra Training Requests', 'SAR 5,399 each'),
-        ('Extra Report Requests', 'SAR 5,399 each')
-    ]
-    
-    for i, (service, cost) in enumerate(additional_services):
-        row = 6 + i
-        support_sheet.write(f'A{row}', service, data_format)
-        support_sheet.write(f'B{row}', '', number_format)
-        support_sheet.write(f'C{row}', cost, instruction_format)
-    
-    # Sheet 5: Implementation Projects
-    projects_sheet = workbook.add_worksheet('5. Implementation Projects')
-    projects_sheet.set_column('A:H', 20)
-    
-    projects_sheet.merge_range('A1:H1', 'Implementation Projects', header_format)
-    project_headers = ['Project Name', 'Category', 'Project Type', 'Budget (SAR)', 'Timeline', 'Priority', 'Departments', 'Description']
-    for col, header in enumerate(project_headers):
-        projects_sheet.write(1, col, header, subheader_format)
-    
-    categories = ['Digital Transformation & Automation', 'AI & Advanced Analytics', 'Data & Business Intelligence', 'Enterprise Applications']
-    timelines = ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Multi-quarter']
-    priorities = ['Low', 'Medium', 'High', 'Critical']
-    
-    for row in range(2, 17):
-        projects_sheet.write(row, 0, '', data_format)  # Project Name
-        projects_sheet.data_validation(row, 1, {'validate': 'list', 'source': categories})
-        projects_sheet.write(row, 1, '', data_format)  # Category
-        projects_sheet.write(row, 2, '', data_format)  # Project Type
-        projects_sheet.write(row, 3, '', number_format)  # Budget
-        projects_sheet.data_validation(row, 4, {'validate': 'list', 'source': timelines})
-        projects_sheet.write(row, 4, '', data_format)  # Timeline
-        projects_sheet.data_validation(row, 5, {'validate': 'list', 'source': priorities})
-        projects_sheet.write(row, 5, '', data_format)  # Priority
-        projects_sheet.write(row, 6, '', data_format)  # Departments
-        projects_sheet.write(row, 7, '', data_format)  # Description
-    
-    workbook.close()
-    output.seek(0)
-    return output
-
-def parse_excel_data(uploaded_file):
-    """Parses the uploaded Excel file and returns structured data"""
-    try:
-        excel_data = pd.read_excel(uploaded_file, sheet_name=None, engine='openpyxl')
-        
-        parsed_data = {
-            'company_info': {},
-            'operational_services': {},
-            'custom_services': [],
-            'support_package': None,
-            'support_extras': {'support': 0, 'training': 0, 'reports': 0},
-            'implementation_projects': []
-        }
-        
-        # Parse company info from sheet 1
-        if '1. Instructions & Company Info' in excel_data:
-            company_sheet = excel_data['1. Instructions & Company Info']
-            if len(company_sheet) > 10:
-                parsed_data['company_info'] = {
-                    'company': str(company_sheet.iloc[10, 1]) if pd.notna(company_sheet.iloc[10, 1]) else '',
-                    'company_code': str(company_sheet.iloc[10, 1]) if pd.notna(company_sheet.iloc[10, 1]) else '',
-                    'department': str(company_sheet.iloc[11, 1]) if pd.notna(company_sheet.iloc[11, 1]) else '',
-                    'contact_person': str(company_sheet.iloc[12, 1]) if pd.notna(company_sheet.iloc[12, 1]) else '',
-                    'email': str(company_sheet.iloc[13, 1]) if pd.notna(company_sheet.iloc[13, 1]) else '',
-                    'date': str(company_sheet.iloc[14, 1]) if pd.notna(company_sheet.iloc[14, 1]) else datetime.now().strftime("%Y-%m-%d")
-                }
-        
-        return parsed_data, None
-        
-    except Exception as e:
-        return None, f"Error parsing Excel file: {str(e)}. Please ensure you are using the correct template format."
-
-def load_data_to_session_state(parsed_data):
-    """Loads parsed data into Streamlit session state"""
-    st.session_state.company_info = parsed_data['company_info']
-    st.session_state.operational_services = parsed_data['operational_services']
-    st.session_state.custom_operational = parsed_data['custom_services']
-    st.session_state.support_package = parsed_data['support_package']
-    st.session_state.support_extras = parsed_data['support_extras']
-    st.session_state.implementation_projects = parsed_data['implementation_projects']:
     if 'operational_services' not in st.session_state:
         st.session_state.operational_services = {}
     if 'custom_operational' not in st.session_state:
@@ -885,7 +662,7 @@ def calculate_implementation_total():
 def calculate_total_budget():
     return calculate_operational_total() + calculate_support_total() + calculate_implementation_total()
 
-# Header with Excel Template functionality
+# Header
 def show_header():
     selected_company_info = st.session_state.company_info.get('company_code', '')
     
@@ -901,137 +678,33 @@ def show_header():
         <p><strong>Budget Year:</strong> 2025 | <strong>Version:</strong> 2.0</p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Excel Template Section
-    st.markdown("### 📊 Excel Template & Data Import")
-    
-    col1, col2, col3 = st.columns([2, 2, 2])
-    
-    with col1:
-        st.markdown("#### 📥 Download Template")
-        st.markdown("Download the Excel template to fill in your service requirements offline.")
-        st.markdown("""
-        **Template Features:**
-        - ✅ **Dropdown Lists** for consistent data entry
-        - ✅ **Data Validation** to prevent errors
-        - ✅ **Auto-calculations** for budgets
-        - ✅ **7 Worksheets** covering all service areas
-        - ✅ **Professional formatting** with instructions
-        """)
-        
-        # Generate Excel template
-        if st.button("📥 Download Excel Template", type="primary", use_container_width=True):
-            excel_template = create_excel_template()
-            
-            st.download_button(
-                label="💾 Download Template.xlsx",
-                data=excel_template,
-                file_name=f"Alkhorayef_Service_Catalogue_Template_{datetime.now().strftime('%Y%m%d')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True
-            )
-            st.success("✅ Excel template generated! Click the download button above.")
-    
-    with col2:
-        st.markdown("#### 📤 Upload Completed Template")
-        st.markdown("Upload your completed Excel template to automatically populate all fields.")
-        
-        uploaded_file = st.file_uploader(
-            "Choose Excel file",
-            type=['xlsx', 'xls'],
-            help="Upload the completed Alkhorayef service catalogue template"
-        )
-        
-        if uploaded_file is not None:
-            with st.spinner("Processing Excel file..."):
-                parsed_data, error = parse_excel_data(uploaded_file)
-                
-                if error:
-                    st.error(f"❌ {error}")
-                else:
-                    load_data_to_session_state(parsed_data)
-                    st.success("✅ Data imported successfully!")
-                    st.info("🔄 Please refresh the page or navigate through tabs to see the imported data.")
-                    
-                    # Show import summary
-                    with st.expander("📋 Import Summary"):
-                        st.markdown(f"**Company:** {parsed_data['company_info'].get('company', 'N/A')}")
-                        st.markdown(f"**Operational Services:** {len(parsed_data['operational_services'])}")
-                        st.markdown(f"**Custom Services:** {len(parsed_data['custom_services'])}")
-                        st.markdown(f"**Support Package:** {parsed_data['support_package'] or 'None selected'}")
-                        st.markdown(f"**Implementation Projects:** {len(parsed_data['implementation_projects'])}")
-    
-    with col3:
-        st.markdown("#### 🔄 Template Instructions")
-        st.markdown("""
-        **How to use the Excel template:**
-        
-        **📊 Template Structure (7 Worksheets):**
-        1. **Instructions & Company Info** - Setup and contact details
-        2. **Operational Services** - Oracle & Microsoft services with dropdowns
-        3. **Custom Services** - Define your own services with auto-calculations
-        4. **Support Package** - Select support tier and additional services
-        5. **Implementation Projects** - Project planning with category dropdowns
-        6. **Project Types Reference** - Complete list of available project types
-        7. **Budget Summary** - Auto-calculated totals from all sheets
-        
-        **💡 Key Features:**
-        - **Blue cells** = Dropdown lists (don't type manually)
-        - **Yellow cells** = Required information
-        - **Auto-calculations** = Budget totals update automatically
-        - **Data validation** = Prevents entry errors
-        
-        **📋 Steps:**
-        1. **Download** template ← 
-        2. **Fill** required fields (yellow cells)
-        3. **Use** dropdowns (blue cells) 
-        4. **Save** the completed file
-        5. **Upload** using middle column →
-        6. **Review** imported data in app
-        """)
-    
-    st.markdown("---")
 
 # Sidebar for company info and budget summary
 def show_sidebar():
     with st.sidebar:
         st.markdown("### 🏢 Company Information")
         
-        # Check if data was imported from Excel
-        if st.session_state.company_info.get('company'):
-            st.markdown("📊 **Data Source:** Excel Import")
-        
         st.markdown("**🏭 Alkhorayef Group**")
         
-        # Company selection - pre-populated if imported
-        current_company = st.session_state.company_info.get('company', '')
-        company_index = 0
-        if current_company in ALKHORAYEF_COMPANIES:
-            company_index = ALKHORAYEF_COMPANIES.index(current_company)
-        
+        # Company selection with abbreviations only
         selected_company = st.selectbox(
             "Select Your Company", 
             options=ALKHORAYEF_COMPANIES,
-            index=company_index,
+            index=0,
             key="company_selection",
             help="Choose which Alkhorayef Group company you represent"
         )
         
-        # Display selected company info
+        # Display selected company info with abbreviation only
         st.markdown(f"""
         <div style='background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;'>
             <strong>Selected:</strong> {selected_company}
         </div>
         """, unsafe_allow_html=True)
         
-        # Pre-populate form fields if data was imported
-        department_value = st.session_state.company_info.get('department', '')
-        contact_value = st.session_state.company_info.get('contact_person', '')
-        email_value = st.session_state.company_info.get('email', '')
-        
-        department = st.text_input("Department", key="department", value=department_value, placeholder="e.g., IT, Finance, Operations")
-        contact_person = st.text_input("Contact Person", key="contact_person", value=contact_value, placeholder="Your full name")
-        email = st.text_input("Email", key="email", value=email_value, placeholder="your.email@alkhorayef.com")
+        department = st.text_input("Department", key="department", placeholder="e.g., IT, Finance, Operations")
+        contact_person = st.text_input("Contact Person", key="contact_person", placeholder="Your full name")
+        email = st.text_input("Email", key="email", placeholder="your.email@alkhorayef.com")
         
         st.session_state.company_info = {
             'company': selected_company,
@@ -1041,35 +714,6 @@ def show_sidebar():
             'email': email,
             'date': datetime.now().strftime("%Y-%m-%d")
         }
-        
-        st.markdown("---")
-        
-        # Data Management
-        st.markdown("### 🔧 Data Management")
-        
-        # Reset data button
-        if st.button("🔄 Reset All Data", use_container_width=True):
-            # Clear all session state data
-            st.session_state.operational_services = {}
-            st.session_state.custom_operational = []
-            st.session_state.support_package = None
-            st.session_state.support_extras = {'support': 0, 'training': 0, 'reports': 0}
-            st.session_state.implementation_projects = []
-            st.session_state.company_info = {}
-            st.success("✅ All data has been reset!")
-            st.rerun()
-        
-        # Quick Excel download in sidebar
-        if st.button("📥 Quick Template Download", use_container_width=True):
-            excel_template = create_excel_template()
-            st.download_button(
-                label="💾 Download Excel Template",
-                data=excel_template,
-                file_name=f"Alkhorayef_Template_{datetime.now().strftime('%Y%m%d')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True,
-                key="sidebar_download"
-            )
         
         st.markdown("---")
         
@@ -1118,20 +762,6 @@ def show_sidebar():
         st.metric("Operational Services", operational_count)
         st.metric("Support Package", "Selected" if support_selected else "Not Selected")
         st.metric("Implementation Projects", implementation_count)
-        
-        # Show import status
-        if any([operational_count > 0, support_selected > 0, implementation_count > 0]):
-            imported_services = []
-            if operational_count > 0:
-                imported_services.append(f"✅ {operational_count} Operational")
-            if support_selected > 0:
-                imported_services.append(f"✅ Support Package")
-            if implementation_count > 0:
-                imported_services.append(f"✅ {implementation_count} Projects")
-            
-            st.markdown("### 📋 Data Status")
-            for service in imported_services:
-                st.markdown(service)
         
         # Show support package details if selected
         if st.session_state.support_package:
