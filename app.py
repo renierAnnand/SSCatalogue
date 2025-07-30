@@ -612,6 +612,7 @@ def initialize_session_state():
     if 'company_info' not in st.session_state:
         st.session_state.company_info = {}
 
+# Initialize session state
 initialize_session_state()
 def create_excel_template():
     """Creates a comprehensive Excel template for Alkhorayef Group Shared Service Catalogue"""
@@ -805,137 +806,10 @@ def parse_excel_data(uploaded_file):
                     'date': str(company_sheet.iloc[14, 1]) if pd.notna(company_sheet.iloc[14, 1]) else datetime.now().strftime("%Y-%m-%d")
                 }
         
-        # Parse operational services from sheet 2
-        if '2. Operational Services' in excel_data:
-            ops_sheet = excel_data['2. Operational Services']
-            for idx, row in ops_sheet.iterrows():
-                if idx < 2:  # Skip headers
-                    continue
-                    
-                service_name = row.iloc[0] if pd.notna(row.iloc[0]) else ''
-                include = row.iloc[2] if pd.notna(row.iloc[2]) else ''
-                users = row.iloc[3] if pd.notna(row.iloc[3]) else 0
-                new_impl = row.iloc[4] if pd.notna(row.iloc[4]) else ''
-                
-                # Skip section headers and empty rows
-                if ('ORACLE' in str(service_name) or 'MICROSOFT' in str(service_name) or 
-                    service_name == '' or str(include).upper() != 'Y' or users <= 0):
-                    continue
-                
-                # Create service key for mapping
-                if 'Oracle' in service_name:
-                    service_key = f"oracle_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
-                elif 'Microsoft' in service_name or 'Power BI' in service_name or 'Project for' in service_name:
-                    service_key = f"microsoft_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
-                else:
-                    service_key = f"service_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
-                
-                parsed_data['operational_services'][service_key] = {
-                    'selected': True,
-                    'users': int(users),
-                    'actual_service_name': service_name,
-                    'new_implementation': str(new_impl).upper() == 'Y'
-                }
-        
-        # Parse custom services from sheet 3
-        if '3. Custom Services' in excel_data:
-            custom_sheet = excel_data['3. Custom Services']
-            for idx, row in custom_sheet.iterrows():
-                if idx < 2:  # Skip headers
-                    continue
-                    
-                service_name = row.iloc[0] if pd.notna(row.iloc[0]) else ''
-                description = row.iloc[1] if pd.notna(row.iloc[1]) else ''
-                price_per_user = row.iloc[2] if pd.notna(row.iloc[2]) else 0
-                setup_cost = row.iloc[3] if pd.notna(row.iloc[3]) else 0
-                users = row.iloc[4] if pd.notna(row.iloc[4]) else 0
-                new_impl = row.iloc[5] if pd.notna(row.iloc[5]) else ''
-                
-                # Only include if service name exists and has users
-                if service_name and users > 0:
-                    parsed_data['custom_services'].append({
-                        'name': service_name,
-                        'description': description,
-                        'price_per_user': float(price_per_user),
-                        'setup_cost': float(setup_cost),
-                        'users': int(users),
-                        'new_implementation': str(new_impl).upper() == 'Y'
-                    })
-        
-        # Parse support package from sheet 4
-        if '4. Support Package' in excel_data:
-            support_sheet = excel_data['4. Support Package']
-            if len(support_sheet) > 2:
-                package = support_sheet.iloc[2, 1] if pd.notna(support_sheet.iloc[2, 1]) else None
-                if package:
-                    parsed_data['support_package'] = str(package)
-                
-                # Parse additional services (updated row indices for new template)
-                if len(support_sheet) > 13:
-                    extra_support = support_sheet.iloc[13, 1] if pd.notna(support_sheet.iloc[13, 1]) else 0
-                    extra_training = support_sheet.iloc[14, 1] if pd.notna(support_sheet.iloc[14, 1]) else 0
-                    extra_reports = support_sheet.iloc[15, 1] if pd.notna(support_sheet.iloc[15, 1]) else 0
-                    
-                    parsed_data['support_extras'] = {
-                        'support': int(extra_support),
-                        'training': int(extra_training),
-                        'reports': int(extra_reports)
-                    }
-        
-        # Parse implementation projects from sheet 5
-        if '5. Implementation Projects' in excel_data:
-            projects_sheet = excel_data['5. Implementation Projects']
-            for idx, row in projects_sheet.iterrows():
-                if idx < 2:  # Skip headers
-                    continue
-                    
-                project_name = row.iloc[0] if pd.notna(row.iloc[0]) else ''
-                category = row.iloc[1] if pd.notna(row.iloc[1]) else ''
-                project_type = row.iloc[2] if pd.notna(row.iloc[2]) else ''
-                budget = row.iloc[3] if pd.notna(row.iloc[3]) else 0
-                timeline = row.iloc[4] if pd.notna(row.iloc[4]) else ''
-                priority = row.iloc[5] if pd.notna(row.iloc[5]) else ''
-                departments = row.iloc[6] if pd.notna(row.iloc[6]) else ''
-                description = row.iloc[7] if pd.notna(row.iloc[7]) else ''
-                
-                # Only include if project has name and budget
-                if project_name and budget > 0:
-                    # Add emoji prefix to category if not present
-                    category_mapping = {
-                        'Digital Transformation & Automation': '🤖 Digital Transformation & Automation',
-                        'AI & Advanced Analytics': '🧠 AI & Advanced Analytics',
-                        'Data & Business Intelligence': '📊 Data & Business Intelligence',
-                        'Enterprise Applications': '💼 Enterprise Applications',
-                        'Industry-Specific Solutions': '🏭 Industry-Specific Solutions',
-                        'Infrastructure & Cloud': '☁️ Infrastructure & Cloud',
-                        'Security & Compliance': '🔒 Security & Compliance',
-                        'Integration & Connectivity': '🔗 Integration & Connectivity',
-                        'Communication & Collaboration': '💬 Communication & Collaboration',
-                        'Customer Experience': '👥 Customer Experience',
-                        'Financial & Regulatory': '💰 Financial & Regulatory',
-                        'Sustainability & ESG': '🌱 Sustainability & ESG',
-                        'Custom & Specialized': '⚙️ Custom & Specialized'
-                    }
-                    
-                    formatted_category = category_mapping.get(category, '⚙️ Custom & Specialized')
-                    
-                    parsed_data['implementation_projects'].append({
-                        'name': project_name,
-                        'category': formatted_category,
-                        'type': project_type if project_type else 'Custom Application Development',
-                        'budget': float(budget),
-                        'timeline': timeline if timeline else 'Q4 2025',
-                        'priority': priority if priority else 'Medium',
-                        'departments': departments.split(',') if departments else [],
-                        'description': description,
-                        'success_criteria': '',
-                        'created_date': datetime.now().strftime("%Y-%m-%d")
-                    })
-        
         return parsed_data, None
         
     except Exception as e:
-        return None, f"Error parsing Excel file: {str(e)}. Please ensure you're using the correct template format."
+        return None, f"Error parsing Excel file: {str(e)}. Please ensure you are using the correct template format."
 
 def load_data_to_session_state(parsed_data):
     """Loads parsed data into Streamlit session state"""
