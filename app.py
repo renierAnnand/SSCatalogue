@@ -354,18 +354,154 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
     }
     
-    .support-package {
-        background: #f0fdf4;
-        border: 2px solid #22c55e;
-        border-radius: 10px;
-        padding: 1.5rem;
+    .support-package-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 2rem;
         margin: 1rem 0;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        text-align: center;
         position: relative;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
     
-    .support-package.selected {
+    .support-package-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .support-package-card.basic {
+        border-color: #6b7280;
+        background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    }
+    
+    .support-package-card.bronze {
+        border-color: #92400e;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    }
+    
+    .support-package-card.silver {
+        border-color: #374151;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    }
+    
+    .support-package-card.gold {
+        border-color: #d97706;
+        background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+    }
+    
+    .support-package-card.platinum {
+        border-color: #1e293b;
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    }
+    
+    .support-package-card.selected {
         border-color: #dc2626;
-        background: #fef2f2;
+        background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+        box-shadow: 0 15px 35px rgba(220, 38, 38, 0.25);
+    }
+    
+    .package-header {
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .package-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .package-price {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #dc2626;
+        margin-bottom: 0.5rem;
+    }
+    
+    .package-tagline {
+        font-style: italic;
+        color: #6b7280;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .package-features {
+        text-align: left;
+        flex-grow: 1;
+        margin: 1rem 0;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: center;
+        margin: 0.75rem 0;
+        padding: 0.5rem;
+        background: rgba(255,255,255,0.7);
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .feature-icon {
+        margin-right: 0.75rem;
+        font-size: 1.1rem;
+    }
+    
+    .feature-label {
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .feature-value {
+        color: #6b7280;
+        margin-left: 0.5rem;
+    }
+    
+    .select-button {
+        background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .select-button:hover {
+        background: linear-gradient(45deg, #1d4ed8, #1e40af);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    .select-button.basic {
+        background: linear-gradient(45deg, #6b7280, #4b5563);
+    }
+    
+    .select-button.bronze {
+        background: linear-gradient(45deg, #92400e, #78350f);
+    }
+    
+    .select-button.silver {
+        background: linear-gradient(45deg, #374151, #1f2937);
+    }
+    
+    .select-button.gold {
+        background: linear-gradient(45deg, #d97706, #b45309);
+    }
+    
+    .select-button.platinum {
+        background: linear-gradient(45deg, #1e293b, #0f172a);
     }
     
     .project-card {
@@ -404,6 +540,36 @@ st.markdown("""
         border-radius: 8px;
         padding: 1rem;
         margin: 1rem 0;
+    }
+    
+    .support-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .unlimited-badge {
+        background: linear-gradient(45deg, #ef4444, #dc2626);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+    
+    .popular-badge {
+        position: absolute;
+        top: -10px;
+        right: 15px;
+        background: linear-gradient(45deg, #f59e0b, #d97706);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -831,107 +997,179 @@ def show_operational_services():
                 st.session_state.custom_operational.pop(i)
                 st.rerun()
 
-# Support Packages Section
+# Support Packages Section with Modern Design
 def show_support_packages():
     st.markdown("""
     <div class='category-section'>
         <h2>🛠️ Support Packages</h2>
-        <p>Choose the support level that best fits your organization's needs.</p>
+        <p>Choose the support level that best fits your organization's needs. Each package is designed to scale with your business requirements.</p>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("### 📞 Available Support Packages")
     
+    # Create responsive grid layout for support packages
     packages_list = list(SUPPORT_PACKAGES.items())
     
-    # First row: Basic, Bronze, Silver
-    cols1 = st.columns(3)
-    for i in range(min(3, len(packages_list))):
-        package_name, details = packages_list[i]
+    # Define package configurations
+    package_configs = {
+        "Basic": {"tier": "basic", "popular": False},
+        "Bronze": {"tier": "bronze", "popular": False},
+        "Silver": {"tier": "silver", "popular": True},  # Mark Silver as popular
+        "Gold": {"tier": "gold", "popular": False},
+        "Platinum": {"tier": "platinum", "popular": False}
+    }
+    
+    # Feature icons mapping
+    feature_icons = {
+        "support_requests": "🛠️",
+        "improvement_hours": "🔧", 
+        "training_requests": "🎓",
+        "report_requests": "📊"
+    }
+    
+    # Create grid layout
+    st.markdown('<div class="support-grid">', unsafe_allow_html=True)
+    
+    # Generate cards for each package
+    for package_name, details in packages_list:
+        config = package_configs.get(package_name, {"tier": "basic", "popular": False})
+        is_selected = st.session_state.support_package == package_name
         
-        with cols1[i]:
-            st.markdown(f"### {package_name}")
-            st.markdown(f"**SAR {details['price']:,.0f}**")
+        # Build card classes
+        card_classes = f"support-package-card {config['tier']}"
+        if is_selected:
+            card_classes += " selected"
+        
+        # Create the card HTML
+        popular_badge = '<div class="popular-badge">🔥 Most Popular</div>' if config['popular'] else ''
+        
+        unlimited_features = []
+        if "Unlimited" in details['support_requests']:
+            unlimited_features.append("support_requests")
+        if "Unlimited" in details['training_requests']:
+            unlimited_features.append("training_requests")
+        if "Unlimited" in details['report_requests']:
+            unlimited_features.append("report_requests")
+        
+        # Format feature values with badges for unlimited
+        def format_feature_value(key, value):
+            if "Unlimited" in value:
+                return f'{value.replace("Unlimited", "")}<span class="unlimited-badge">Unlimited 🔥</span>'
+            return value
+        
+        card_html = f"""
+        <div class='{card_classes}'>
+            {popular_badge}
+            <div class='package-header'>
+                <div class='package-name'>{package_name}</div>
+                <div class='package-price'>SAR {details['price']:,.0f}</div>
+                <div class='package-tagline'>{details['description']}</div>
+            </div>
             
-            with st.container():
-                st.markdown("---")
-                st.write(f"**Support Requests:** {details['support_requests']}")
-                st.write(f"**Improvement Hours:** {details['improvement_hours']}")
-                st.write(f"**Training Requests:** {details['training_requests']}")
-                st.write(f"**Report Requests:** {details['report_requests']}")
-                st.markdown("---")
-                st.caption(details['description'])
-            
-            if st.button(f"Select {package_name}", key=f"select_package_{package_name.lower()}_btn"):
+            <div class='package-features'>
+                <div class='feature-item'>
+                    <span class='feature-icon'>{feature_icons['support_requests']}</span>
+                    <span class='feature-label'>Support Requests:</span>
+                    <span class='feature-value'>{format_feature_value('support_requests', details['support_requests'])}</span>
+                </div>
+                
+                <div class='feature-item'>
+                    <span class='feature-icon'>{feature_icons['improvement_hours']}</span>
+                    <span class='feature-label'>Improvement Hours:</span>
+                    <span class='feature-value'>{details['improvement_hours']}</span>
+                </div>
+                
+                <div class='feature-item'>
+                    <span class='feature-icon'>{feature_icons['training_requests']}</span>
+                    <span class='feature-label'>Training Requests:</span>
+                    <span class='feature-value'>{format_feature_value('training_requests', details['training_requests'])}</span>
+                </div>
+                
+                <div class='feature-item'>
+                    <span class='feature-icon'>{feature_icons['report_requests']}</span>
+                    <span class='feature-label'>Report Requests:</span>
+                    <span class='feature-value'>{format_feature_value('report_requests', details['report_requests'])}</span>
+                </div>
+            </div>
+        </div>
+        """
+        
+        st.markdown(card_html, unsafe_allow_html=True)
+        
+        # Add selection button
+        button_text = f"✅ Selected" if is_selected else f"Select {package_name}"
+        button_disabled = is_selected
+        
+        if st.button(button_text, 
+                    key=f"select_package_{package_name.lower()}_btn", 
+                    disabled=button_disabled,
+                    type="primary" if not is_selected else "secondary"):
+            if not is_selected:
                 st.session_state.support_package = package_name
                 st.success(f"✅ Selected {package_name} Support Package")
                 st.rerun()
     
-    # Second row: Gold, Platinum (centered)
-    if len(packages_list) > 3:
-        st.markdown("<br>", unsafe_allow_html=True)
-        cols2 = st.columns([1, 2, 2, 1])
-        
-        for i in range(3, len(packages_list)):
-            package_name, details = packages_list[i]
-            col_index = i - 3 + 1
-            
-            with cols2[col_index]:
-                st.markdown(f"### {package_name}")
-                st.markdown(f"**SAR {details['price']:,.0f}**")
-                
-                with st.container():
-                    st.markdown("---")
-                    st.write(f"**Support Requests:** {details['support_requests']}")
-                    st.write(f"**Improvement Hours:** {details['improvement_hours']}")
-                    st.write(f"**Training Requests:** {details['training_requests']}")
-                    st.write(f"**Report Requests:** {details['report_requests']}")
-                    st.markdown("---")
-                    st.caption(details['description'])
-                
-                if st.button(f"Select {package_name}", key=f"select_package_{package_name.lower()}_btn_row2"):
-                    st.session_state.support_package = package_name
-                    st.success(f"✅ Selected {package_name} Support Package")
-                    st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
     
-    # Show selected package
+    # Show selected package summary
     if st.session_state.support_package:
         selected_package = SUPPORT_PACKAGES[st.session_state.support_package]
         st.markdown(f"""
-        <div class='cost-display' style='background: #dcfce7; border-color: #16a34a;'>
-            ✅ Selected: <strong>{st.session_state.support_package}</strong> - SAR {selected_package['price']:,.0f}
+        <div class='cost-display' style='background: #dcfce7; border-color: #16a34a; margin-top: 2rem;'>
+            ✅ <strong>Selected Package:</strong> {st.session_state.support_package} - SAR {selected_package['price']:,.0f}
         </div>
         """, unsafe_allow_html=True)
         
-        # Additional services
+        # Additional services section
         st.markdown("### ➕ Additional Support Services")
+        st.markdown("Enhance your support package with additional services as needed.")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            extra_support = st.number_input("Extra Support Requests (SAR 1,800 each)", 
-                                          min_value=0, 
-                                          value=st.session_state.support_extras['support'],
-                                          key="extra_support_requests_input")
+            st.markdown("#### 🛠️ Extra Support Requests")
+            extra_support = st.number_input(
+                "Additional Support Requests", 
+                min_value=0, 
+                value=st.session_state.support_extras['support'],
+                key="extra_support_requests_input",
+                help="SAR 1,800 per additional support request"
+            )
+            st.markdown("**Cost:** SAR 1,800 each")
             st.session_state.support_extras['support'] = extra_support
         
         with col2:
-            extra_training = st.number_input("Extra Training/Reports (SAR 5,399 each)", 
-                                           min_value=0, 
-                                           value=st.session_state.support_extras['training'],
-                                           key="extra_training_reports_input")
+            st.markdown("#### 🎓 Extra Training & Reports")
+            extra_training = st.number_input(
+                "Additional Training/Reports", 
+                min_value=0, 
+                value=st.session_state.support_extras['training'],
+                key="extra_training_reports_input",
+                help="SAR 5,399 per additional training session or custom report"
+            )
+            st.markdown("**Cost:** SAR 5,399 each")
             st.session_state.support_extras['training'] = extra_training
         
+        # Calculate and display total cost
         if extra_support > 0 or extra_training > 0:
             extra_cost = (extra_support * 1800) + (extra_training * 5399)
             total_support_cost = selected_package['price'] + extra_cost
             
             st.markdown(f"""
-            <div class='cost-display'>
-                💰 Additional Services: SAR {extra_cost:,.0f}<br>
-                <strong>Total Support Cost: SAR {total_support_cost:,.0f}</strong>
+            <div class='cost-display' style='background: #fef3c7; border-color: #f59e0b;'>
+                💰 <strong>Additional Services Cost:</strong> SAR {extra_cost:,.0f}<br>
+                <strong>Total Support Package Cost:</strong> SAR {total_support_cost:,.0f}
             </div>
             """, unsafe_allow_html=True)
+            
+            # Breakdown of additional costs
+            if extra_support > 0:
+                st.markdown(f"- **Extra Support Requests:** {extra_support} × SAR 1,800 = SAR {extra_support * 1800:,.0f}")
+            if extra_training > 0:
+                st.markdown(f"- **Extra Training/Reports:** {extra_training} × SAR 5,399 = SAR {extra_training * 5399:,.0f}")
+    else:
+        st.info("👆 Please select a support package above to continue with your service configuration.")
 
 # Implementation Projects Section with Enhanced Categories
 def show_implementation_projects():
