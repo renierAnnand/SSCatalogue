@@ -597,9 +597,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Initialize session state
-def initialize_session_state()
+def # Initialize session state
+def initialize_session_state():
+    if 'operational_services' not in st.session_state:
+        st.session_state.operational_services = {}
+    if 'custom_operational' not in st.session_state:
+        st.session_state.custom_operational = []
+    if 'support_package' not in st.session_state:
+        st.session_state.support_package = None
+    if 'support_extras' not in st.session_state:
+        st.session_state.support_extras = {'support': 0, 'training': 0, 'reports': 0}
+    if 'implementation_projects' not in st.session_state:
+        st.session_state.implementation_projects = []
+    if 'company_info' not in st.session_state:
+        st.session_state.company_info = {}
 
-# Excel Template Functions
+initialize_session_state()
 def create_excel_template():
     """Creates a comprehensive Excel template for Alkhorayef Group Shared Service Catalogue"""
     output = io.BytesIO()
@@ -779,7 +792,7 @@ def parse_excel_data(uploaded_file):
             'implementation_projects': []
         }
         
-        # Parse company info
+        # Parse company info from sheet 1
         if '1. Instructions & Company Info' in excel_data:
             company_sheet = excel_data['1. Instructions & Company Info']
             if len(company_sheet) > 10:
@@ -792,93 +805,129 @@ def parse_excel_data(uploaded_file):
                     'date': str(company_sheet.iloc[14, 1]) if pd.notna(company_sheet.iloc[14, 1]) else datetime.now().strftime("%Y-%m-%d")
                 }
         
-        # Parse operational services
+        # Parse operational services from sheet 2
         if '2. Operational Services' in excel_data:
             ops_sheet = excel_data['2. Operational Services']
             for idx, row in ops_sheet.iterrows():
-                if idx < 2:
+                if idx < 2:  # Skip headers
                     continue
-                service_name = row.iloc[0]
-                include = row.iloc[2]
-                users = row.iloc[3]
-                new_impl = row.iloc[4]
+                    
+                service_name = row.iloc[0] if pd.notna(row.iloc[0]) else ''
+                include = row.iloc[2] if pd.notna(row.iloc[2]) else ''
+                users = row.iloc[3] if pd.notna(row.iloc[3]) else 0
+                new_impl = row.iloc[4] if pd.notna(row.iloc[4]) else ''
                 
-                if pd.notna(service_name) and 'SERVICES' not in str(service_name) and str(include).upper() == 'Y' and pd.notna(users) and users > 0:
+                # Skip section headers and empty rows
+                if ('ORACLE' in str(service_name) or 'MICROSOFT' in str(service_name) or 
+                    service_name == '' or str(include).upper() != 'Y' or users <= 0):
+                    continue
+                
+                # Create service key for mapping
+                if 'Oracle' in service_name:
+                    service_key = f"oracle_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
+                elif 'Microsoft' in service_name or 'Power BI' in service_name or 'Project for' in service_name:
+                    service_key = f"microsoft_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
+                else:
                     service_key = f"service_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
-                    parsed_data['operational_services'][service_key] = {
-                        'selected': True,
-                        'users': int(users),
-                        'actual_service_name': service_name,
-                        'new_implementation': str(new_impl).upper() == 'Y'
-                    }
+                
+                parsed_data['operational_services'][service_key] = {
+                    'selected': True,
+                    'users': int(users),
+                    'actual_service_name': service_name,
+                    'new_implementation': str(new_impl).upper() == 'Y'
+                }
         
-        # Parse custom services
+        # Parse custom services from sheet 3
         if '3. Custom Services' in excel_data:
             custom_sheet = excel_data['3. Custom Services']
             for idx, row in custom_sheet.iterrows():
-                if idx < 2:
+                if idx < 2:  # Skip headers
                     continue
-                service_name = row.iloc[0]
-                description = row.iloc[1]
-                price_per_user = row.iloc[2]
-                setup_cost = row.iloc[3]
-                users = row.iloc[4]
-                new_impl = row.iloc[5]
+                    
+                service_name = row.iloc[0] if pd.notna(row.iloc[0]) else ''
+                description = row.iloc[1] if pd.notna(row.iloc[1]) else ''
+                price_per_user = row.iloc[2] if pd.notna(row.iloc[2]) else 0
+                setup_cost = row.iloc[3] if pd.notna(row.iloc[3]) else 0
+                users = row.iloc[4] if pd.notna(row.iloc[4]) else 0
+                new_impl = row.iloc[5] if pd.notna(row.iloc[5]) else ''
                 
-                if pd.notna(service_name) and pd.notna(users) and users > 0:
+                # Only include if service name exists and has users
+                if service_name and users > 0:
                     parsed_data['custom_services'].append({
                         'name': service_name,
-                        'description': description if pd.notna(description) else '',
-                        'price_per_user': float(price_per_user) if pd.notna(price_per_user) else 0,
-                        'setup_cost': float(setup_cost) if pd.notna(setup_cost) else 0,
+                        'description': description,
+                        'price_per_user': float(price_per_user),
+                        'setup_cost': float(setup_cost),
                         'users': int(users),
                         'new_implementation': str(new_impl).upper() == 'Y'
                     })
         
-        # Parse support package
+        # Parse support package from sheet 4
         if '4. Support Package' in excel_data:
             support_sheet = excel_data['4. Support Package']
             if len(support_sheet) > 2:
-                package = support_sheet.iloc[2, 1]
-                if pd.notna(package):
+                package = support_sheet.iloc[2, 1] if pd.notna(support_sheet.iloc[2, 1]) else None
+                if package:
                     parsed_data['support_package'] = str(package)
                 
-                if len(support_sheet) > 5:
-                    extra_support = support_sheet.iloc[5, 1]
-                    extra_training = support_sheet.iloc[6, 1]
-                    extra_reports = support_sheet.iloc[7, 1]
+                # Parse additional services (updated row indices for new template)
+                if len(support_sheet) > 13:
+                    extra_support = support_sheet.iloc[13, 1] if pd.notna(support_sheet.iloc[13, 1]) else 0
+                    extra_training = support_sheet.iloc[14, 1] if pd.notna(support_sheet.iloc[14, 1]) else 0
+                    extra_reports = support_sheet.iloc[15, 1] if pd.notna(support_sheet.iloc[15, 1]) else 0
                     
                     parsed_data['support_extras'] = {
-                        'support': int(extra_support) if pd.notna(extra_support) else 0,
-                        'training': int(extra_training) if pd.notna(extra_training) else 0,
-                        'reports': int(extra_reports) if pd.notna(extra_reports) else 0
+                        'support': int(extra_support),
+                        'training': int(extra_training),
+                        'reports': int(extra_reports)
                     }
         
-        # Parse implementation projects
+        # Parse implementation projects from sheet 5
         if '5. Implementation Projects' in excel_data:
             projects_sheet = excel_data['5. Implementation Projects']
             for idx, row in projects_sheet.iterrows():
-                if idx < 2:
+                if idx < 2:  # Skip headers
                     continue
-                project_name = row.iloc[0]
-                category = row.iloc[1]
-                project_type = row.iloc[2]
-                budget = row.iloc[3]
-                timeline = row.iloc[4]
-                priority = row.iloc[5]
-                departments = row.iloc[6]
-                description = row.iloc[7]
+                    
+                project_name = row.iloc[0] if pd.notna(row.iloc[0]) else ''
+                category = row.iloc[1] if pd.notna(row.iloc[1]) else ''
+                project_type = row.iloc[2] if pd.notna(row.iloc[2]) else ''
+                budget = row.iloc[3] if pd.notna(row.iloc[3]) else 0
+                timeline = row.iloc[4] if pd.notna(row.iloc[4]) else ''
+                priority = row.iloc[5] if pd.notna(row.iloc[5]) else ''
+                departments = row.iloc[6] if pd.notna(row.iloc[6]) else ''
+                description = row.iloc[7] if pd.notna(row.iloc[7]) else ''
                 
-                if pd.notna(project_name) and pd.notna(budget) and budget > 0:
+                # Only include if project has name and budget
+                if project_name and budget > 0:
+                    # Add emoji prefix to category if not present
+                    category_mapping = {
+                        'Digital Transformation & Automation': '🤖 Digital Transformation & Automation',
+                        'AI & Advanced Analytics': '🧠 AI & Advanced Analytics',
+                        'Data & Business Intelligence': '📊 Data & Business Intelligence',
+                        'Enterprise Applications': '💼 Enterprise Applications',
+                        'Industry-Specific Solutions': '🏭 Industry-Specific Solutions',
+                        'Infrastructure & Cloud': '☁️ Infrastructure & Cloud',
+                        'Security & Compliance': '🔒 Security & Compliance',
+                        'Integration & Connectivity': '🔗 Integration & Connectivity',
+                        'Communication & Collaboration': '💬 Communication & Collaboration',
+                        'Customer Experience': '👥 Customer Experience',
+                        'Financial & Regulatory': '💰 Financial & Regulatory',
+                        'Sustainability & ESG': '🌱 Sustainability & ESG',
+                        'Custom & Specialized': '⚙️ Custom & Specialized'
+                    }
+                    
+                    formatted_category = category_mapping.get(category, '⚙️ Custom & Specialized')
+                    
                     parsed_data['implementation_projects'].append({
                         'name': project_name,
-                        'category': category if pd.notna(category) else '⚙️ Custom & Specialized',
-                        'type': project_type if pd.notna(project_type) else 'Custom Application Development',
+                        'category': formatted_category,
+                        'type': project_type if project_type else 'Custom Application Development',
                         'budget': float(budget),
-                        'timeline': timeline if pd.notna(timeline) else 'Q4 2025',
-                        'priority': priority if pd.notna(priority) else 'Medium',
-                        'departments': departments.split(',') if pd.notna(departments) else [],
-                        'description': description if pd.notna(description) else '',
+                        'timeline': timeline if timeline else 'Q4 2025',
+                        'priority': priority if priority else 'Medium',
+                        'departments': departments.split(',') if departments else [],
+                        'description': description,
                         'success_criteria': '',
                         'created_date': datetime.now().strftime("%Y-%m-%d")
                     })
@@ -886,7 +935,7 @@ def parse_excel_data(uploaded_file):
         return parsed_data, None
         
     except Exception as e:
-        return None, f"Error parsing Excel file: {str(e)}"
+        return None, f"Error parsing Excel file: {str(e)}. Please ensure you're using the correct template format."
 
 def load_data_to_session_state(parsed_data):
     """Loads parsed data into Streamlit session state"""
@@ -962,7 +1011,7 @@ def calculate_implementation_total():
 def calculate_total_budget():
     return calculate_operational_total() + calculate_support_total() + calculate_implementation_total()
 
-# Header
+# Header with Excel Template functionality
 def show_header():
     selected_company_info = st.session_state.company_info.get('company_code', '')
     
@@ -978,33 +1027,137 @@ def show_header():
         <p><strong>Budget Year:</strong> 2025 | <strong>Version:</strong> 2.0</p>
     </div>
     """, unsafe_allow_html=True)
+    
+    # Excel Template Section
+    st.markdown("### 📊 Excel Template & Data Import")
+    
+    col1, col2, col3 = st.columns([2, 2, 2])
+    
+    with col1:
+        st.markdown("#### 📥 Download Template")
+        st.markdown("Download the Excel template to fill in your service requirements offline.")
+        st.markdown("""
+        **Template Features:**
+        - ✅ **Dropdown Lists** for consistent data entry
+        - ✅ **Data Validation** to prevent errors
+        - ✅ **Auto-calculations** for budgets
+        - ✅ **7 Worksheets** covering all service areas
+        - ✅ **Professional formatting** with instructions
+        """)
+        
+        # Generate Excel template
+        if st.button("📥 Download Excel Template", type="primary", use_container_width=True):
+            excel_template = create_excel_template()
+            
+            st.download_button(
+                label="💾 Download Template.xlsx",
+                data=excel_template,
+                file_name=f"Alkhorayef_Service_Catalogue_Template_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+            st.success("✅ Excel template generated! Click the download button above.")
+    
+    with col2:
+        st.markdown("#### 📤 Upload Completed Template")
+        st.markdown("Upload your completed Excel template to automatically populate all fields.")
+        
+        uploaded_file = st.file_uploader(
+            "Choose Excel file",
+            type=['xlsx', 'xls'],
+            help="Upload the completed Alkhorayef service catalogue template"
+        )
+        
+        if uploaded_file is not None:
+            with st.spinner("Processing Excel file..."):
+                parsed_data, error = parse_excel_data(uploaded_file)
+                
+                if error:
+                    st.error(f"❌ {error}")
+                else:
+                    load_data_to_session_state(parsed_data)
+                    st.success("✅ Data imported successfully!")
+                    st.info("🔄 Please refresh the page or navigate through tabs to see the imported data.")
+                    
+                    # Show import summary
+                    with st.expander("📋 Import Summary"):
+                        st.markdown(f"**Company:** {parsed_data['company_info'].get('company', 'N/A')}")
+                        st.markdown(f"**Operational Services:** {len(parsed_data['operational_services'])}")
+                        st.markdown(f"**Custom Services:** {len(parsed_data['custom_services'])}")
+                        st.markdown(f"**Support Package:** {parsed_data['support_package'] or 'None selected'}")
+                        st.markdown(f"**Implementation Projects:** {len(parsed_data['implementation_projects'])}")
+    
+    with col3:
+        st.markdown("#### 🔄 Template Instructions")
+        st.markdown("""
+        **How to use the Excel template:**
+        
+        **📊 Template Structure (7 Worksheets):**
+        1. **Instructions & Company Info** - Setup and contact details
+        2. **Operational Services** - Oracle & Microsoft services with dropdowns
+        3. **Custom Services** - Define your own services with auto-calculations
+        4. **Support Package** - Select support tier and additional services
+        5. **Implementation Projects** - Project planning with category dropdowns
+        6. **Project Types Reference** - Complete list of available project types
+        7. **Budget Summary** - Auto-calculated totals from all sheets
+        
+        **💡 Key Features:**
+        - **Blue cells** = Dropdown lists (don't type manually)
+        - **Yellow cells** = Required information
+        - **Auto-calculations** = Budget totals update automatically
+        - **Data validation** = Prevents entry errors
+        
+        **📋 Steps:**
+        1. **Download** template ← 
+        2. **Fill** required fields (yellow cells)
+        3. **Use** dropdowns (blue cells) 
+        4. **Save** the completed file
+        5. **Upload** using middle column →
+        6. **Review** imported data in app
+        """)
+    
+    st.markdown("---")
 
 # Sidebar for company info and budget summary
 def show_sidebar():
     with st.sidebar:
         st.markdown("### 🏢 Company Information")
         
+        # Check if data was imported from Excel
+        if st.session_state.company_info.get('company'):
+            st.markdown("📊 **Data Source:** Excel Import")
+        
         st.markdown("**🏭 Alkhorayef Group**")
         
-        # Company selection with abbreviations only
+        # Company selection - pre-populated if imported
+        current_company = st.session_state.company_info.get('company', '')
+        company_index = 0
+        if current_company in ALKHORAYEF_COMPANIES:
+            company_index = ALKHORAYEF_COMPANIES.index(current_company)
+        
         selected_company = st.selectbox(
             "Select Your Company", 
             options=ALKHORAYEF_COMPANIES,
-            index=0,
+            index=company_index,
             key="company_selection",
             help="Choose which Alkhorayef Group company you represent"
         )
         
-        # Display selected company info with abbreviation only
+        # Display selected company info
         st.markdown(f"""
         <div style='background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;'>
             <strong>Selected:</strong> {selected_company}
         </div>
         """, unsafe_allow_html=True)
         
-        department = st.text_input("Department", key="department", placeholder="e.g., IT, Finance, Operations")
-        contact_person = st.text_input("Contact Person", key="contact_person", placeholder="Your full name")
-        email = st.text_input("Email", key="email", placeholder="your.email@alkhorayef.com")
+        # Pre-populate form fields if data was imported
+        department_value = st.session_state.company_info.get('department', '')
+        contact_value = st.session_state.company_info.get('contact_person', '')
+        email_value = st.session_state.company_info.get('email', '')
+        
+        department = st.text_input("Department", key="department", value=department_value, placeholder="e.g., IT, Finance, Operations")
+        contact_person = st.text_input("Contact Person", key="contact_person", value=contact_value, placeholder="Your full name")
+        email = st.text_input("Email", key="email", value=email_value, placeholder="your.email@alkhorayef.com")
         
         st.session_state.company_info = {
             'company': selected_company,
@@ -1014,6 +1167,35 @@ def show_sidebar():
             'email': email,
             'date': datetime.now().strftime("%Y-%m-%d")
         }
+        
+        st.markdown("---")
+        
+        # Data Management
+        st.markdown("### 🔧 Data Management")
+        
+        # Reset data button
+        if st.button("🔄 Reset All Data", use_container_width=True):
+            # Clear all session state data
+            st.session_state.operational_services = {}
+            st.session_state.custom_operational = []
+            st.session_state.support_package = None
+            st.session_state.support_extras = {'support': 0, 'training': 0, 'reports': 0}
+            st.session_state.implementation_projects = []
+            st.session_state.company_info = {}
+            st.success("✅ All data has been reset!")
+            st.rerun()
+        
+        # Quick Excel download in sidebar
+        if st.button("📥 Quick Template Download", use_container_width=True):
+            excel_template = create_excel_template()
+            st.download_button(
+                label="💾 Download Excel Template",
+                data=excel_template,
+                file_name=f"Alkhorayef_Template_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+                key="sidebar_download"
+            )
         
         st.markdown("---")
         
@@ -1062,6 +1244,20 @@ def show_sidebar():
         st.metric("Operational Services", operational_count)
         st.metric("Support Package", "Selected" if support_selected else "Not Selected")
         st.metric("Implementation Projects", implementation_count)
+        
+        # Show import status
+        if any([operational_count > 0, support_selected > 0, implementation_count > 0]):
+            imported_services = []
+            if operational_count > 0:
+                imported_services.append(f"✅ {operational_count} Operational")
+            if support_selected > 0:
+                imported_services.append(f"✅ Support Package")
+            if implementation_count > 0:
+                imported_services.append(f"✅ {implementation_count} Projects")
+            
+            st.markdown("### 📋 Data Status")
+            for service in imported_services:
+                st.markdown(service)
         
         # Show support package details if selected
         if st.session_state.support_package:
