@@ -18,6 +18,140 @@ ALKHORAYEF_COMPANIES = [
     "APC", "AIC", "AGC", "APS", "PS", "AWPT", "AMIC", "ACC", "SPC", "Tom Egypt"
 ]
 
+# Enhanced PROJECT_TYPES organized by categories
+PROJECT_CATEGORIES = {
+    "🤖 Digital Transformation & Automation": [
+        "RPA (Robotic Process Automation)",
+        "Process Automation & Optimization",
+        "Digital Workflow Management",
+        "Business Process Re-engineering",
+        "Document Management System",
+        "Electronic Signature Solutions"
+    ],
+    
+    "🧠 AI & Advanced Analytics": [
+        "AI & Machine Learning Platform",
+        "Predictive Analytics Implementation",
+        "Computer Vision Solutions",
+        "Natural Language Processing",
+        "Chatbot & Virtual Assistant",
+        "AI-Powered Quality Control"
+    ],
+    
+    "📊 Data & Business Intelligence": [
+        "Data Analytics & BI Platform",
+        "Data Warehouse Implementation",
+        "Real-time Dashboard Development",
+        "Data Lake Architecture",
+        "Master Data Management",
+        "Data Migration & Integration",
+        "Self-Service Analytics Tools"
+    ],
+    
+    "💼 Enterprise Applications": [
+        "ERP System Implementation",
+        "CRM System Deployment",
+        "HCM/HR System Implementation",
+        "Supply Chain Management System",
+        "Asset Management System",
+        "Project Management Platform",
+        "Financial Management System",
+        "Procurement & Vendor Management"
+    ],
+    
+    "🏭 Industry-Specific Solutions": [
+        "Manufacturing Execution System (MES)",
+        "Industrial IoT (IIoT) Implementation",
+        "Equipment Monitoring & Maintenance",
+        "Quality Management System",
+        "Inventory Management System",
+        "Transportation Management System",
+        "Warehouse Management System",
+        "Field Service Management"
+    ],
+    
+    "☁️ Infrastructure & Cloud": [
+        "Cloud Migration & Modernization",
+        "Hybrid Cloud Implementation",
+        "Infrastructure Upgrade",
+        "Network Infrastructure Enhancement",
+        "Server Virtualization",
+        "Backup & Disaster Recovery",
+        "Performance Monitoring System"
+    ],
+    
+    "🔒 Security & Compliance": [
+        "Cybersecurity Enhancement",
+        "Identity & Access Management",
+        "Security Information & Event Management (SIEM)",
+        "Data Loss Prevention (DLP)",
+        "Compliance Management System",
+        "Risk Management Platform",
+        "Audit & Governance Tools"
+    ],
+    
+    "🔗 Integration & Connectivity": [
+        "System Integration Project",
+        "API Development & Management",
+        "EDI Implementation",
+        "B2B Portal Development",
+        "Mobile Application Development",
+        "Web Portal Implementation",
+        "Third-party System Integration"
+    ],
+    
+    "💬 Communication & Collaboration": [
+        "Unified Communications Platform",
+        "Video Conferencing Solutions",
+        "Team Collaboration Tools",
+        "Knowledge Management System",
+        "Training & Learning Management System"
+    ],
+    
+    "👥 Customer Experience": [
+        "Customer Portal Development",
+        "E-commerce Platform",
+        "Customer Service Management",
+        "Marketing Automation Platform",
+        "Social Media Management Tools"
+    ],
+    
+    "💰 Financial & Regulatory": [
+        "Financial Reporting & Analytics",
+        "Regulatory Compliance System",
+        "Tax Management System",
+        "Treasury Management System",
+        "Budget Planning & Forecasting"
+    ],
+    
+    "🌱 Sustainability & ESG": [
+        "Environmental Management System",
+        "Sustainability Reporting Platform",
+        "Energy Management System",
+        "Carbon Footprint Tracking",
+        "ESG Compliance & Reporting"
+    ],
+    
+    "⚙️ Custom & Specialized": [
+        "Custom Application Development",
+        "Legacy System Modernization",
+        "Database Optimization & Migration",
+        "Business Intelligence Custom Reports",
+        "Specialized Industry Solution",
+        "Research & Development Platform"
+    ]
+}
+
+# Flatten the categories for backward compatibility
+PROJECT_TYPES = []
+for category, services in PROJECT_CATEGORIES.items():
+    PROJECT_TYPES.extend(services)
+
+DEPARTMENTS = [
+    "Finance", "Human Resources", "Operations", "Sales", "Marketing", 
+    "IT", "Customer Service", "Supply Chain", "Manufacturing", "Executive"
+]
+
 # Predefined service data
 ORACLE_SERVICES = {
     "Oracle ERP Cloud": {
@@ -120,7 +254,7 @@ RPA_PACKAGES = {
         "build_implementation": 3080,
         "project_management": 9350,
         "infrastructure_license": 43230,
-        "year_1_total": 88770,  # Sum of all Year 1 components
+        "year_1_total": 88770,
         "year_2_cost": 10098,
         "year_3_cost": 10906,
         "processes_covered": "Covers up to 2 processes",
@@ -131,7 +265,7 @@ RPA_PACKAGES = {
         "build_implementation": 8778,
         "project_management": 57310,
         "infrastructure_license": 124608,
-        "year_1_total": 285660,  # Sum of all Year 1 components
+        "year_1_total": 285660,
         "year_2_cost": 30294,
         "year_3_cost": 32718,
         "processes_covered": "Covers up to 5 processes",
@@ -142,7 +276,7 @@ RPA_PACKAGES = {
         "build_implementation": 13860,
         "project_management": 92950,
         "infrastructure_license": 199210,
-        "year_1_total": 455015,  # Sum of all Year 1 components
+        "year_1_total": 455015,
         "year_2_cost": 50490,
         "year_3_cost": 54529,
         "processes_covered": "Covers up to 10 processes",
@@ -153,31 +287,13 @@ RPA_PACKAGES = {
         "build_implementation": 26180,
         "project_management": 180766,
         "infrastructure_license": 381480,
-        "year_1_total": 869861,  # Sum of all Year 1 components
+        "year_1_total": 869861,
         "year_2_cost": 100980,
         "year_3_cost": 109058,
         "processes_covered": "Covers up to 20 processes",
         "implementation_processes": "Covers up to 10 processes"
     }
 }
-
-PROJECT_TYPES = [
-    "RPA (Robotic Process Automation)",
-    "AI & Machine Learning",
-    "IoT Implementation",
-    "Custom Application Development",
-    "Data Analytics & BI",
-    "Digital Transformation",
-    "Infrastructure Upgrade",
-    "Cybersecurity Enhancement",
-    "Cloud Migration",
-    "Integration Project"
-]
-
-DEPARTMENTS = [
-    "Finance", "Human Resources", "Operations", "Sales", "Marketing", 
-    "IT", "Customer Service", "Supply Chain", "Manufacturing", "Executive"
-]
 
 # Custom CSS for professional styling
 st.markdown("""
@@ -191,19 +307,6 @@ st.markdown("""
         margin-bottom: 2rem;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-
-PROJECT_TYPES = [
-    "RPA (Robotic Process Automation)",
-    "AI & Machine Learning",
-    "IoT Implementation",
-    "Custom Application Development",
-    "Data Analytics & BI",
-    "Digital Transformation",
-    "Infrastructure Upgrade",
-    "Cybersecurity Enhancement",
-    "Cloud Migration",
-    "Integration Project"
-]
     
     .category-section {
         background: #f8fafc;
@@ -294,6 +397,14 @@ PROJECT_TYPES = [
         border: 1px solid #e5e7eb;
         margin: 0.5rem 0;
     }
+    
+    .category-selector {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -313,154 +424,6 @@ def initialize_session_state():
         st.session_state.company_info = {}
 
 initialize_session_state()
-
-# Predefined service data
-ORACLE_SERVICES = {
-    "Oracle ERP Cloud": {
-        "description": "Complete enterprise resource planning solution with financials, procurement, and project management",
-        "price_per_user": 180,
-        "setup_cost": 25000
-    },
-    "Oracle HCM Cloud": {
-        "description": "Human capital management including payroll, talent management, and workforce planning",
-        "price_per_user": 75,
-        "setup_cost": 15000
-    },
-    "Oracle Supply Chain Management": {
-        "description": "End-to-end supply chain planning, inventory management, and logistics optimization",
-        "price_per_user": 120,
-        "setup_cost": 20000
-    },
-    "Oracle Fusion Analytics": {
-        "description": "Pre-built analytics and reporting for Oracle applications with real-time insights",
-        "price_per_user": 45,
-        "setup_cost": 8000
-    }
-}
-
-MICROSOFT_SERVICES = {
-    "Microsoft 365 E3": {
-        "description": "Premium productivity suite with advanced security, compliance, and analytics capabilities",
-        "price_per_user": 82,
-        "setup_cost": 5000
-    },
-    "Microsoft Teams Phone": {
-        "description": "Cloud-based phone system integrated with Teams for calling and conferencing",
-        "price_per_user": 28,
-        "setup_cost": 3000
-    },
-    "Power BI Premium": {
-        "description": "Advanced business intelligence with AI-powered insights and enterprise-grade capabilities",
-        "price_per_user": 75,
-        "setup_cost": 4000
-    },
-    "Project for the Web": {
-        "description": "Cloud-based project management with resource scheduling and portfolio management",
-        "price_per_user": 120,
-        "setup_cost": 6000
-    },
-    "Microsoft Dynamics 365": {
-        "description": "Customer relationship management and enterprise applications suite",
-        "price_per_user": 210,
-        "setup_cost": 30000
-    }
-}
-
-SUPPORT_PACKAGES = {
-    "Basic": {
-        "price": 52000,
-        "support_requests": "Standard (5 per month)",
-        "improvement_hours": "10 hours",
-        "training_requests": "2 per quarter",
-        "report_requests": "1 per month",
-        "description": "Essential support for small teams with basic IT needs"
-    },
-    "Bronze": {
-        "price": 195975,
-        "support_requests": "Priority (15 per month)",
-        "improvement_hours": "25 hours",
-        "training_requests": "4 per quarter",
-        "report_requests": "3 per month",
-        "description": "Enhanced support for growing organizations"
-    },
-    "Silver": {
-        "price": 649498,
-        "support_requests": "Premium (35 per month)",
-        "improvement_hours": "50 hours",
-        "training_requests": "8 per quarter",
-        "report_requests": "6 per month",
-        "description": "Comprehensive support for medium enterprises"
-    },
-    "Gold": {
-        "price": 1578139,
-        "support_requests": "Premium Plus (75 per month)",
-        "improvement_hours": "100 hours",
-        "training_requests": "15 per quarter",
-        "report_requests": "12 per month",
-        "description": "Premium support for large organizations"
-    },
-    "Platinum": {
-        "price": 2500000,
-        "support_requests": "Unlimited",
-        "improvement_hours": "200 hours",
-        "training_requests": "Unlimited",
-        "report_requests": "Unlimited",
-        "description": "Enterprise-grade support with dedicated resources"
-    }
-}
-
-# RPA Package data from the provided table
-RPA_PACKAGES = {
-    "Bronze (1 Credit)": {
-        "discovery_analysis": 33110,
-        "build_implementation": 3080,
-        "project_management": 9350,
-        "infrastructure_license": 43230,
-        "year_1_total": 88770,  # Sum of all Year 1 components
-        "year_2_cost": 10098,
-        "year_3_cost": 10906,
-        "processes_covered": "Covers up to 2 processes",
-        "implementation_processes": "Covers 1 process"
-    },
-    "Silver (3 Credits)": {
-        "discovery_analysis": 94964,
-        "build_implementation": 8778,
-        "project_management": 57310,
-        "infrastructure_license": 124608,
-        "year_1_total": 285660,  # Sum of all Year 1 components
-        "year_2_cost": 30294,
-        "year_3_cost": 32718,
-        "processes_covered": "Covers up to 5 processes",
-        "implementation_processes": "Covers up to 3 processes"
-    },
-    "Gold (5 Credits)": {
-        "discovery_analysis": 148995,
-        "build_implementation": 13860,
-        "project_management": 92950,
-        "infrastructure_license": 199210,
-        "year_1_total": 455015,  # Sum of all Year 1 components
-        "year_2_cost": 50490,
-        "year_3_cost": 54529,
-        "processes_covered": "Covers up to 10 processes",
-        "implementation_processes": "Covers up to 5 processes"
-    },
-    "Platinum (10 Credits)": {
-        "discovery_analysis": 281435,
-        "build_implementation": 26180,
-        "project_management": 180766,
-        "infrastructure_license": 381480,
-        "year_1_total": 869861,  # Sum of all Year 1 components
-        "year_2_cost": 100980,
-        "year_3_cost": 109058,
-        "processes_covered": "Covers up to 20 processes",
-        "implementation_processes": "Covers up to 10 processes"
-    }
-}
-
-DEPARTMENTS = [
-    "Finance", "Human Resources", "Operations", "Sales", "Marketing", 
-    "IT", "Customer Service", "Supply Chain", "Manufacturing", "Executive"
-]
 
 # Utility functions
 def calculate_operational_total():
@@ -514,7 +477,6 @@ def calculate_total_budget():
 
 # Header
 def show_header():
-    # Get selected company for dynamic header
     selected_company_info = st.session_state.company_info.get('company_code', '')
     
     header_subtitle = f"Shared Service Catalogue and Budgeting System"
@@ -529,11 +491,6 @@ def show_header():
         <p><strong>Budget Year:</strong> 2025 | <strong>Version:</strong> 2.0</p>
     </div>
     """, unsafe_allow_html=True)
-
-# Company list for Alkhorayef Group
-ALKHORAYEF_COMPANIES = [
-    "APC", "AIC", "AGC", "APS", "PS", "AWPT", "AMIC", "ACC", "SPC", "Tom Egypt"
-]
 
 # Sidebar for company info and budget summary
 def show_sidebar():
@@ -573,10 +530,9 @@ def show_sidebar():
         
         st.markdown("---")
         
-        # Budget summary - force recalculation each time
+        # Budget summary
         st.markdown("### 💰 Service Selection Summary")
         
-        # Force recalculation of all totals
         operational_total = calculate_operational_total()
         support_total = calculate_support_total()
         implementation_total = calculate_implementation_total()
@@ -619,18 +575,6 @@ def show_sidebar():
         st.metric("Operational Services", operational_count)
         st.metric("Support Package", "Selected" if support_selected else "Not Selected")
         st.metric("Implementation Projects", implementation_count)
-        
-        # Debug info (can be removed in production)
-        if st.checkbox("Show Debug Info", value=False):
-            st.markdown("### 🔍 Debug Information")
-            st.write("Operational Services State:")
-            for key, value in st.session_state.operational_services.items():
-                if value.get('selected', False):
-                    impl_status = "New" if value.get('new_implementation', False) else "Existing"
-                    st.write(f"- {key}: Users={value.get('users', 0)}, Implementation={impl_status}")
-            st.write(f"Custom Services: {len(st.session_state.custom_operational)}")
-            st.write(f"Support Package: {st.session_state.support_package}")
-            st.write(f"Projects: {len(st.session_state.implementation_projects)}")
 
 # Operational Services Section
 def show_operational_services():
@@ -709,7 +653,6 @@ def show_operational_services():
                     setup_cost = details['setup_cost'] if new_implementation else 0
                     annual_cost = monthly_cost * 12 + setup_cost
                     
-                    # Dynamic cost display
                     setup_text = f" + SAR {setup_cost:,} setup" if new_implementation else " (no setup cost)"
                     
                     st.markdown(f"""
@@ -718,9 +661,6 @@ def show_operational_services():
                         <strong>Annual Total: SAR {annual_cost:,.0f}</strong>
                     </div>
                     """, unsafe_allow_html=True)
-                    
-                    if not new_implementation and setup_cost > 0:
-                        st.info("💡 No setup cost - adding users to existing system")
             else:
                 st.session_state.operational_services[service_key] = {
                     'selected': False,
@@ -799,7 +739,6 @@ def show_operational_services():
                     setup_cost = details['setup_cost'] if new_implementation else 0
                     annual_cost = monthly_cost * 12 + setup_cost
                     
-                    # Dynamic cost display
                     setup_text = f" + SAR {setup_cost:,} setup" if new_implementation else " (no setup cost)"
                     
                     st.markdown(f"""
@@ -808,9 +747,6 @@ def show_operational_services():
                         <strong>Annual Total: SAR {annual_cost:,.0f}</strong>
                     </div>
                     """, unsafe_allow_html=True)
-                    
-                    if not new_implementation and setup_cost > 0:
-                        st.info("💡 No setup cost - adding users to existing system")
             else:
                 st.session_state.operational_services[service_key] = {
                     'selected': False,
@@ -906,7 +842,6 @@ def show_support_packages():
     
     st.markdown("### 📞 Available Support Packages")
     
-    # Display packages in rows to accommodate all 5 packages
     packages_list = list(SUPPORT_PACKAGES.items())
     
     # First row: Basic, Bronze, Silver
@@ -915,11 +850,6 @@ def show_support_packages():
         package_name, details = packages_list[i]
         
         with cols1[i]:
-            is_selected = st.session_state.support_package == package_name
-            border_color = "#dc2626" if is_selected else "#22c55e"
-            bg_color = "#fef2f2" if is_selected else "#f0fdf4"
-            
-            # Create the card content without problematic HTML
             st.markdown(f"### {package_name}")
             st.markdown(f"**SAR {details['price']:,.0f}**")
             
@@ -940,16 +870,13 @@ def show_support_packages():
     # Second row: Gold, Platinum (centered)
     if len(packages_list) > 3:
         st.markdown("<br>", unsafe_allow_html=True)
-        cols2 = st.columns([1, 2, 2, 1])  # Center the remaining packages
+        cols2 = st.columns([1, 2, 2, 1])
         
         for i in range(3, len(packages_list)):
             package_name, details = packages_list[i]
-            col_index = i - 3 + 1  # Start from column 1 for centering
+            col_index = i - 3 + 1
             
             with cols2[col_index]:
-                is_selected = st.session_state.support_package == package_name
-                
-                # Create the card content without problematic HTML
                 st.markdown(f"### {package_name}")
                 st.markdown(f"**SAR {details['price']:,.0f}**")
                 
@@ -1006,7 +933,7 @@ def show_support_packages():
             </div>
             """, unsafe_allow_html=True)
 
-# Implementation Projects Section
+# Implementation Projects Section with Enhanced Categories
 def show_implementation_projects():
     st.markdown("""
     <div class='category-section'>
@@ -1030,13 +957,57 @@ def show_implementation_projects():
         
         with col1:
             project_name = st.text_input("Project Name", placeholder="e.g., AI-Powered Analytics Platform", key="project_name_input")
-            project_type = st.selectbox("Project Type", PROJECT_TYPES, key="project_type_input")
+            
+            # Enhanced project type selection with categories
+            st.markdown("#### Select Project Category & Type")
+            st.markdown("""
+            <div class='category-selector'>
+                <p style='margin-bottom: 0.5rem; font-weight: 500;'>Choose from our comprehensive service categories:</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Category selection
+            selected_category = st.selectbox(
+                "Project Category", 
+                options=list(PROJECT_CATEGORIES.keys()),
+                key="project_category_input",
+                help="Select the main category for your project"
+            )
+            
+            # Service type based on selected category
+            project_type = st.selectbox(
+                "Specific Service Type", 
+                options=PROJECT_CATEGORIES[selected_category],
+                key="project_type_input",
+                help=f"Select the specific service within {selected_category}"
+            )
+            
             timeline = st.selectbox("Timeline", ["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Multi-quarter", "2+ years"], key="project_timeline_input")
             priority = st.select_slider("Priority Level", ["Low", "Medium", "High", "Critical"], value="Medium", key="project_priority_input")
         
         with col2:
             budget = st.number_input("Budget Estimate (SAR)", min_value=0, value=100000, step=10000, key="project_budget_input")
             departments = st.multiselect("Departments Involved", DEPARTMENTS, key="project_departments_input")
+            
+            # Show category description
+            category_descriptions = {
+                "🤖 Digital Transformation & Automation": "Streamline operations through intelligent automation and process optimization",
+                "🧠 AI & Advanced Analytics": "Leverage artificial intelligence and machine learning for data-driven insights",
+                "📊 Data & Business Intelligence": "Transform raw data into actionable business intelligence and reporting",
+                "💼 Enterprise Applications": "Implement core business applications for operational excellence",
+                "🏭 Industry-Specific Solutions": "Specialized solutions for manufacturing and industrial operations",
+                "☁️ Infrastructure & Cloud": "Modernize IT infrastructure with cloud-native technologies",
+                "🔒 Security & Compliance": "Enhance cybersecurity posture and regulatory compliance",
+                "🔗 Integration & Connectivity": "Connect systems and enable seamless data flow",
+                "💬 Communication & Collaboration": "Improve team collaboration and communication capabilities",
+                "👥 Customer Experience": "Enhance customer interactions and engagement platforms",
+                "💰 Financial & Regulatory": "Strengthen financial management and regulatory compliance",
+                "🌱 Sustainability & ESG": "Support environmental and sustainability initiatives",
+                "⚙️ Custom & Specialized": "Tailored solutions for unique business requirements"
+            }
+            
+            if selected_category in category_descriptions:
+                st.info(f"**{selected_category}**: {category_descriptions[selected_category]}")
             
         project_description = st.text_area("Project Description", 
                                          placeholder="Describe the project scope, objectives, and expected outcomes...", 
@@ -1046,10 +1017,34 @@ def show_implementation_projects():
                                       placeholder="Define how success will be measured...", 
                                       key="project_success_criteria_input")
         
+        # Special handling for RPA projects
+        if project_type == "RPA (Robotic Process Automation)":
+            st.markdown("#### 🤖 RPA Package Selection")
+            st.info("For RPA projects, you can select from our predefined packages or specify a custom budget.")
+            
+            use_rpa_package = st.checkbox("Use Predefined RPA Package", key="use_rpa_package_input")
+            
+            if use_rpa_package:
+                rpa_package = st.selectbox("Select RPA Package", list(RPA_PACKAGES.keys()), key="rpa_package_selection")
+                
+                if rpa_package:
+                    package_details = RPA_PACKAGES[rpa_package]
+                    st.markdown(f"""
+                    **Selected Package:** {rpa_package}  
+                    **Year 1 Budget:** SAR {package_details['year_1_total']:,.0f}  
+                    **{package_details['processes_covered']}**  
+                    **Implementation:** {package_details['implementation_processes']}
+                    """)
+                    
+                    # Update budget with RPA package cost
+                    budget = package_details['year_1_total']
+                    st.session_state['project_budget_input'] = budget
+        
         if st.button("Add Project", type="primary", key="add_implementation_project_btn"):
             if project_name and project_description and budget > 0:
                 new_project = {
                     'name': project_name,
+                    'category': selected_category,
                     'type': project_type,
                     'description': project_description,
                     'timeline': timeline,
@@ -1059,6 +1054,14 @@ def show_implementation_projects():
                     'success_criteria': success_criteria,
                     'created_date': datetime.now().strftime("%Y-%m-%d")
                 }
+                
+                # Add RPA package details if applicable
+                if project_type == "RPA (Robotic Process Automation)" and 'use_rpa_package_input' in st.session_state and st.session_state['use_rpa_package_input']:
+                    if 'rpa_package_selection' in st.session_state:
+                        rpa_package = st.session_state['rpa_package_selection']
+                        new_project['rpa_package'] = True
+                        new_project['rpa_details'] = RPA_PACKAGES[rpa_package]
+                        new_project['rpa_package_name'] = rpa_package
                 
                 st.session_state.implementation_projects.append(new_project)
                 st.success(f"✅ Added project: {project_name}")
@@ -1072,42 +1075,81 @@ def show_implementation_projects():
         
         total_implementation_budget = 0
         
-        for i, project in enumerate(st.session_state.implementation_projects):
-            total_implementation_budget += project['budget']
+        # Group projects by category for better organization
+        projects_by_category = {}
+        for project in st.session_state.implementation_projects:
+            category = project.get('category', '⚙️ Custom & Specialized')
+            if category not in projects_by_category:
+                projects_by_category[category] = []
+            projects_by_category[category].append(project)
+        
+        for category, projects in projects_by_category.items():
+            st.markdown(f"#### {category}")
             
-            # Color coding by priority
-            priority_colors = {
-                'Low': '#10b981',
-                'Medium': '#f59e0b', 
-                'High': '#ef4444',
-                'Critical': '#dc2626'
-            }
-            
-            priority_color = priority_colors.get(project['priority'], '#6b7280')
-            
-            st.markdown(f"""
-            <div class='project-card' style='border-left: 4px solid {priority_color};'>
-                <div style='display: flex; justify-content: space-between; align-items: start;'>
-                    <div style='flex: 1;'>
-                        <h4>{project['name']}</h4>
-                        <p style='color: #6b7280; margin: 0.5rem 0;'><strong>Type:</strong> {project['type']}</p>
-                        <p style='color: #6b7280; margin: 0.5rem 0;'><strong>Timeline:</strong> {project['timeline']}</p>
-                        <p style='color: {priority_color}; margin: 0.5rem 0;'><strong>Priority:</strong> {project['priority']}</p>
-                        <p style='margin: 0.5rem 0;'>{project['description']}</p>
-                        {f"<p style='margin: 0.5rem 0;'><strong>Departments:</strong> {', '.join(project['departments'])}</p>" if project['departments'] else ""}
+            for i, project in enumerate(projects):
+                # Find the original index in the full projects list
+                original_index = st.session_state.implementation_projects.index(project)
+                total_implementation_budget += project['budget']
+                
+                # Color coding by priority
+                priority_colors = {
+                    'Low': '#10b981',
+                    'Medium': '#f59e0b', 
+                    'High': '#ef4444',
+                    'Critical': '#dc2626'
+                }
+                
+                priority_color = priority_colors.get(project['priority'], '#6b7280')
+                
+                # Special display for RPA packages
+                if project.get('rpa_package', False):
+                    rpa_details = project.get('rpa_details', {})
+                    three_year_total = rpa_details.get('year_1_total', 0) + rpa_details.get('year_2_cost', 0) + rpa_details.get('year_3_cost', 0)
+                    
+                    st.markdown(f"""
+                    <div class='project-card' style='border-left: 4px solid {priority_color};'>
+                        <div style='display: flex; justify-content: space-between; align-items: start;'>
+                            <div style='flex: 1;'>
+                                <h4>{project['name']} 🤖</h4>
+                                <p style='color: #6b7280; margin: 0.5rem 0;'><strong>RPA Package:</strong> {project.get('rpa_package_name', 'Custom')}</p>
+                                <p style='color: #6b7280; margin: 0.5rem 0;'><strong>Timeline:</strong> {project['timeline']}</p>
+                                <p style='color: {priority_color}; margin: 0.5rem 0;'><strong>Priority:</strong> {project['priority']}</p>
+                                <p style='margin: 0.5rem 0;'>{project['description']}</p>
+                                <p style='margin: 0.5rem 0;'><strong>Process Coverage:</strong> {rpa_details.get('processes_covered', 'N/A')}</p>
+                                {f"<p style='margin: 0.5rem 0;'><strong>Departments:</strong> {', '.join(project['departments'])}</p>" if project['departments'] else ""}
+                            </div>
+                            <div style='text-align: right; margin-left: 1rem;'>
+                                <h3 style='color: #1f2937; margin: 0;'>SAR {project['budget']:,.0f}</h3>
+                                <p style='color: #6b7280; font-size: 0.9em; margin: 0;'>Year 1</p>
+                                <p style='color: #6b7280; font-size: 0.9em; margin: 0;'>3-Year: SAR {three_year_total:,.0f}</p>
+                            </div>
+                        </div>
                     </div>
-                    <div style='text-align: right; margin-left: 1rem;'>
-                        <h3 style='color: #1f2937; margin: 0;'>SAR {project['budget']:,.0f}</h3>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                    <div class='project-card' style='border-left: 4px solid {priority_color};'>
+                        <div style='display: flex; justify-content: space-between; align-items: start;'>
+                            <div style='flex: 1;'>
+                                <h4>{project['name']}</h4>
+                                <p style='color: #6b7280; margin: 0.5rem 0;'><strong>Type:</strong> {project['type']}</p>
+                                <p style='color: #6b7280; margin: 0.5rem 0;'><strong>Timeline:</strong> {project['timeline']}</p>
+                                <p style='color: {priority_color}; margin: 0.5rem 0;'><strong>Priority:</strong> {project['priority']}</p>
+                                <p style='margin: 0.5rem 0;'>{project['description']}</p>
+                                {f"<p style='margin: 0.5rem 0;'><strong>Departments:</strong> {', '.join(project['departments'])}</p>" if project['departments'] else ""}
+                            </div>
+                            <div style='text-align: right; margin-left: 1rem;'>
+                                <h3 style='color: #1f2937; margin: 0;'>SAR {project['budget']:,.0f}</h3>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            col1, col2 = st.columns([3, 1])
-            with col2:
-                if st.button(f"Remove", key=f"remove_implementation_project_{i}"):
-                    st.session_state.implementation_projects.pop(i)
-                    st.rerun()
+                    """, unsafe_allow_html=True)
+                
+                col1, col2 = st.columns([3, 1])
+                with col2:
+                    if st.button(f"Remove", key=f"remove_implementation_project_{original_index}"):
+                        st.session_state.implementation_projects.pop(original_index)
+                        st.rerun()
         
         st.markdown(f"""
         <div class='cost-display' style='background: #fef3c7; border-color: #f59e0b;'>
@@ -1115,7 +1157,7 @@ def show_implementation_projects():
         </div>
         """, unsafe_allow_html=True)
 
-# Summary Section
+# Summary Section (keeping the existing implementation)
 def show_summary():
     st.markdown("""
     <div class='category-section'>
@@ -1178,41 +1220,20 @@ def show_summary():
             fig_pie.update_traces(textposition='inside', textinfo='percent+label')
             st.plotly_chart(fig_pie, use_container_width=True, key="budget_pie_chart")
     
-    # Charts
-    col1, col2 = st.columns(2)
-    
-    # Pie chart for budget distribution
-    with col1:
-        if total_budget > 0:
-            fig_pie = px.pie(
-                values=[operational_total, support_total, implementation_total],
-                names=['Operational Services', 'Support Packages', 'Implementation Projects'],
-                title="2025 IT Budget Distribution",
-                color_discrete_map={
-                    'Operational Services': '#3b82f6',
-                    'Support Packages': '#10b981',
-                    'Implementation Projects': '#f59e0b'
-                }
-            )
-            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-            st.plotly_chart(fig_pie, use_container_width=True)
-    
-    # Monthly cash flow projection with correct billing schedule
+    # Monthly cash flow projection
     with col2:
         months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         
-        # Initialize monthly arrays
         monthly_operational = [0] * 12
         monthly_support = [0] * 12
         monthly_implementation = [0] * 12
         
         # Support and Operational costs are billed at year-end (December)
-        monthly_operational[11] = operational_total  # December (index 11)
-        monthly_support[11] = support_total  # December (index 11)
+        monthly_operational[11] = operational_total
+        monthly_support[11] = support_total
         
         # Implementation projects billed based on timeline/completion
         if st.session_state.implementation_projects:
-            # Distribute implementation costs based on project timelines
             q1_projects = []
             q2_projects = []
             q3_projects = []
@@ -1223,7 +1244,6 @@ def show_summary():
                 timeline = project.get('timeline', 'Q4 2025')
                 budget = project.get('budget', 0)
                 
-                # Special handling for RPA packages (multi-quarter by default)
                 if project.get('rpa_package', False):
                     multi_quarter_projects.append(budget)
                 elif 'Q1' in timeline:
@@ -1234,20 +1254,18 @@ def show_summary():
                     q3_projects.append(budget)
                 elif 'Q4' in timeline:
                     q4_projects.append(budget)
-                else:  # Multi-quarter or 2+ years
+                else:
                     multi_quarter_projects.append(budget)
             
-            # Assign project costs to completion months
             if q1_projects:
-                monthly_implementation[2] = sum(q1_projects)  # March (end of Q1)
+                monthly_implementation[2] = sum(q1_projects)
             if q2_projects:
-                monthly_implementation[5] = sum(q2_projects)  # June (end of Q2)
+                monthly_implementation[5] = sum(q2_projects)
             if q3_projects:
-                monthly_implementation[8] = sum(q3_projects)  # September (end of Q3)
+                monthly_implementation[8] = sum(q3_projects)
             if q4_projects:
-                monthly_implementation[11] = sum(q4_projects)  # December (end of Q4)
+                monthly_implementation[11] = sum(q4_projects)
             if multi_quarter_projects:
-                # Spread multi-quarter projects across the year
                 monthly_amount = sum(multi_quarter_projects) / 12
                 monthly_implementation = [x + monthly_amount for x in monthly_implementation]
         
@@ -1264,139 +1282,6 @@ def show_summary():
             showlegend=True
         )
         st.plotly_chart(fig_bar, use_container_width=True, key="cash_flow_chart")
-    
-    # Cash flow explanation
-    st.markdown("""
-    ### 💳 Billing Schedule Information
-    - **📅 Operational & Support**: Billed at year-end (December)
-    - **🚀 Implementation Projects**: Billed upon project completion based on timeline
-    - **📊 Chart Above**: Shows actual payment timing based on your project schedules
-    """)
-    
-    # Detailed breakdowns
-    st.markdown("### 📋 Detailed Budget Breakdown")
-    
-    # Operational Services Table
-    if operational_total > 0:
-        st.markdown("#### 🔧 Operational Services")
-        
-        operational_data = []
-        
-        # Predefined services
-        for service_key, data in st.session_state.operational_services.items():
-            if data.get('selected', False) and data.get('users', 0) > 0:
-                actual_service_name = data.get('actual_service_name', '')
-                users = data.get('users', 0)
-                is_new_implementation = data.get('new_implementation', False)
-                
-                # Determine provider and get service info
-                if actual_service_name in ORACLE_SERVICES:
-                    service_info = ORACLE_SERVICES[actual_service_name]
-                    monthly_cost = service_info['price_per_user'] * users
-                    setup_cost = service_info['setup_cost'] if is_new_implementation else 0
-                    annual_cost = (monthly_cost * 12) + setup_cost
-                    
-                    implementation_status = "New Implementation" if is_new_implementation else "Adding Users"
-                    
-                    operational_data.append({
-                        'Service': actual_service_name,
-                        'Provider': 'Oracle',
-                        'Users': users,
-                        'Status': implementation_status,
-                        'Monthly Cost': f"SAR {monthly_cost:,.0f}",
-                        'Setup Cost': f"SAR {setup_cost:,.0f}",
-                        'Annual Cost': f"SAR {annual_cost:,.0f}"
-                    })
-                
-                elif actual_service_name in MICROSOFT_SERVICES:
-                    service_info = MICROSOFT_SERVICES[actual_service_name]
-                    monthly_cost = service_info['price_per_user'] * users
-                    setup_cost = service_info['setup_cost'] if is_new_implementation else 0
-                    annual_cost = (monthly_cost * 12) + setup_cost
-                    
-                    implementation_status = "New Implementation" if is_new_implementation else "Adding Users"
-                    
-                    operational_data.append({
-                        'Service': actual_service_name,
-                        'Provider': 'Microsoft',
-                        'Users': users,
-                        'Status': implementation_status,
-                        'Monthly Cost': f"SAR {monthly_cost:,.0f}",
-                        'Setup Cost': f"SAR {setup_cost:,.0f}",
-                        'Annual Cost': f"SAR {annual_cost:,.0f}"
-                    })
-        
-        # Custom services
-        for custom_service in st.session_state.custom_operational:
-            users = custom_service['users']
-            monthly_cost = custom_service['price_per_user'] * users
-            is_new_implementation = custom_service.get('new_implementation', False)
-            setup_cost = custom_service['setup_cost'] if is_new_implementation else 0
-            annual_cost = (monthly_cost * 12) + setup_cost
-            
-            implementation_status = "New Implementation" if is_new_implementation else "Adding Users"
-            
-            operational_data.append({
-                'Service': f"{custom_service['name']} (Custom)",
-                'Provider': 'Custom',
-                'Users': users,
-                'Status': implementation_status,
-                'Monthly Cost': f"SAR {monthly_cost:,.0f}",
-                'Setup Cost': f"SAR {setup_cost:,.0f}",
-                'Annual Cost': f"SAR {annual_cost:,.0f}"
-            })
-        
-        if operational_data:
-            st.dataframe(pd.DataFrame(operational_data), use_container_width=True)
-    
-    # Support Package Details
-    if support_total > 0:
-        st.markdown("#### 🛠️ Support Package")
-        
-        support_data = [{
-            'Package': st.session_state.support_package,
-            'Base Cost': f"SAR {SUPPORT_PACKAGES[st.session_state.support_package]['price']:,.0f}",
-            'Extra Support Requests': st.session_state.support_extras['support'],
-            'Extra Training/Reports': st.session_state.support_extras['training'],
-            'Additional Cost': f"SAR {(st.session_state.support_extras['support'] * 1800) + (st.session_state.support_extras['training'] * 5399):,.0f}",
-            'Total Cost': f"SAR {support_total:,.0f}"
-        }]
-        
-        st.dataframe(pd.DataFrame(support_data), use_container_width=True)
-    
-    # Implementation Projects Table
-    if implementation_total > 0:
-        st.markdown("#### 🚀 Implementation Projects")
-        
-        implementation_data = []
-        for project in st.session_state.implementation_projects:
-            if project.get('rpa_package', False):
-                # Special handling for RPA packages
-                rpa_details = project.get('rpa_details', {})
-                three_year_total = rpa_details.get('year_1_total', 0) + rpa_details.get('year_2_cost', 0) + rpa_details.get('year_3_cost', 0)
-                
-                implementation_data.append({
-                    'Project Name': project['name'],
-                    'Type': project['type'],
-                    'Priority': project['priority'],
-                    'Timeline': project['timeline'],
-                    'Process Coverage': rpa_details.get('processes_covered', 'N/A'),
-                    'Year 1 Budget': f"SAR {project['budget']:,.0f}",
-                    '3-Year Total': f"SAR {three_year_total:,.0f}"
-                })
-            else:
-                # Regular projects
-                implementation_data.append({
-                    'Project Name': project['name'],
-                    'Type': project['type'],
-                    'Priority': project['priority'],
-                    'Timeline': project['timeline'],
-                    'Departments': ', '.join(project['departments']) if project['departments'] else 'N/A',
-                    'Budget': f"SAR {project['budget']:,.0f}",
-                    '3-Year Total': f"SAR {project['budget']:,.0f}"
-                })
-        
-        st.dataframe(pd.DataFrame(implementation_data), use_container_width=True)
     
     # Export and submission options
     st.markdown("### 📤 Export & Submit Selection")
@@ -1417,7 +1302,6 @@ def show_summary():
     
     with col4:
         if st.button("🚀 Submit Final Budget", type="primary", use_container_width=True, key="submit_final_budget_btn"):
-            # Generate unique reference ID with company code
             company_code = st.session_state.company_info.get('company_code', 'ALK')
             reference_id = f"{company_code}-2025-{datetime.now().strftime('%Y%m%d%H%M%S')}-{str(uuid.uuid4())[:8].upper()}"
             
