@@ -4,6 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import uuid
+import xlsxwriter
+import io
 
 # Page configuration
 st.set_page_config(
@@ -595,7 +597,305 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Initialize session state
-def initialize_session_state():
+def initialize_session_state()
+
+# Excel Template Functions
+def create_excel_template():
+    """Creates a comprehensive Excel template for Alkhorayef Group Shared Service Catalogue"""
+    output = io.BytesIO()
+    workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+    
+    # Define formats
+    header_format = workbook.add_format({
+        'bold': True, 'font_size': 12, 'bg_color': '#3b82f6', 'font_color': 'white',
+        'border': 1, 'align': 'center', 'valign': 'vcenter'
+    })
+    subheader_format = workbook.add_format({
+        'bold': True, 'font_size': 11, 'bg_color': '#e2e8f0',
+        'border': 1, 'align': 'center', 'valign': 'vcenter'
+    })
+    instruction_format = workbook.add_format({
+        'font_size': 10, 'italic': True, 'bg_color': '#fef3c7',
+        'border': 1, 'text_wrap': True
+    })
+    data_format = workbook.add_format({
+        'border': 1, 'align': 'left', 'valign': 'vcenter'
+    })
+    number_format = workbook.add_format({
+        'border': 1, 'align': 'center', 'valign': 'vcenter', 'num_format': '#,##0'
+    })
+    
+    # Sheet 1: Instructions and Company Info
+    instructions_sheet = workbook.add_worksheet('1. Instructions & Company Info')
+    instructions_sheet.set_column('A:A', 25)
+    instructions_sheet.set_column('B:B', 40)
+    instructions_sheet.set_column('C:C', 30)
+    
+    instructions_sheet.merge_range('A1:C1', 'Alkhorayef Group - 2025 Shared Service Catalogue Template', header_format)
+    instructions_sheet.write('A3', 'Instructions:', subheader_format)
+    instructions_sheet.write('A4', '1. Fill in all required fields', instruction_format)
+    instructions_sheet.write('A5', '2. Use dropdown lists where provided', instruction_format)
+    instructions_sheet.write('A6', '3. Save and upload to the Streamlit app', instruction_format)
+    instructions_sheet.write('A7', '4. Required fields are marked with *', instruction_format)
+    
+    # Company Information
+    instructions_sheet.write('A10', 'Company Information *', subheader_format)
+    instructions_sheet.write('A11', 'Company Code *', data_format)
+    instructions_sheet.write('A12', 'Department *', data_format)
+    instructions_sheet.write('A13', 'Contact Person *', data_format)
+    instructions_sheet.write('A14', 'Email *', data_format)
+    instructions_sheet.write('A15', 'Date', data_format)
+    
+    instructions_sheet.data_validation('B11', {
+        'validate': 'list',
+        'source': ['APC', 'AIC', 'AGC', 'APS', 'PS', 'AWPT', 'AMIC', 'ACC', 'SPC', 'Tom Egypt']
+    })
+    instructions_sheet.write('B11', '', data_format)
+    instructions_sheet.write('B12', '', data_format)
+    instructions_sheet.write('B13', '', data_format)
+    instructions_sheet.write('B14', '', data_format)
+    instructions_sheet.write('B15', datetime.now().strftime('%Y-%m-%d'), data_format)
+    
+    # Sheet 2: Operational Services
+    operational_sheet = workbook.add_worksheet('2. Operational Services')
+    operational_sheet.set_column('A:F', 20)
+    
+    operational_sheet.merge_range('A1:F1', 'Operational Services Selection', header_format)
+    operational_sheet.write('A2', 'Service Name', subheader_format)
+    operational_sheet.write('B2', 'Description', subheader_format)
+    operational_sheet.write('C2', 'Include? (Y/N)', subheader_format)
+    operational_sheet.write('D2', 'Number of Users', subheader_format)
+    operational_sheet.write('E2', 'New Implementation?', subheader_format)
+    operational_sheet.write('F2', 'Monthly Cost/User', subheader_format)
+    
+    # Add services data
+    services_data = [
+        ('ORACLE SERVICES', '', '', '', '', ''),
+        ('Oracle ERP Cloud', 'Complete enterprise resource planning solution', '', '', '', 180),
+        ('Oracle HCM Cloud', 'Human capital management including payroll', '', '', '', 75),
+        ('Oracle Supply Chain Management', 'End-to-end supply chain planning', '', '', '', 120),
+        ('Oracle Fusion Analytics', 'Pre-built analytics and reporting', '', '', '', 45),
+        ('', '', '', '', '', ''),
+        ('MICROSOFT SERVICES', '', '', '', '', ''),
+        ('Microsoft 365 E3', 'Premium productivity suite', '', '', '', 82),
+        ('Microsoft Teams Phone', 'Cloud-based phone system', '', '', '', 28),
+        ('Power BI Premium', 'Advanced business intelligence', '', '', '', 75),
+        ('Project for the Web', 'Cloud-based project management', '', '', '', 120),
+        ('Microsoft Dynamics 365', 'Customer relationship management', '', '', '', 210)
+    ]
+    
+    for row, (name, desc, inc, users, new_impl, cost) in enumerate(services_data, start=3):
+        operational_sheet.write(f'A{row}', name, subheader_format if 'SERVICES' in name else data_format)
+        operational_sheet.write(f'B{row}', desc, data_format)
+        if name and 'SERVICES' not in name:
+            operational_sheet.data_validation(f'C{row}', {'validate': 'list', 'source': ['Y', 'N']})
+            operational_sheet.data_validation(f'E{row}', {'validate': 'list', 'source': ['Y', 'N']})
+        operational_sheet.write(f'C{row}', inc, data_format)
+        operational_sheet.write(f'D{row}', users, number_format if isinstance(users, int) else data_format)
+        operational_sheet.write(f'E{row}', new_impl, data_format)
+        operational_sheet.write(f'F{row}', cost, number_format if isinstance(cost, int) else data_format)
+    
+    # Sheet 3: Custom Services
+    custom_sheet = workbook.add_worksheet('3. Custom Services')
+    custom_sheet.set_column('A:F', 20)
+    
+    custom_sheet.merge_range('A1:F1', 'Custom Operational Services', header_format)
+    headers = ['Service Name', 'Description', 'Price/User/Month', 'Setup Cost', 'Number of Users', 'New Implementation?']
+    for col, header in enumerate(headers):
+        custom_sheet.write(1, col, header, subheader_format)
+    
+    for row in range(2, 12):
+        for col in range(6):
+            if col == 5:  # New Implementation column
+                custom_sheet.data_validation(row, col, {'validate': 'list', 'source': ['Y', 'N']})
+            custom_sheet.write(row, col, '', data_format)
+    
+    # Sheet 4: Support Package
+    support_sheet = workbook.add_worksheet('4. Support Package')
+    support_sheet.set_column('A:C', 25)
+    
+    support_sheet.merge_range('A1:C1', 'Support Package Selection', header_format)
+    support_sheet.write('A3', 'Selected Package *', subheader_format)
+    support_sheet.data_validation('B3', {
+        'validate': 'list',
+        'source': ['Basic', 'Bronze', 'Silver', 'Gold', 'Platinum']
+    })
+    support_sheet.write('B3', '', data_format)
+    
+    support_sheet.write('A5', 'Additional Services', subheader_format)
+    additional_services = [
+        ('Extra Support Requests', 'SAR 1,800 each'),
+        ('Extra Training Requests', 'SAR 5,399 each'),
+        ('Extra Report Requests', 'SAR 5,399 each')
+    ]
+    
+    for i, (service, cost) in enumerate(additional_services):
+        row = 6 + i
+        support_sheet.write(f'A{row}', service, data_format)
+        support_sheet.write(f'B{row}', '', number_format)
+        support_sheet.write(f'C{row}', cost, instruction_format)
+    
+    # Sheet 5: Implementation Projects
+    projects_sheet = workbook.add_worksheet('5. Implementation Projects')
+    projects_sheet.set_column('A:H', 20)
+    
+    projects_sheet.merge_range('A1:H1', 'Implementation Projects', header_format)
+    project_headers = ['Project Name', 'Category', 'Project Type', 'Budget (SAR)', 'Timeline', 'Priority', 'Departments', 'Description']
+    for col, header in enumerate(project_headers):
+        projects_sheet.write(1, col, header, subheader_format)
+    
+    categories = ['Digital Transformation & Automation', 'AI & Advanced Analytics', 'Data & Business Intelligence', 'Enterprise Applications']
+    timelines = ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Multi-quarter']
+    priorities = ['Low', 'Medium', 'High', 'Critical']
+    
+    for row in range(2, 17):
+        projects_sheet.write(row, 0, '', data_format)  # Project Name
+        projects_sheet.data_validation(row, 1, {'validate': 'list', 'source': categories})
+        projects_sheet.write(row, 1, '', data_format)  # Category
+        projects_sheet.write(row, 2, '', data_format)  # Project Type
+        projects_sheet.write(row, 3, '', number_format)  # Budget
+        projects_sheet.data_validation(row, 4, {'validate': 'list', 'source': timelines})
+        projects_sheet.write(row, 4, '', data_format)  # Timeline
+        projects_sheet.data_validation(row, 5, {'validate': 'list', 'source': priorities})
+        projects_sheet.write(row, 5, '', data_format)  # Priority
+        projects_sheet.write(row, 6, '', data_format)  # Departments
+        projects_sheet.write(row, 7, '', data_format)  # Description
+    
+    workbook.close()
+    output.seek(0)
+    return output
+
+def parse_excel_data(uploaded_file):
+    """Parses the uploaded Excel file and returns structured data"""
+    try:
+        excel_data = pd.read_excel(uploaded_file, sheet_name=None, engine='openpyxl')
+        
+        parsed_data = {
+            'company_info': {},
+            'operational_services': {},
+            'custom_services': [],
+            'support_package': None,
+            'support_extras': {'support': 0, 'training': 0, 'reports': 0},
+            'implementation_projects': []
+        }
+        
+        # Parse company info
+        if '1. Instructions & Company Info' in excel_data:
+            company_sheet = excel_data['1. Instructions & Company Info']
+            if len(company_sheet) > 10:
+                parsed_data['company_info'] = {
+                    'company': str(company_sheet.iloc[10, 1]) if pd.notna(company_sheet.iloc[10, 1]) else '',
+                    'company_code': str(company_sheet.iloc[10, 1]) if pd.notna(company_sheet.iloc[10, 1]) else '',
+                    'department': str(company_sheet.iloc[11, 1]) if pd.notna(company_sheet.iloc[11, 1]) else '',
+                    'contact_person': str(company_sheet.iloc[12, 1]) if pd.notna(company_sheet.iloc[12, 1]) else '',
+                    'email': str(company_sheet.iloc[13, 1]) if pd.notna(company_sheet.iloc[13, 1]) else '',
+                    'date': str(company_sheet.iloc[14, 1]) if pd.notna(company_sheet.iloc[14, 1]) else datetime.now().strftime("%Y-%m-%d")
+                }
+        
+        # Parse operational services
+        if '2. Operational Services' in excel_data:
+            ops_sheet = excel_data['2. Operational Services']
+            for idx, row in ops_sheet.iterrows():
+                if idx < 2:
+                    continue
+                service_name = row.iloc[0]
+                include = row.iloc[2]
+                users = row.iloc[3]
+                new_impl = row.iloc[4]
+                
+                if pd.notna(service_name) and 'SERVICES' not in str(service_name) and str(include).upper() == 'Y' and pd.notna(users) and users > 0:
+                    service_key = f"service_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
+                    parsed_data['operational_services'][service_key] = {
+                        'selected': True,
+                        'users': int(users),
+                        'actual_service_name': service_name,
+                        'new_implementation': str(new_impl).upper() == 'Y'
+                    }
+        
+        # Parse custom services
+        if '3. Custom Services' in excel_data:
+            custom_sheet = excel_data['3. Custom Services']
+            for idx, row in custom_sheet.iterrows():
+                if idx < 2:
+                    continue
+                service_name = row.iloc[0]
+                description = row.iloc[1]
+                price_per_user = row.iloc[2]
+                setup_cost = row.iloc[3]
+                users = row.iloc[4]
+                new_impl = row.iloc[5]
+                
+                if pd.notna(service_name) and pd.notna(users) and users > 0:
+                    parsed_data['custom_services'].append({
+                        'name': service_name,
+                        'description': description if pd.notna(description) else '',
+                        'price_per_user': float(price_per_user) if pd.notna(price_per_user) else 0,
+                        'setup_cost': float(setup_cost) if pd.notna(setup_cost) else 0,
+                        'users': int(users),
+                        'new_implementation': str(new_impl).upper() == 'Y'
+                    })
+        
+        # Parse support package
+        if '4. Support Package' in excel_data:
+            support_sheet = excel_data['4. Support Package']
+            if len(support_sheet) > 2:
+                package = support_sheet.iloc[2, 1]
+                if pd.notna(package):
+                    parsed_data['support_package'] = str(package)
+                
+                if len(support_sheet) > 5:
+                    extra_support = support_sheet.iloc[5, 1]
+                    extra_training = support_sheet.iloc[6, 1]
+                    extra_reports = support_sheet.iloc[7, 1]
+                    
+                    parsed_data['support_extras'] = {
+                        'support': int(extra_support) if pd.notna(extra_support) else 0,
+                        'training': int(extra_training) if pd.notna(extra_training) else 0,
+                        'reports': int(extra_reports) if pd.notna(extra_reports) else 0
+                    }
+        
+        # Parse implementation projects
+        if '5. Implementation Projects' in excel_data:
+            projects_sheet = excel_data['5. Implementation Projects']
+            for idx, row in projects_sheet.iterrows():
+                if idx < 2:
+                    continue
+                project_name = row.iloc[0]
+                category = row.iloc[1]
+                project_type = row.iloc[2]
+                budget = row.iloc[3]
+                timeline = row.iloc[4]
+                priority = row.iloc[5]
+                departments = row.iloc[6]
+                description = row.iloc[7]
+                
+                if pd.notna(project_name) and pd.notna(budget) and budget > 0:
+                    parsed_data['implementation_projects'].append({
+                        'name': project_name,
+                        'category': category if pd.notna(category) else '⚙️ Custom & Specialized',
+                        'type': project_type if pd.notna(project_type) else 'Custom Application Development',
+                        'budget': float(budget),
+                        'timeline': timeline if pd.notna(timeline) else 'Q4 2025',
+                        'priority': priority if pd.notna(priority) else 'Medium',
+                        'departments': departments.split(',') if pd.notna(departments) else [],
+                        'description': description if pd.notna(description) else '',
+                        'success_criteria': '',
+                        'created_date': datetime.now().strftime("%Y-%m-%d")
+                    })
+        
+        return parsed_data, None
+        
+    except Exception as e:
+        return None, f"Error parsing Excel file: {str(e)}"
+
+def load_data_to_session_state(parsed_data):
+    """Loads parsed data into Streamlit session state"""
+    st.session_state.company_info = parsed_data['company_info']
+    st.session_state.operational_services = parsed_data['operational_services']
+    st.session_state.custom_operational = parsed_data['custom_services']
+    st.session_state.support_package = parsed_data['support_package']
+    st.session_state.support_extras = parsed_data['support_extras']
+    st.session_state.implementation_projects = parsed_data['implementation_projects']:
     if 'operational_services' not in st.session_state:
         st.session_state.operational_services = {}
     if 'custom_operational' not in st.session_state:
