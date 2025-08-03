@@ -7,7 +7,7 @@ import uuid
 
 # Page configuration
 st.set_page_config(
-    page_title="Alkhorayef Group - 2025 Shared Service Catalogue",
+    page_title="Alkhorayef Group - 2025 Multi-Department Shared Services Catalogue",
     page_icon="💼",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -18,8 +18,8 @@ ALKHORAYEF_COMPANIES = [
     "APC", "AIC", "AGC", "APS", "PS", "AWPT", "AMIC", "ACC", "SPC", "Tom Egypt"
 ]
 
-# Enhanced PROJECT_TYPES organized by categories
-PROJECT_CATEGORIES = {
+# Enhanced PROJECT_TYPES organized by categories for IT
+IT_PROJECT_CATEGORIES = {
     "🤖 Digital Transformation & Automation": [
         "RPA (Robotic Process Automation)",
         "Process Automation & Optimization",
@@ -142,37 +142,147 @@ PROJECT_CATEGORIES = {
     ]
 }
 
-# Flatten the categories for backward compatibility
-PROJECT_TYPES = []
-for category, services in PROJECT_CATEGORIES.items():
-    PROJECT_TYPES.extend(services)
+# Procurement Service Categories based on the Excel file
+PROCUREMENT_SERVICE_CATEGORIES = {
+    "🛒 Purchase Order Management": [
+        "Purchase Request Processing",
+        "Purchase Order Creation & Management",
+        "Urgent & Emergency Purchases",
+        "Purchase History & Analytics",
+        "Purchase Request Review & Approval"
+    ],
+    
+    "🤝 Supplier & Vendor Management": [
+        "Supplier Registration & Onboarding",
+        "Vendor Document Review & Verification",
+        "Supplier Data Management & Updates",
+        "Vendor Compliance Management",
+        "Supplier Performance Evaluation",
+        "Vendor Master Data Maintenance"
+    ],
+    
+    "📋 Master Data Management": [
+        "Item Creation & Classification",
+        "Part Number Management",
+        "Product Data Entry & Updates",
+        "Master Data Cleansing & Validation",
+        "Item Number Verification & Guidance",
+        "Technical Specifications Management"
+    ],
+    
+    "📄 Contract Management": [
+        "Service Contract Negotiation",
+        "Material Contract Management",
+        "Contract Documentation & Filing",
+        "Contract Renewal Management",
+        "Terms & Conditions Management",
+        "Contract Compliance Monitoring"
+    ],
+    
+    "🚚 Logistics & Delivery": [
+        "Internal Logistics Coordination",
+        "External Shipping Management",
+        "Pick-up & Delivery Services",
+        "Inter-branch Transportation",
+        "Warehouse-to-Company Shipping",
+        "Supplier-to-Warehouse Logistics"
+    ],
+    
+    "💰 Payment & Financial Processing": [
+        "Payment Request Processing",
+        "Invoice Verification & Processing",
+        "Petty Cash Management",
+        "Payment Coordination with Finance",
+        "Currency & Exchange Management",
+        "Refund & Return Processing"
+    ],
+    
+    "📊 Sourcing & RFQ Management": [
+        "Request for Quotation (RFQ)",
+        "Request for Proposal (RFP)",
+        "Supplier Quote Collection & Analysis",
+        "Market Research & Price Negotiation",
+        "Competitive Bidding Management",
+        "Source-to-Contract Process"
+    ],
+    
+    "🎓 Training & Development": [
+        "Procurement Process Training",
+        "Employee Skill Development",
+        "System Training & Support",
+        "Best Practices Training",
+        "Compliance Training",
+        "New Employee Orientation"
+    ],
+    
+    "🔍 Audit & Compliance": [
+        "Procurement Audit & Review",
+        "Document Verification & Validation",
+        "Compliance Monitoring",
+        "Process Review & Improvement",
+        "Risk Assessment & Mitigation",
+        "Quality Assurance"
+    ],
+    
+    "📞 Support & Communication": [
+        "Ticket Resolution & Support",
+        "Stakeholder Communication",
+        "Customer Support Procurement",
+        "Inter-department Coordination",
+        "Supplier Communication Management",
+        "Issue Resolution & Follow-up"
+    ]
+}
 
-DEPARTMENTS = [
+# Department configurations
+DEPARTMENTS_CONFIG = {
+    "IT": {
+        "icon": "💻",
+        "title": "Information Technology",
+        "project_categories": IT_PROJECT_CATEGORIES,
+        "color": "#3b82f6",
+        "description": "Digital transformation, technology infrastructure, and enterprise applications"
+    },
+    "Procurement": {
+        "icon": "🛒",
+        "title": "Procurement & Supply Chain",
+        "project_categories": PROCUREMENT_SERVICE_CATEGORIES,
+        "color": "#10b981",
+        "description": "Purchasing, vendor management, contracts, and supply chain optimization"
+    }
+}
+
+COMPANY_DEPARTMENTS = [
     "Finance", "Human Resources", "Operations", "Sales", "Marketing", 
-    "IT", "Customer Service", "Supply Chain", "Manufacturing", "Executive"
+    "IT", "Customer Service", "Supply Chain", "Manufacturing", "Executive",
+    "Procurement", "Legal", "Quality Assurance", "Safety & Security"
 ]
 
-# Predefined service data
+# Predefined service data for IT
 ORACLE_SERVICES = {
     "Oracle ERP Cloud": {
         "description": "Complete enterprise resource planning solution with financials, procurement, and project management",
         "price_per_user": 180,
-        "setup_cost": 25000
+        "setup_cost": 25000,
+        "department": "IT"
     },
     "Oracle HCM Cloud": {
         "description": "Human capital management including payroll, talent management, and workforce planning",
         "price_per_user": 75,
-        "setup_cost": 15000
+        "setup_cost": 15000,
+        "department": "IT"
     },
     "Oracle Supply Chain Management": {
         "description": "End-to-end supply chain planning, inventory management, and logistics optimization",
         "price_per_user": 120,
-        "setup_cost": 20000
+        "setup_cost": 20000,
+        "department": "IT"
     },
     "Oracle Fusion Analytics": {
         "description": "Pre-built analytics and reporting for Oracle applications with real-time insights",
         "price_per_user": 45,
-        "setup_cost": 8000
+        "setup_cost": 8000,
+        "department": "IT"
     }
 }
 
@@ -180,30 +290,70 @@ MICROSOFT_SERVICES = {
     "Microsoft 365 E3": {
         "description": "Premium productivity suite with advanced security, compliance, and analytics capabilities",
         "price_per_user": 82,
-        "setup_cost": 5000
+        "setup_cost": 5000,
+        "department": "IT"
     },
     "Microsoft Teams Phone": {
         "description": "Cloud-based phone system integrated with Teams for calling and conferencing",
         "price_per_user": 28,
-        "setup_cost": 3000
+        "setup_cost": 3000,
+        "department": "IT"
     },
     "Power BI Premium": {
         "description": "Advanced business intelligence with AI-powered insights and enterprise-grade capabilities",
         "price_per_user": 75,
-        "setup_cost": 4000
+        "setup_cost": 4000,
+        "department": "IT"
     },
     "Project for the Web": {
         "description": "Cloud-based project management with resource scheduling and portfolio management",
         "price_per_user": 120,
-        "setup_cost": 6000
+        "setup_cost": 6000,
+        "department": "IT"
     },
     "Microsoft Dynamics 365": {
         "description": "Customer relationship management and enterprise applications suite",
         "price_per_user": 210,
-        "setup_cost": 30000
+        "setup_cost": 30000,
+        "department": "IT"
     }
 }
 
+# Procurement Services with pricing
+PROCUREMENT_SERVICES = {
+    "Procurement Management Suite": {
+        "description": "Complete purchase-to-pay solution including PO management, supplier onboarding, and analytics",
+        "price_per_transaction": 25,
+        "setup_cost": 15000,
+        "department": "Procurement"
+    },
+    "Supplier Portal & Management": {
+        "description": "Centralized supplier registration, document management, and performance tracking",
+        "price_per_supplier": 120,
+        "setup_cost": 8000,
+        "department": "Procurement"
+    },
+    "Contract Management System": {
+        "description": "End-to-end contract lifecycle management with automated workflows and compliance tracking",
+        "price_per_contract": 150,
+        "setup_cost": 12000,
+        "department": "Procurement"
+    },
+    "E-Sourcing & RFQ Platform": {
+        "description": "Digital sourcing platform for RFQs, RFPs, competitive bidding, and supplier negotiations",
+        "price_per_event": 500,
+        "setup_cost": 10000,
+        "department": "Procurement"
+    },
+    "Procurement Analytics & Reporting": {
+        "description": "Advanced analytics for spend analysis, supplier performance, and procurement KPIs",
+        "price_per_user": 85,
+        "setup_cost": 6000,
+        "department": "Procurement"
+    }
+}
+
+# Support packages remain the same but now support multiple departments
 SUPPORT_PACKAGES = {
     "Basic": {
         "price": 52000,
@@ -215,7 +365,8 @@ SUPPORT_PACKAGES = {
         "training_requests": 0,
         "report_requests": 0,
         "systems_operation": "✓ Included",
-        "description": "Essential support for small teams with basic IT needs"
+        "description": "Essential support for small teams with basic shared service needs",
+        "departments": ["IT", "Procurement"]
     },
     "Bronze": {
         "price": 195975,
@@ -227,7 +378,8 @@ SUPPORT_PACKAGES = {
         "training_requests": 0,
         "report_requests": 0,
         "systems_operation": "✓ Included",
-        "description": "Enhanced support for growing organizations"
+        "description": "Enhanced support for growing organizations",
+        "departments": ["IT", "Procurement"]
     },
     "Silver": {
         "price": 649498,
@@ -239,7 +391,8 @@ SUPPORT_PACKAGES = {
         "training_requests": 0,
         "report_requests": 5,
         "systems_operation": "✓ Included",
-        "description": "Comprehensive support for medium enterprises"
+        "description": "Comprehensive support for medium enterprises",
+        "departments": ["IT", "Procurement"]
     },
     "Gold": {
         "price": 1578139,
@@ -251,7 +404,8 @@ SUPPORT_PACKAGES = {
         "training_requests": 5,
         "report_requests": 5,
         "systems_operation": "✓ Included",
-        "description": "Premium support for large organizations"
+        "description": "Premium support for large organizations",
+        "departments": ["IT", "Procurement"]
     },
     "Platinum": {
         "price": 2500000,
@@ -263,11 +417,12 @@ SUPPORT_PACKAGES = {
         "training_requests": 10,
         "report_requests": 15,
         "systems_operation": "✓ Included",
-        "description": "Enterprise-grade support with dedicated resources"
+        "description": "Enterprise-grade support with dedicated resources across all departments",
+        "departments": ["IT", "Procurement"]
     }
 }
 
-# RPA Package data from the provided table
+# RPA Package data remains the same
 RPA_PACKAGES = {
     "Bronze (1 Credit)": {
         "discovery_analysis": 33110,
@@ -328,6 +483,39 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     
+    .department-selector {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        text-align: center;
+    }
+    
+    .department-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 0.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .department-card:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .department-card.selected {
+        border-color: #dc2626;
+        background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.25);
+    }
+    
     .category-section {
         background: #f8fafc;
         border: 2px solid #e2e8f0;
@@ -352,6 +540,15 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
     }
     
+    .service-card.procurement {
+        border-left: 4px solid #10b981;
+    }
+    
+    .service-card.procurement:hover {
+        border-color: #10b981;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    }
+    
     .cost-display {
         background: #f0f9ff;
         border: 2px solid #0ea5e9;
@@ -360,6 +557,11 @@ st.markdown("""
         text-align: center;
         margin: 0.5rem 0;
         font-weight: bold;
+    }
+    
+    .cost-display.procurement {
+        background: #f0fdf4;
+        border-color: #10b981;
     }
     
     .total-budget {
@@ -374,154 +576,12 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
     }
     
-    .support-package-card {
-        background: white;
-        border: 2px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 2rem;
+    .custom-service {
+        background: #f3e8ff;
+        border: 2px solid #8b5cf6;
+        border-radius: 10px;
+        padding: 1rem;
         margin: 1rem 0;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-        text-align: center;
-        position: relative;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-    
-    .support-package-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-    }
-    
-    .support-package-card.basic {
-        border-color: #6b7280;
-        background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-    }
-    
-    .support-package-card.bronze {
-        border-color: #92400e;
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    }
-    
-    .support-package-card.silver {
-        border-color: #374151;
-        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    }
-    
-    .support-package-card.gold {
-        border-color: #d97706;
-        background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
-    }
-    
-    .support-package-card.platinum {
-        border-color: #1e293b;
-        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-    }
-    
-    .support-package-card.selected {
-        border-color: #dc2626;
-        background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
-        box-shadow: 0 15px 35px rgba(220, 38, 38, 0.25);
-    }
-    
-    .package-header {
-        border-bottom: 1px solid rgba(0,0,0,0.1);
-        padding-bottom: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .package-name {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 0.5rem;
-    }
-    
-    .package-price {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #dc2626;
-        margin-bottom: 0.5rem;
-    }
-    
-    .package-tagline {
-        font-style: italic;
-        color: #6b7280;
-        font-size: 0.9rem;
-        line-height: 1.4;
-    }
-    
-    .package-features {
-        text-align: left;
-        flex-grow: 1;
-        margin: 1rem 0;
-    }
-    
-    .feature-item {
-        display: flex;
-        align-items: center;
-        margin: 0.75rem 0;
-        padding: 0.5rem;
-        background: rgba(255,255,255,0.7);
-        border-radius: 8px;
-        font-size: 0.9rem;
-    }
-    
-    .feature-icon {
-        margin-right: 0.75rem;
-        font-size: 1.1rem;
-    }
-    
-    .feature-label {
-        font-weight: 600;
-        color: #374151;
-    }
-    
-    .feature-value {
-        color: #6b7280;
-        margin-left: 0.5rem;
-    }
-    
-    .select-button {
-        background: linear-gradient(45deg, #3b82f6, #1d4ed8);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 1rem;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-    
-    .select-button:hover {
-        background: linear-gradient(45deg, #1d4ed8, #1e40af);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-    }
-    
-    .select-button.basic {
-        background: linear-gradient(45deg, #6b7280, #4b5563);
-    }
-    
-    .select-button.bronze {
-        background: linear-gradient(45deg, #92400e, #78350f);
-    }
-    
-    .select-button.silver {
-        background: linear-gradient(45deg, #374151, #1f2937);
-    }
-    
-    .select-button.gold {
-        background: linear-gradient(45deg, #d97706, #b45309);
-    }
-    
-    .select-button.platinum {
-        background: linear-gradient(45deg, #1e293b, #0f172a);
     }
     
     .project-card {
@@ -532,19 +592,6 @@ st.markdown("""
         margin: 1rem 0;
     }
     
-    .custom-service {
-        background: #f3e8ff;
-        border: 2px solid #8b5cf6;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 1rem 0;
-    }
-    
-    .sidebar-budget {
-        position: sticky;
-        top: 1rem;
-    }
-    
     .metric-card {
         background: white;
         border-radius: 8px;
@@ -553,49 +600,13 @@ st.markdown("""
         border: 1px solid #e5e7eb;
         margin: 0.5rem 0;
     }
-    
-    .category-selector {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 1rem 0;
-    }
-    
-    .support-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
-        margin: 2rem 0;
-    }
-    
-    .unlimited-badge {
-        background: linear-gradient(45deg, #ef4444, #dc2626);
-        color: white;
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        margin-left: 0.5rem;
-    }
-    
-    .popular-badge {
-        position: absolute;
-        top: -10px;
-        right: 15px;
-        background: linear-gradient(45deg, #f59e0b, #d97706);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-    }
 </style>
 """, unsafe_allow_html=True)
 
 # Initialize session state
 def initialize_session_state():
+    if 'selected_department' not in st.session_state:
+        st.session_state.selected_department = None
     if 'operational_services' not in st.session_state:
         st.session_state.operational_services = {}
     if 'custom_operational' not in st.session_state:
@@ -611,35 +622,94 @@ def initialize_session_state():
 
 initialize_session_state()
 
+# Department selection functions
+def show_department_selection():
+    st.markdown("""
+    <div class='department-selector'>
+        <h2>🏢 Select Shared Services Department</h2>
+        <p>Choose the department for which you want to configure shared services</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    cols = st.columns(len(DEPARTMENTS_CONFIG))
+    
+    for i, (dept_key, dept_config) in enumerate(DEPARTMENTS_CONFIG.items()):
+        with cols[i]:
+            is_selected = st.session_state.selected_department == dept_key
+            card_class = "department-card selected" if is_selected else "department-card"
+            
+            st.markdown(f"""
+            <div class='{card_class}' onclick='selectDepartment("{dept_key}")'>
+                <h1 style='margin: 0; color: {dept_config["color"]};'>{dept_config["icon"]}</h1>
+                <h3 style='margin: 0.5rem 0; color: #1f2937;'>{dept_config["title"]}</h3>
+                <p style='margin: 0; color: #6b7280; font-size: 0.9em;'>{dept_config["description"]}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button(f"Select {dept_config['title']}", 
+                        key=f"select_dept_{dept_key}", 
+                        use_container_width=True,
+                        type="primary" if is_selected else "secondary"):
+                st.session_state.selected_department = dept_key
+                st.rerun()
+
 # Utility functions
 def calculate_operational_total():
     total = 0
     
-    # Predefined services
+    # Predefined services (IT)
     for service_key, data in st.session_state.operational_services.items():
         if data.get('selected', False) and data.get('users', 0) > 0:
             users = data.get('users', 0)
             actual_service_name = data.get('actual_service_name', '')
             is_new_implementation = data.get('new_implementation', False)
             
-            # Direct lookup using the actual service name stored in session state
+            # Check Oracle services
             if actual_service_name in ORACLE_SERVICES:
                 service_info = ORACLE_SERVICES[actual_service_name]
                 monthly_cost = service_info['price_per_user'] * users
                 setup_cost = service_info['setup_cost'] if is_new_implementation else 0
                 total += (monthly_cost * 12) + setup_cost
+            # Check Microsoft services
             elif actual_service_name in MICROSOFT_SERVICES:
                 service_info = MICROSOFT_SERVICES[actual_service_name]
                 monthly_cost = service_info['price_per_user'] * users
                 setup_cost = service_info['setup_cost'] if is_new_implementation else 0
                 total += (monthly_cost * 12) + setup_cost
+            # Check Procurement services
+            elif actual_service_name in PROCUREMENT_SERVICES:
+                service_info = PROCUREMENT_SERVICES[actual_service_name]
+                volume = data.get('volume', users)  # Use volume or users depending on service
+                
+                if 'price_per_user' in service_info:
+                    monthly_cost = service_info['price_per_user'] * users
+                    annual_cost = monthly_cost * 12
+                elif 'price_per_transaction' in service_info:
+                    annual_cost = service_info['price_per_transaction'] * volume
+                elif 'price_per_supplier' in service_info:
+                    annual_cost = service_info['price_per_supplier'] * volume
+                elif 'price_per_contract' in service_info:
+                    annual_cost = service_info['price_per_contract'] * volume
+                elif 'price_per_event' in service_info:
+                    annual_cost = service_info['price_per_event'] * volume
+                else:
+                    annual_cost = 0
+                
+                setup_cost = service_info['setup_cost'] if is_new_implementation else 0
+                total += annual_cost + setup_cost
     
     # Custom services
     for custom_service in st.session_state.custom_operational:
-        users = custom_service.get('users', 0)
-        monthly_cost = custom_service.get('price_per_user', 0) * users
+        volume = custom_service.get('volume', custom_service.get('users', 0))
+        price_per_unit = custom_service.get('price_per_user', custom_service.get('price_per_unit', 0))
+        
+        if custom_service.get('pricing_model') == 'monthly':
+            annual_cost = price_per_unit * volume * 12
+        else:
+            annual_cost = price_per_unit * volume
+            
         setup_cost = custom_service.get('setup_cost', 0) if custom_service.get('new_implementation', False) else 0
-        total += (monthly_cost * 12) + setup_cost
+        total += annual_cost + setup_cost
     
     return total
 
@@ -665,15 +735,20 @@ def calculate_total_budget():
 # Header
 def show_header():
     selected_company_info = st.session_state.company_info.get('company_code', '')
+    selected_dept = st.session_state.selected_department
     
-    header_subtitle = f"Shared Service Catalogue and Budgeting System"
-    if selected_company_info:
-        header_subtitle = f"{selected_company_info} - Shared Service Catalogue and Budgeting System"
+    header_subtitle = "Multi-Department Shared Services Catalogue and Budgeting System"
+    if selected_company_info and selected_dept:
+        dept_name = DEPARTMENTS_CONFIG[selected_dept]['title']
+        header_subtitle = f"{selected_company_info} - {dept_name} - Shared Services Catalogue"
+    elif selected_dept:
+        dept_name = DEPARTMENTS_CONFIG[selected_dept]['title']
+        header_subtitle = f"{dept_name} - Shared Services Catalogue and Budgeting System"
     
     st.markdown(f"""
     <div class='main-header'>
         <h1>💼 Alkhorayef Group</h1>
-        <h2>2025 Shared Service Catalogue</h2>
+        <h2>2025 Multi-Department Shared Services Catalogue</h2>
         <p>{header_subtitle}</p>
         <p><strong>Budget Year:</strong> 2025 | <strong>Version:</strong> 2.0</p>
     </div>
@@ -686,7 +761,7 @@ def show_sidebar():
         
         st.markdown("**🏭 Alkhorayef Group**")
         
-        # Company selection with abbreviations only
+        # Company selection
         selected_company = st.selectbox(
             "Select Your Company", 
             options=ALKHORAYEF_COMPANIES,
@@ -695,16 +770,27 @@ def show_sidebar():
             help="Choose which Alkhorayef Group company you represent"
         )
         
-        # Display selected company info with abbreviation only
-        st.markdown(f"""
-        <div style='background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;'>
-            <strong>Selected:</strong> {selected_company}
-        </div>
-        """, unsafe_allow_html=True)
+        # Department selection for the requester (not the shared service department)
+        department = st.selectbox(
+            "Your Department", 
+            options=COMPANY_DEPARTMENTS,
+            key="department_selection",
+            help="Your department within the company"
+        )
         
-        department = st.text_input("Department", key="department", placeholder="e.g., IT, Finance, Operations")
         contact_person = st.text_input("Contact Person", key="contact_person", placeholder="Your full name")
         email = st.text_input("Email", key="email", placeholder="your.email@alkhorayef.com")
+        
+        # Display selected company and shared service department
+        if st.session_state.selected_department:
+            dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+            st.markdown(f"""
+            <div style='background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;'>
+                <strong>Company:</strong> {selected_company}<br>
+                <strong>Your Dept:</strong> {department}<br>
+                <strong>Shared Service:</strong> {dept_config['icon']} {dept_config['title']}
+            </div>
+            """, unsafe_allow_html=True)
         
         st.session_state.company_info = {
             'company': selected_company,
@@ -712,91 +798,71 @@ def show_sidebar():
             'department': department,
             'contact_person': contact_person,
             'email': email,
+            'shared_service_dept': st.session_state.selected_department,
             'date': datetime.now().strftime("%Y-%m-%d")
         }
         
-        st.markdown("---")
-        
-        # Budget summary
-        st.markdown("### 💰 Service Selection Summary")
-        
-        operational_total = calculate_operational_total()
-        support_total = calculate_support_total()
-        implementation_total = calculate_implementation_total()
-        total_budget = operational_total + support_total + implementation_total
-        
-        st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Operational Services</h4>
-            <h3>SAR {operational_total:,.0f}</h3>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Support Packages</h4>
-            <h3>SAR {support_total:,.0f}</h3>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f"""
-        <div class='metric-card'>
-            <h4>Custom Implementations</h4>
-            <h3>SAR {implementation_total:,.0f}</h3>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f"""
-        <div class='total-budget'>
-            💰 Total 2025 Shared Services Budget<br>
-            <span style='font-size: 1.5em'>SAR {total_budget:,.0f}</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Progress indicators
-        operational_count = len([k for k, v in st.session_state.operational_services.items() if v.get('selected', False) and v.get('users', 0) > 0]) + len(st.session_state.custom_operational)
-        support_selected = 1 if st.session_state.support_package else 0
-        implementation_count = len(st.session_state.implementation_projects)
-        
-        st.markdown("### 📊 Service Selection Progress")
-        st.metric("Operational Services", operational_count)
-        st.metric("Support Package", "Selected" if support_selected else "Not Selected")
-        st.metric("Implementation Projects", implementation_count)
-        
-        # Show support package details if selected
-        if st.session_state.support_package:
-            st.markdown("### 📋 Selected Support Package")
-            selected_package = SUPPORT_PACKAGES[st.session_state.support_package]
-            st.markdown(f"**{st.session_state.support_package}**")
-            st.markdown(f"- Total Support Requests: {selected_package.get('total_support_requests', 'N/A')}")
-            st.markdown(f"- Improvement Hours: {selected_package.get('improvement_hours', 'N/A')}")
-            st.markdown(f"- Training Requests: {selected_package.get('training_requests', 'N/A')}")
-            st.markdown(f"- Report Requests: {selected_package.get('report_requests', 'N/A')}")
+        if st.session_state.selected_department:
+            st.markdown("---")
             
-            # Show additional services if any
-            extra_support = st.session_state.support_extras.get('support', 0)
-            extra_training = st.session_state.support_extras.get('training', 0) 
-            extra_reports = st.session_state.support_extras.get('reports', 0)
+            # Budget summary
+            st.markdown("### 💰 Service Selection Summary")
             
-            if extra_support > 0 or extra_training > 0 or extra_reports > 0:
-                st.markdown("**Additional Services:**")
-                if extra_support > 0:
-                    st.markdown(f"- Extra Support: {extra_support}")
-                if extra_training > 0:
-                    st.markdown(f"- Extra Training: {extra_training}")
-                if extra_reports > 0:
-                    st.markdown(f"- Extra Reports: {extra_reports}")
+            operational_total = calculate_operational_total()
+            support_total = calculate_support_total()
+            implementation_total = calculate_implementation_total()
+            total_budget = operational_total + support_total + implementation_total
+            
+            st.markdown(f"""
+            <div class='metric-card'>
+                <h4>Operational Services</h4>
+                <h3>SAR {operational_total:,.0f}</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div class='metric-card'>
+                <h4>Support Packages</h4>
+                <h3>SAR {support_total:,.0f}</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div class='metric-card'>
+                <h4>Custom Implementations</h4>
+                <h3>SAR {implementation_total:,.0f}</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div class='total-budget'>
+                💰 Total 2025 Budget<br>
+                <span style='font-size: 1.5em'>SAR {total_budget:,.0f}</span>
+            </div>
+            """, unsafe_allow_html=True)
 
-# Operational Services Section
+# Operational Services Section - Updated to support multiple departments
 def show_operational_services():
-    st.markdown("""
+    if not st.session_state.selected_department:
+        st.warning("Please select a department first from the Department Selection tab.")
+        return
+    
+    dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+    
+    st.markdown(f"""
     <div class='category-section'>
-        <h2>🔧 Operational Services</h2>
-        <p>Select recurring licenses and software subscriptions for daily operations.</p>
+        <h2>{dept_config['icon']} {dept_config['title']} - Operational Services</h2>
+        <p>Select recurring licenses and software subscriptions for {dept_config['title']} operations.</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Oracle Services
+    if st.session_state.selected_department == "IT":
+        show_it_operational_services()
+    elif st.session_state.selected_department == "Procurement":
+        show_procurement_operational_services()
+
+def show_it_operational_services():
+    # Oracle Services (existing implementation)
     st.markdown("### 🟠 Oracle Cloud Services")
     
     col1, col2 = st.columns(2)
@@ -882,7 +948,7 @@ def show_operational_services():
     
     st.markdown("---")
     
-    # Microsoft Services
+    # Microsoft Services (existing implementation)
     st.markdown("### 🟦 Microsoft Cloud Services")
     
     col1, col2 = st.columns(2)
@@ -965,16 +1031,159 @@ def show_operational_services():
                     'actual_service_name': service_name,
                     'new_implementation': False
                 }
+
+def show_procurement_operational_services():
+    # Procurement Services
+    st.markdown("### 🛒 Procurement Services & Solutions")
     
+    col1, col2 = st.columns(2)
+    procurement_services = list(PROCUREMENT_SERVICES.items())
+    
+    for i, (service_name, details) in enumerate(procurement_services):
+        col = col1 if i % 2 == 0 else col2
+        service_key = f"procurement_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
+        
+        with col:
+            # Determine pricing display based on service type
+            if 'price_per_user' in details:
+                pricing_text = f"SAR {details['price_per_user']}/user/month"
+                volume_label = "Number of Users"
+            elif 'price_per_transaction' in details:
+                pricing_text = f"SAR {details['price_per_transaction']}/transaction/year"
+                volume_label = "Annual Transactions"
+            elif 'price_per_supplier' in details:
+                pricing_text = f"SAR {details['price_per_supplier']}/supplier/year"
+                volume_label = "Number of Suppliers"
+            elif 'price_per_contract' in details:
+                pricing_text = f"SAR {details['price_per_contract']}/contract/year"
+                volume_label = "Annual Contracts"
+            elif 'price_per_event' in details:
+                pricing_text = f"SAR {details['price_per_event']}/event/year"
+                volume_label = "Annual Sourcing Events"
+            else:
+                pricing_text = "Custom Pricing"
+                volume_label = "Volume"
+            
+            st.markdown(f"""
+            <div class='service-card procurement'>
+                <h4>{service_name}</h4>
+                <p style='color: #6b7280; font-size: 0.9em;'>{details['description']}</p>
+                <div style='background: #f0fdf4; padding: 0.5rem; border-radius: 5px; margin: 0.5rem 0;'>
+                    💰 {pricing_text}<br>
+                    🆕 Setup (new implementation): SAR {details['setup_cost']:,}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Initialize service data if not exists
+            if service_key not in st.session_state.operational_services:
+                st.session_state.operational_services[service_key] = {
+                    'selected': False, 
+                    'users': 0,
+                    'volume': 0,
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
+            
+            # Get current values from session state
+            current_selected = st.session_state.operational_services[service_key].get('selected', False)
+            current_volume = st.session_state.operational_services[service_key].get('volume', 0)
+            current_users = st.session_state.operational_services[service_key].get('users', 0)
+            current_new_impl = st.session_state.operational_services[service_key].get('new_implementation', False)
+            
+            selected = st.checkbox(f"Include {service_name}", 
+                                 key=f"{service_key}_selected",
+                                 value=current_selected)
+            
+            if selected:
+                # New Implementation checkbox
+                new_implementation = st.checkbox(
+                    "🆕 New Implementation", 
+                    key=f"{service_key}_new_impl",
+                    value=current_new_impl,
+                    help="Check this if it's a new implementation requiring setup."
+                )
+                
+                # Volume input based on service type
+                if 'price_per_user' in details:
+                    volume = st.number_input(volume_label, 
+                                          min_value=0, 
+                                          value=current_users,
+                                          key=f"{service_key}_volume",
+                                          step=1)
+                    users = volume
+                else:
+                    volume = st.number_input(volume_label, 
+                                          min_value=0, 
+                                          value=current_volume,
+                                          key=f"{service_key}_volume",
+                                          step=1)
+                    users = 0  # Not user-based
+                
+                # Update session state immediately
+                st.session_state.operational_services[service_key] = {
+                    'selected': True,
+                    'users': users,
+                    'volume': volume,
+                    'actual_service_name': service_name,
+                    'new_implementation': new_implementation
+                }
+                
+                if volume > 0:
+                    # Calculate cost based on pricing model
+                    if 'price_per_user' in details:
+                        monthly_cost = details['price_per_user'] * volume
+                        annual_cost = monthly_cost * 12
+                        cost_display = f"Monthly: SAR {monthly_cost:,.0f}"
+                    elif 'price_per_transaction' in details:
+                        annual_cost = details['price_per_transaction'] * volume
+                        cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                    elif 'price_per_supplier' in details:
+                        annual_cost = details['price_per_supplier'] * volume
+                        cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                    elif 'price_per_contract' in details:
+                        annual_cost = details['price_per_contract'] * volume
+                        cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                    elif 'price_per_event' in details:
+                        annual_cost = details['price_per_event'] * volume
+                        cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                    else:
+                        annual_cost = 0
+                        cost_display = "Custom Pricing"
+                    
+                    setup_cost = details['setup_cost'] if new_implementation else 0
+                    total_cost = annual_cost + setup_cost
+                    
+                    setup_text = f" + SAR {setup_cost:,} setup" if new_implementation else " (no setup cost)"
+                    
+                    st.markdown(f"""
+                    <div class='cost-display procurement'>
+                        📊 {cost_display}{setup_text}<br>
+                        <strong>Total Annual Cost: SAR {total_cost:,.0f}</strong>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.session_state.operational_services[service_key] = {
+                    'selected': False,
+                    'users': 0,
+                    'volume': 0,
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
+    
+    # Show common custom services section
+    show_custom_operational_services()
+
+def show_custom_operational_services():
     st.markdown("---")
-    
-    # Custom Services
     st.markdown("### ➕ Add Custom Services")
     
     with st.expander("Add Custom Operational Service", expanded=False):
-        st.markdown("""
+        dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+        
+        st.markdown(f"""
         <div class='custom-service'>
-            <h4>Define Your Custom Service</h4>
+            <h4>Define Your Custom {dept_config['title']} Service</h4>
             <p>Add any additional operational software or service not listed above.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -982,12 +1191,38 @@ def show_operational_services():
         col1, col2 = st.columns(2)
         
         with col1:
-            custom_name = st.text_input("Service Name", placeholder="e.g., Custom CRM Solution", key="custom_service_name_input")
-            custom_price = st.number_input("Price per User/Month (SAR)", min_value=0, value=50, key="custom_service_price_input")
+            custom_name = st.text_input("Service Name", placeholder="e.g., Custom Solution", key="custom_service_name_input")
+            
+            # Pricing model selection
+            pricing_model = st.selectbox(
+                "Pricing Model", 
+                ["per_user_monthly", "per_transaction_annual", "per_unit_annual", "fixed_annual"],
+                format_func=lambda x: {
+                    "per_user_monthly": "Per User/Month",
+                    "per_transaction_annual": "Per Transaction/Year", 
+                    "per_unit_annual": "Per Unit/Year",
+                    "fixed_annual": "Fixed Annual"
+                }[x],
+                key="custom_pricing_model_input"
+            )
+            
+            # Dynamic pricing input based on model
+            if pricing_model == "per_user_monthly":
+                custom_price = st.number_input("Price per User/Month (SAR)", min_value=0, value=50, key="custom_service_price_input")
+                volume_label = "Number of Users"
+            elif pricing_model == "per_transaction_annual":
+                custom_price = st.number_input("Price per Transaction/Year (SAR)", min_value=0, value=25, key="custom_service_price_input")
+                volume_label = "Annual Transactions"
+            elif pricing_model == "per_unit_annual":
+                custom_price = st.number_input("Price per Unit/Year (SAR)", min_value=0, value=100, key="custom_service_price_input")
+                volume_label = "Annual Units"
+            else:  # fixed_annual
+                custom_price = st.number_input("Fixed Annual Price (SAR)", min_value=0, value=50000, key="custom_service_price_input")
+                volume_label = "Quantity (usually 1)"
         
         with col2:
             custom_setup = st.number_input("Setup Cost (SAR)", min_value=0, value=5000, key="custom_service_setup_input")
-            custom_users = st.number_input("Number of Users", min_value=0, value=0, key="custom_service_users_input")
+            custom_volume = st.number_input(volume_label, min_value=0, value=1, key="custom_service_volume_input")
         
         custom_description = st.text_area("Service Description", 
                                         placeholder="Describe what this service provides...", 
@@ -1001,53 +1236,84 @@ def show_operational_services():
         )
         
         if st.button("Add Custom Service", key="add_custom_operational_service_btn"):
-            if custom_name and custom_description and custom_users > 0:
+            if custom_name and custom_description and custom_volume > 0:
                 custom_service = {
                     'name': custom_name,
                     'description': custom_description,
-                    'price_per_user': custom_price,
+                    'price_per_unit': custom_price,
                     'setup_cost': custom_setup,
-                    'users': custom_users,
-                    'new_implementation': custom_new_implementation
+                    'volume': custom_volume,
+                    'pricing_model': pricing_model,
+                    'new_implementation': custom_new_implementation,
+                    'department': st.session_state.selected_department
                 }
                 
                 st.session_state.custom_operational.append(custom_service)
                 st.success(f"✅ Added custom service: {custom_name}")
                 st.rerun()
             else:
-                st.error("Please fill in all required fields and specify at least 1 user.")
+                st.error("Please fill in all required fields and specify volume.")
     
     # Display custom services
     if st.session_state.custom_operational:
-        st.markdown("### 📋 Your Custom Services")
+        # Filter custom services by current department
+        dept_custom_services = [
+            service for service in st.session_state.custom_operational 
+            if service.get('department') == st.session_state.selected_department
+        ]
         
-        for i, service in enumerate(st.session_state.custom_operational):
-            monthly_cost = service['price_per_user'] * service['users']
-            setup_cost = service['setup_cost'] if service.get('new_implementation', False) else 0
-            annual_cost = monthly_cost * 12 + setup_cost
+        if dept_custom_services:
+            st.markdown("### 📋 Your Custom Services")
             
-            implementation_status = "New Implementation" if service.get('new_implementation', False) else "Adding to Existing"
-            setup_display = f"Setup: SAR {setup_cost:,}" if service.get('new_implementation', False) else "No Setup Cost"
-            
-            st.markdown(f"""
-            <div class='service-card' style='border-left: 4px solid #8b5cf6;'>
-                <h4>{service['name']} (Custom)</h4>
-                <p style='color: #6b7280;'>{service['description']}</p>
-                <p><strong>Users:</strong> {service['users']} | <strong>Status:</strong> {implementation_status}</p>
-                <p><strong>Monthly:</strong> SAR {monthly_cost:,.0f} | <strong>{setup_display}</strong> | <strong>Annual:</strong> SAR {annual_cost:,.0f}</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button(f"Remove {service['name']}", key=f"remove_custom_service_{i}"):
-                st.session_state.custom_operational.pop(i)
-                st.rerun()
+            for i, service in enumerate(dept_custom_services):
+                # Find original index
+                original_index = st.session_state.custom_operational.index(service)
+                
+                volume = service.get('volume', 0)
+                price_per_unit = service.get('price_per_unit', 0)
+                pricing_model = service.get('pricing_model', 'per_user_monthly')
+                
+                if pricing_model == 'per_user_monthly':
+                    monthly_cost = price_per_unit * volume
+                    annual_cost = monthly_cost * 12
+                    cost_display = f"Monthly: SAR {monthly_cost:,.0f}"
+                else:
+                    annual_cost = price_per_unit * volume
+                    cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                
+                setup_cost = service['setup_cost'] if service.get('new_implementation', False) else 0
+                total_cost = annual_cost + setup_cost
+                
+                implementation_status = "New Implementation" if service.get('new_implementation', False) else "Adding to Existing"
+                setup_display = f"Setup: SAR {setup_cost:,}" if service.get('new_implementation', False) else "No Setup Cost"
+                
+                dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+                
+                st.markdown(f"""
+                <div class='service-card' style='border-left: 4px solid {dept_config["color"]};'>
+                    <h4>{service['name']} (Custom {dept_config['title']})</h4>
+                    <p style='color: #6b7280;'>{service['description']}</p>
+                    <p><strong>Volume:</strong> {volume} | <strong>Status:</strong> {implementation_status}</p>
+                    <p><strong>{cost_display}</strong> | <strong>{setup_display}</strong> | <strong>Total Annual:</strong> SAR {total_cost:,.0f}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if st.button(f"Remove {service['name']}", key=f"remove_custom_service_{original_index}"):
+                    st.session_state.custom_operational.pop(original_index)
+                    st.rerun()
 
-# Support Packages Section with Native Streamlit Components
+# Support Packages Section (unchanged but now supports multiple departments)
 def show_support_packages():
-    st.markdown("""
+    if not st.session_state.selected_department:
+        st.warning("Please select a department first from the Department Selection tab.")
+        return
+    
+    dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+    
+    st.markdown(f"""
     <div class='category-section'>
-        <h2>🛠️ Support Packages</h2>
-        <p>Choose the support level that best fits your organization's needs. Compare all features and pricing in the comprehensive table below.</p>
+        <h2>{dept_config['icon']} {dept_config['title']} - Support Packages</h2>
+        <p>Choose the support level that best fits your {dept_config['title']} needs.</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1055,6 +1321,16 @@ def show_support_packages():
     
     # Create comparison using Streamlit's native dataframe
     packages_list = list(SUPPORT_PACKAGES.items())
+    
+    # Filter packages that support the current department
+    available_packages = [
+        (name, details) for name, details in packages_list 
+        if st.session_state.selected_department in details.get('departments', [])
+    ]
+    
+    if not available_packages:
+        st.warning(f"No support packages available for {dept_config['title']} department yet.")
+        return
     
     # Create comparison data
     comparison_data = {
@@ -1071,8 +1347,8 @@ def show_support_packages():
         ]
     }
     
-    # Add data for each package
-    for package_name, details in packages_list:
+    # Add data for each available package
+    for package_name, details in available_packages:
         comparison_data[package_name] = [
             details['systems_operation'],
             details['support_requests_standard'],
@@ -1101,7 +1377,7 @@ def show_support_packages():
     st.markdown("### 🎯 Select Your Support Package")
     
     # Create selection cards using columns
-    cols = st.columns(len(packages_list))
+    cols = st.columns(len(available_packages))
     
     package_colors = {
         "Basic": "#6b7280",
@@ -1111,7 +1387,7 @@ def show_support_packages():
         "Platinum": "#1e293b"
     }
     
-    for i, (package_name, details) in enumerate(packages_list):
+    for i, (package_name, details) in enumerate(available_packages):
         with cols[i]:
             is_selected = st.session_state.support_package == package_name
             color = package_colors.get(package_name, "#6b7280")
@@ -1157,7 +1433,7 @@ def show_support_packages():
                 st.success(f"✅ Selected {package_name} Support Package")
                 st.rerun()
     
-    # Additional services section
+    # Additional services section (same as before)
     if st.session_state.support_package:
         st.markdown("---")
         st.markdown("### ➕ Additional Support Services")
@@ -1254,10 +1530,16 @@ def show_support_packages():
 
 # Implementation Projects Section with Enhanced Categories
 def show_implementation_projects():
-    st.markdown("""
+    if not st.session_state.selected_department:
+        st.warning("Please select a department first from the Department Selection tab.")
+        return
+    
+    dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+    
+    st.markdown(f"""
     <div class='category-section'>
-        <h2>🚀 Custom Implementation Projects</h2>
-        <p>Define your strategic technology initiatives and custom development projects.</p>
+        <h2>{dept_config['icon']} {dept_config['title']} - Custom Implementation Projects</h2>
+        <p>Define your strategic {dept_config['title'].lower()} initiatives and custom development projects.</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1265,30 +1547,31 @@ def show_implementation_projects():
     st.markdown("### ➕ Add New Implementation Project")
     
     with st.expander("Define New Project", expanded=True):
-        st.markdown("""
+        st.markdown(f"""
         <div class='project-card'>
-            <h4>Project Details</h4>
-            <p>Provide comprehensive information about your implementation project.</p>
+            <h4>{dept_config['title']} Project Details</h4>
+            <p>Provide comprehensive information about your {dept_config['title'].lower()} implementation project.</p>
         </div>
         """, unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
         
         with col1:
-            project_name = st.text_input("Project Name", placeholder="e.g., AI-Powered Analytics Platform", key="project_name_input")
+            project_name = st.text_input("Project Name", placeholder=f"e.g., {dept_config['title']} Enhancement Platform", key="project_name_input")
             
             # Enhanced project type selection with categories
             st.markdown("#### Select Project Category & Type")
-            st.markdown("""
+            st.markdown(f"""
             <div class='category-selector'>
-                <p style='margin-bottom: 0.5rem; font-weight: 500;'>Choose from our comprehensive service categories:</p>
+                <p style='margin-bottom: 0.5rem; font-weight: 500;'>Choose from {dept_config['title']} service categories:</p>
             </div>
             """, unsafe_allow_html=True)
             
-            # Category selection
+            # Category selection based on department
+            project_categories = dept_config['project_categories']
             selected_category = st.selectbox(
                 "Project Category", 
-                options=list(PROJECT_CATEGORIES.keys()),
+                options=list(project_categories.keys()),
                 key="project_category_input",
                 help="Select the main category for your project"
             )
@@ -1296,7 +1579,7 @@ def show_implementation_projects():
             # Service type based on selected category
             project_type = st.selectbox(
                 "Specific Service Type", 
-                options=PROJECT_CATEGORIES[selected_category],
+                options=project_categories[selected_category],
                 key="project_type_input",
                 help=f"Select the specific service within {selected_category}"
             )
@@ -1306,24 +1589,40 @@ def show_implementation_projects():
         
         with col2:
             budget = st.number_input("Budget Estimate (SAR)", min_value=0, value=100000, step=10000, key="project_budget_input")
-            departments = st.multiselect("Departments Involved", DEPARTMENTS, key="project_departments_input")
+            departments = st.multiselect("Departments Involved", COMPANY_DEPARTMENTS, key="project_departments_input")
             
-            # Show category description
-            category_descriptions = {
-                "🤖 Digital Transformation & Automation": "Streamline operations through intelligent automation and process optimization",
-                "🧠 AI & Advanced Analytics": "Leverage artificial intelligence and machine learning for data-driven insights",
-                "📊 Data & Business Intelligence": "Transform raw data into actionable business intelligence and reporting",
-                "💼 Enterprise Applications": "Implement core business applications for operational excellence",
-                "🏭 Industry-Specific Solutions": "Specialized solutions for manufacturing and industrial operations",
-                "☁️ Infrastructure & Cloud": "Modernize IT infrastructure with cloud-native technologies",
-                "🔒 Security & Compliance": "Enhance cybersecurity posture and regulatory compliance",
-                "🔗 Integration & Connectivity": "Connect systems and enable seamless data flow",
-                "💬 Communication & Collaboration": "Improve team collaboration and communication capabilities",
-                "👥 Customer Experience": "Enhance customer interactions and engagement platforms",
-                "💰 Financial & Regulatory": "Strengthen financial management and regulatory compliance",
-                "🌱 Sustainability & ESG": "Support environmental and sustainability initiatives",
-                "⚙️ Custom & Specialized": "Tailored solutions for unique business requirements"
-            }
+            # Show category description based on department
+            if st.session_state.selected_department == "IT":
+                category_descriptions = {
+                    "🤖 Digital Transformation & Automation": "Streamline operations through intelligent automation and process optimization",
+                    "🧠 AI & Advanced Analytics": "Leverage artificial intelligence and machine learning for data-driven insights",
+                    "📊 Data & Business Intelligence": "Transform raw data into actionable business intelligence and reporting",
+                    "💼 Enterprise Applications": "Implement core business applications for operational excellence",
+                    "🏭 Industry-Specific Solutions": "Specialized solutions for manufacturing and industrial operations",
+                    "☁️ Infrastructure & Cloud": "Modernize IT infrastructure with cloud-native technologies",
+                    "🔒 Security & Compliance": "Enhance cybersecurity posture and regulatory compliance",
+                    "🔗 Integration & Connectivity": "Connect systems and enable seamless data flow",
+                    "💬 Communication & Collaboration": "Improve team collaboration and communication capabilities",
+                    "👥 Customer Experience": "Enhance customer interactions and engagement platforms",
+                    "💰 Financial & Regulatory": "Strengthen financial management and regulatory compliance",
+                    "🌱 Sustainability & ESG": "Support environmental and sustainability initiatives",
+                    "⚙️ Custom & Specialized": "Tailored solutions for unique business requirements"
+                }
+            elif st.session_state.selected_department == "Procurement":
+                category_descriptions = {
+                    "🛒 Purchase Order Management": "Streamline purchase-to-pay processes and order management",
+                    "🤝 Supplier & Vendor Management": "Enhance supplier relationships and performance management",
+                    "📋 Master Data Management": "Improve data quality and standardization across procurement",
+                    "📄 Contract Management": "Optimize contract lifecycle and compliance management",
+                    "🚚 Logistics & Delivery": "Enhance logistics coordination and delivery management",
+                    "💰 Payment & Financial Processing": "Streamline payment processes and financial coordination",
+                    "📊 Sourcing & RFQ Management": "Improve sourcing strategies and competitive bidding",
+                    "🎓 Training & Development": "Enhance procurement team capabilities and knowledge",
+                    "🔍 Audit & Compliance": "Strengthen audit processes and regulatory compliance",
+                    "📞 Support & Communication": "Improve stakeholder communication and support services"
+                }
+            else:
+                category_descriptions = {}
             
             if selected_category in category_descriptions:
                 st.info(f"**{selected_category}**: {category_descriptions[selected_category]}")
@@ -1336,8 +1635,8 @@ def show_implementation_projects():
                                       placeholder="Define how success will be measured...", 
                                       key="project_success_criteria_input")
         
-        # Special handling for RPA projects
-        if project_type == "RPA (Robotic Process Automation)":
+        # Special handling for RPA projects (IT department only)
+        if st.session_state.selected_department == "IT" and project_type == "RPA (Robotic Process Automation)":
             st.markdown("#### 🤖 RPA Package Selection")
             st.info("For RPA projects, you can select from our predefined packages or specify a custom budget.")
             
@@ -1371,11 +1670,15 @@ def show_implementation_projects():
                     'budget': budget,
                     'departments': departments,
                     'success_criteria': success_criteria,
-                    'created_date': datetime.now().strftime("%Y-%m-%d")
+                    'created_date': datetime.now().strftime("%Y-%m-%d"),
+                    'shared_service_dept': st.session_state.selected_department
                 }
                 
                 # Add RPA package details if applicable
-                if project_type == "RPA (Robotic Process Automation)" and 'use_rpa_package_input' in st.session_state and st.session_state['use_rpa_package_input']:
+                if (st.session_state.selected_department == "IT" and 
+                    project_type == "RPA (Robotic Process Automation)" and 
+                    'use_rpa_package_input' in st.session_state and 
+                    st.session_state['use_rpa_package_input']):
                     if 'rpa_package_selection' in st.session_state:
                         rpa_package = st.session_state['rpa_package_selection']
                         new_project['rpa_package'] = True
@@ -1388,15 +1691,20 @@ def show_implementation_projects():
             else:
                 st.error("Please fill in project name, description, and budget.")
     
-    # Display existing projects
-    if st.session_state.implementation_projects:
-        st.markdown("### 📋 Your Implementation Projects")
+    # Display existing projects for current department
+    dept_projects = [
+        project for project in st.session_state.implementation_projects 
+        if project.get('shared_service_dept') == st.session_state.selected_department
+    ]
+    
+    if dept_projects:
+        st.markdown(f"### 📋 Your {dept_config['title']} Implementation Projects")
         
         total_implementation_budget = 0
         
         # Group projects by category for better organization
         projects_by_category = {}
-        for project in st.session_state.implementation_projects:
+        for project in dept_projects:
             category = project.get('category', '⚙️ Custom & Specialized')
             if category not in projects_by_category:
                 projects_by_category[category] = []
@@ -1405,7 +1713,7 @@ def show_implementation_projects():
         for category, projects in projects_by_category.items():
             st.markdown(f"#### {category}")
             
-            for i, project in enumerate(projects):
+            for project in projects:
                 # Find the original index in the full projects list
                 original_index = st.session_state.implementation_projects.index(project)
                 total_implementation_budget += project['budget']
@@ -1472,16 +1780,22 @@ def show_implementation_projects():
         
         st.markdown(f"""
         <div class='cost-display' style='background: #fef3c7; border-color: #f59e0b;'>
-            💰 Total Implementation Budget: <strong>SAR {total_implementation_budget:,.0f}</strong>
+            💰 Total {dept_config['title']} Implementation Budget: <strong>SAR {total_implementation_budget:,.0f}</strong>
         </div>
         """, unsafe_allow_html=True)
 
-# Summary Section (keeping the existing implementation)
+# Summary Section with Multi-Department Support
 def show_summary():
-    st.markdown("""
+    if not st.session_state.selected_department:
+        st.warning("Please select a department first from the Department Selection tab.")
+        return
+    
+    dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+    
+    st.markdown(f"""
     <div class='category-section'>
-        <h2>📊 Service Catalogue Summary & Budget Analysis</h2>
-        <p>Comprehensive overview of your 2025 shared services selection and investment strategy.</p>
+        <h2>{dept_config['icon']} {dept_config['title']} - Service Catalogue Summary & Budget Analysis</h2>
+        <p>Comprehensive overview of your 2025 {dept_config['title'].lower()} shared services selection and investment strategy.</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1492,7 +1806,7 @@ def show_summary():
     total_budget = operational_total + support_total + implementation_total
     
     if total_budget == 0:
-        st.info("👋 No services selected yet. Please visit the other sections to build your shared services selection.")
+        st.info(f"👋 No {dept_config['title'].lower()} services selected yet. Please visit the other sections to build your shared services selection.")
         return
     
     # Budget overview metrics
@@ -1515,7 +1829,7 @@ def show_summary():
     with col4:
         st.markdown(f"""
         <div class='total-budget'>
-            💰 Total 2025 Shared Services Budget<br>
+            💰 Total 2025 {dept_config['title']} Budget<br>
             <span style='font-size: 1.8em'>SAR {total_budget:,.0f}</span>
         </div>
         """, unsafe_allow_html=True)
@@ -1529,9 +1843,9 @@ def show_summary():
             fig_pie = px.pie(
                 values=[operational_total, support_total, implementation_total],
                 names=['Operational Services', 'Support Packages', 'Implementation Projects'],
-                title="2025 Shared Services Budget Distribution",
+                title=f"2025 {dept_config['title']} Budget Distribution",
                 color_discrete_map={
-                    'Operational Services': '#3b82f6',
+                    'Operational Services': dept_config['color'],
                     'Support Packages': '#10b981',
                     'Implementation Projects': '#f59e0b'
                 }
@@ -1560,21 +1874,23 @@ def show_summary():
             multi_quarter_projects = []
             
             for project in st.session_state.implementation_projects:
-                timeline = project.get('timeline', 'Q4 2025')
-                budget = project.get('budget', 0)
-                
-                if project.get('rpa_package', False):
-                    multi_quarter_projects.append(budget)
-                elif 'Q1' in timeline:
-                    q1_projects.append(budget)
-                elif 'Q2' in timeline:
-                    q2_projects.append(budget)
-                elif 'Q3' in timeline:
-                    q3_projects.append(budget)
-                elif 'Q4' in timeline:
-                    q4_projects.append(budget)
-                else:
-                    multi_quarter_projects.append(budget)
+                # Only include projects for current department
+                if project.get('shared_service_dept') == st.session_state.selected_department:
+                    timeline = project.get('timeline', 'Q4 2025')
+                    budget = project.get('budget', 0)
+                    
+                    if project.get('rpa_package', False):
+                        multi_quarter_projects.append(budget)
+                    elif 'Q1' in timeline:
+                        q1_projects.append(budget)
+                    elif 'Q2' in timeline:
+                        q2_projects.append(budget)
+                    elif 'Q3' in timeline:
+                        q3_projects.append(budget)
+                    elif 'Q4' in timeline:
+                        q4_projects.append(budget)
+                    else:
+                        multi_quarter_projects.append(budget)
             
             if q1_projects:
                 monthly_implementation[2] = sum(q1_projects)
@@ -1589,12 +1905,12 @@ def show_summary():
                 monthly_implementation = [x + monthly_amount for x in monthly_implementation]
         
         fig_bar = go.Figure()
-        fig_bar.add_trace(go.Bar(name='Operational (Year-end)', x=months, y=monthly_operational, marker_color='#3b82f6'))
+        fig_bar.add_trace(go.Bar(name='Operational (Year-end)', x=months, y=monthly_operational, marker_color=dept_config['color']))
         fig_bar.add_trace(go.Bar(name='Support (Year-end)', x=months, y=monthly_support, marker_color='#10b981'))
         fig_bar.add_trace(go.Bar(name='Implementation (On Completion)', x=months, y=monthly_implementation, marker_color='#f59e0b'))
         
         fig_bar.update_layout(
-            title='Monthly Shared Services Cash Flow Projection (SAR)<br><sub>Support & Operations billed year-end | Projects billed on completion</sub>',
+            title=f'{dept_config["title"]} Monthly Cash Flow Projection (SAR)<br><sub>Support & Operations billed year-end | Projects billed on completion</sub>',
             barmode='stack',
             xaxis_title='Month',
             yaxis_title='Cost (SAR)',
@@ -1609,7 +1925,7 @@ def show_summary():
     
     with col1:
         if st.button("📊 Export to Excel", use_container_width=True, key="export_excel_btn"):
-            st.success("📊 Excel export functionality would generate a comprehensive budget report including all selected services, costs, and projections.")
+            st.success(f"📊 Excel export functionality would generate a comprehensive {dept_config['title'].lower()} budget report including all selected services, costs, and projections.")
     
     with col2:
         if st.button("💾 Save Draft", use_container_width=True, key="save_draft_btn"):
@@ -1617,22 +1933,24 @@ def show_summary():
     
     with col3:
         if st.button("📧 Share Summary", use_container_width=True, key="share_summary_btn"):
-            st.success("📧 Budget summary prepared for sharing with stakeholders and finance team.")
+            st.success(f"📧 {dept_config['title']} budget summary prepared for sharing with stakeholders and finance team.")
     
     with col4:
         if st.button("🚀 Submit Final Budget", type="primary", use_container_width=True, key="submit_final_budget_btn"):
             company_code = st.session_state.company_info.get('company_code', 'ALK')
-            reference_id = f"{company_code}-2025-{datetime.now().strftime('%Y%m%d%H%M%S')}-{str(uuid.uuid4())[:8].upper()}"
+            dept_code = st.session_state.selected_department[:3].upper()
+            reference_id = f"{company_code}-{dept_code}-2025-{datetime.now().strftime('%Y%m%d%H%M%S')}-{str(uuid.uuid4())[:8].upper()}"
             
             st.balloons()
             st.success(f"""
-            ✅ **2025 Shared Service Selection Successfully Submitted!**
+            ✅ **2025 {dept_config['title']} Shared Service Selection Successfully Submitted!**
             
             **Reference ID:** {reference_id}
             
             **Submission Summary:**
             - Company: {st.session_state.company_info.get('company', 'N/A')}
-            - Department: {st.session_state.company_info.get('department', 'N/A')}
+            - Shared Service Department: {dept_config['title']}
+            - Requesting Department: {st.session_state.company_info.get('department', 'N/A')}
             - Contact: {st.session_state.company_info.get('contact_person', 'N/A')}
             - Email: {st.session_state.company_info.get('email', 'N/A')}
             - Total Budget: SAR {total_budget:,.0f}
@@ -1641,12 +1959,12 @@ def show_summary():
             - Implementation Projects: SAR {implementation_total:,.0f}
             
             **Next Steps:**
-            1. Shared Services team review (3-5 business days)
+            1. {dept_config['title']} shared services team review (3-5 business days)
             2. Finance approval process
             3. Q4 2024: Service implementation planning begins
             4. Q1 2025: Service delivery starts
             
-            A detailed service catalogue report has been sent to your email and the shared services team.
+            A detailed {dept_config['title'].lower()} service catalogue report has been sent to your email and the shared services team.
             """)
 
 # Main application
@@ -1654,20 +1972,30 @@ def main():
     show_header()
     show_sidebar()
     
-    # Navigation
-    tab1, tab2, tab3, tab4 = st.tabs(["🔧 Operational Services", "🛠️ Support Packages", "🚀 Implementation Projects", "📊 Summary"])
-    
-    with tab1:
-        show_operational_services()
-    
-    with tab2:
-        show_support_packages()
-    
-    with tab3:
-        show_implementation_projects()
-    
-    with tab4:
-        show_summary()
+    # Check if department is selected
+    if not st.session_state.selected_department:
+        show_department_selection()
+    else:
+        # Navigation
+        dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+        tab1, tab2, tab3, tab4 = st.tabs([
+            f"{dept_config['icon']} Operational Services", 
+            "🛠️ Support Packages", 
+            "🚀 Implementation Projects", 
+            "📊 Summary"
+        ])
+        
+        with tab1:
+            show_operational_services()
+        
+        with tab2:
+            show_support_packages()
+        
+        with tab3:
+            show_implementation_projects()
+        
+        with tab4:
+            show_summary()
 
 if __name__ == "__main__":
     main()
