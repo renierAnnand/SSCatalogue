@@ -234,6 +234,119 @@ PROCUREMENT_SERVICE_CATEGORIES = {
     ]
 }
 
+# Facility & Safety Service Categories
+FACILITY_SAFETY_SERVICE_CATEGORIES = {
+    "🏢 Facility Management & Operations": [
+        "Building Maintenance & Repairs",
+        "HVAC System Management",
+        "Electrical System Maintenance",
+        "Plumbing & Water System Management",
+        "Facility Cleaning & Janitorial Services",
+        "Grounds & Landscape Maintenance",
+        "Space Planning & Optimization",
+        "Move Management & Office Setup"
+    ],
+    
+    "🔒 Security & Access Control": [
+        "Physical Security Management",
+        "Access Control Systems",
+        "CCTV Surveillance Management",
+        "Security Guard Services",
+        "Visitor Management Systems",
+        "Key & Badge Management",
+        "Perimeter Security",
+        "Emergency Response Coordination"
+    ],
+    
+    "⚠️ Safety & Compliance": [
+        "Workplace Safety Management",
+        "Safety Training & Certification",
+        "Incident Investigation & Reporting",
+        "Safety Equipment Management",
+        "Compliance Audit & Monitoring",
+        "Risk Assessment & Mitigation",
+        "Safety Policy Development",
+        "Regulatory Compliance Management"
+    ],
+    
+    "🚨 Emergency Management": [
+        "Emergency Response Planning",
+        "Fire Safety & Evacuation Procedures",
+        "Emergency Communication Systems",
+        "Business Continuity Planning",
+        "Crisis Management",
+        "Emergency Equipment Management",
+        "Disaster Recovery Coordination",
+        "Emergency Training & Drills"
+    ],
+    
+    "🌡️ Environmental & Health": [
+        "Environmental Monitoring",
+        "Air Quality Management",
+        "Waste Management & Recycling",
+        "Hazardous Material Handling",
+        "Occupational Health Services",
+        "Ergonomic Assessments",
+        "Environmental Compliance",
+        "Sustainability Initiatives"
+    ],
+    
+    "🔧 Asset & Equipment Management": [
+        "Equipment Maintenance Scheduling",
+        "Asset Tracking & Inventory",
+        "Preventive Maintenance Programs",
+        "Equipment Calibration",
+        "Tool & Equipment Procurement",
+        "Facility Equipment Lifecycle Management",
+        "Maintenance Documentation",
+        "Equipment Performance Monitoring"
+    ],
+    
+    "🚗 Transportation & Fleet": [
+        "Vehicle Fleet Management",
+        "Driver Safety Training",
+        "Vehicle Maintenance & Inspection",
+        "Fuel Management",
+        "Fleet Insurance & Compliance",
+        "Vehicle Scheduling & Allocation",
+        "Transportation Policy Management",
+        "Fleet Performance Analytics"
+    ],
+    
+    "📋 Documentation & Reporting": [
+        "Safety Documentation Management",
+        "Incident Report Processing",
+        "Compliance Report Generation",
+        "Safety Metrics & KPI Tracking",
+        "Audit Trail Management",
+        "Regulatory Filing & Submissions",
+        "Safety Committee Meeting Management",
+        "Training Record Management"
+    ],
+    
+    "👷 Contractor & Vendor Management": [
+        "Contractor Safety Qualification",
+        "Vendor Safety Compliance",
+        "Contractor Training & Orientation",
+        "Work Permit Management",
+        "Contractor Performance Monitoring",
+        "Safety Service Provider Management",
+        "Contractor Insurance Verification",
+        "Subcontractor Safety Oversight"
+    ],
+    
+    "📊 Safety Analytics & Reporting": [
+        "Safety Performance Analytics",
+        "Incident Trend Analysis",
+        "Risk Assessment Reporting",
+        "Safety Dashboard Development",
+        "Compliance Status Monitoring",
+        "Safety Cost Analysis",
+        "Benchmarking & Best Practices",
+        "Predictive Safety Analytics"
+    ]
+}
+
 # Department configurations
 DEPARTMENTS_CONFIG = {
     "IT": {
@@ -249,6 +362,13 @@ DEPARTMENTS_CONFIG = {
         "project_categories": PROCUREMENT_SERVICE_CATEGORIES,
         "color": "#10b981",
         "description": "Purchasing, vendor management, contracts, and supply chain optimization"
+    },
+    "Facility_Safety": {
+        "icon": "🏢",
+        "title": "Facility & Safety",
+        "project_categories": FACILITY_SAFETY_SERVICE_CATEGORIES,
+        "color": "#f59e0b",
+        "description": "Facility management, workplace safety, security, and environmental compliance"
     }
 }
 
@@ -353,6 +473,58 @@ PROCUREMENT_SERVICES = {
     }
 }
 
+# Facility & Safety Services with pricing
+FACILITY_SAFETY_SERVICES = {
+    "Facility Management Platform": {
+        "description": "Comprehensive facility management system for maintenance, space planning, and operations",
+        "price_per_sq_meter": 12,
+        "setup_cost": 25000,
+        "department": "Facility_Safety"
+    },
+    "Safety Management System": {
+        "description": "Integrated safety management platform for incident tracking, training, and compliance",
+        "price_per_employee": 45,
+        "setup_cost": 18000,
+        "department": "Facility_Safety"
+    },
+    "Security & Access Control": {
+        "description": "Complete security management including access control, surveillance, and visitor management",
+        "price_per_access_point": 180,
+        "setup_cost": 35000,
+        "department": "Facility_Safety"
+    },
+    "Emergency Management System": {
+        "description": "Emergency response planning, notification systems, and business continuity management",
+        "price_per_location": 2500,
+        "setup_cost": 20000,
+        "department": "Facility_Safety"
+    },
+    "Environmental Monitoring": {
+        "description": "Environmental compliance tracking, monitoring systems, and sustainability reporting",
+        "price_per_monitoring_point": 250,
+        "setup_cost": 15000,
+        "department": "Facility_Safety"
+    },
+    "Asset & Equipment Management": {
+        "description": "Asset tracking, maintenance scheduling, and equipment lifecycle management",
+        "price_per_asset": 35,
+        "setup_cost": 12000,
+        "department": "Facility_Safety"
+    },
+    "Fleet Management System": {
+        "description": "Vehicle fleet tracking, maintenance, fuel management, and driver safety monitoring",
+        "price_per_vehicle": 850,
+        "setup_cost": 22000,
+        "department": "Facility_Safety"
+    },
+    "Safety Training & Compliance": {
+        "description": "Online safety training platform with certification tracking and compliance management",
+        "price_per_employee": 120,
+        "setup_cost": 8000,
+        "department": "Facility_Safety"
+    }
+}
+
 # Support packages remain the same but now support multiple departments
 SUPPORT_PACKAGES = {
     "Basic": {
@@ -366,7 +538,7 @@ SUPPORT_PACKAGES = {
         "report_requests": 0,
         "systems_operation": "✓ Included",
         "description": "Essential support for small teams with basic shared service needs",
-        "departments": ["IT", "Procurement"]
+        "departments": ["IT", "Procurement", "Facility_Safety"]
     },
     "Bronze": {
         "price": 195975,
@@ -379,7 +551,7 @@ SUPPORT_PACKAGES = {
         "report_requests": 0,
         "systems_operation": "✓ Included",
         "description": "Enhanced support for growing organizations",
-        "departments": ["IT", "Procurement"]
+        "departments": ["IT", "Procurement", "Facility_Safety"]
     },
     "Silver": {
         "price": 649498,
@@ -392,7 +564,7 @@ SUPPORT_PACKAGES = {
         "report_requests": 5,
         "systems_operation": "✓ Included",
         "description": "Comprehensive support for medium enterprises",
-        "departments": ["IT", "Procurement"]
+        "departments": ["IT", "Procurement", "Facility_Safety"]
     },
     "Gold": {
         "price": 1578139,
@@ -405,7 +577,7 @@ SUPPORT_PACKAGES = {
         "report_requests": 5,
         "systems_operation": "✓ Included",
         "description": "Premium support for large organizations",
-        "departments": ["IT", "Procurement"]
+        "departments": ["IT", "Procurement", "Facility_Safety"]
     },
     "Platinum": {
         "price": 2500000,
@@ -418,7 +590,7 @@ SUPPORT_PACKAGES = {
         "report_requests": 15,
         "systems_operation": "✓ Included",
         "description": "Enterprise-grade support with dedicated resources across all departments",
-        "departments": ["IT", "Procurement"]
+        "departments": ["IT", "Procurement", "Facility_Safety"]
     }
 }
 
@@ -549,6 +721,15 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
     }
     
+    .service-card.facility_safety {
+        border-left: 4px solid #f59e0b;
+    }
+    
+    .service-card.facility_safety:hover {
+        border-color: #f59e0b;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+    }
+    
     .cost-display {
         background: #f0f9ff;
         border: 2px solid #0ea5e9;
@@ -562,6 +743,11 @@ st.markdown("""
     .cost-display.procurement {
         background: #f0fdf4;
         border-color: #10b981;
+    }
+    
+    .cost-display.facility_safety {
+        background: #fffbeb;
+        border-color: #f59e0b;
     }
     
     .total-budget {
@@ -631,25 +817,38 @@ def show_department_selection():
     </div>
     """, unsafe_allow_html=True)
     
+    # Show current selections if returning from a department
+    if len(st.session_state.operational_services) > 0 or len(st.session_state.implementation_projects) > 0:
+        st.info("💡 You have existing selections. Switching departments will preserve your data for each department separately.")
+    
     cols = st.columns(len(DEPARTMENTS_CONFIG))
     
     for i, (dept_key, dept_config) in enumerate(DEPARTMENTS_CONFIG.items()):
         with cols[i]:
-            is_selected = st.session_state.selected_department == dept_key
-            card_class = "department-card selected" if is_selected else "department-card"
+            # Check if this department has any selections
+            dept_projects = [p for p in st.session_state.implementation_projects if p.get('shared_service_dept') == dept_key]
+            dept_services = [k for k, v in st.session_state.operational_services.items() if v.get('selected', False)]
+            
+            has_selections = len(dept_projects) > 0 or len(dept_services) > 0
+            
+            card_class = "department-card"
             
             st.markdown(f"""
-            <div class='{card_class}' onclick='selectDepartment("{dept_key}")'>
+            <div class='{card_class}' style='position: relative;'>
                 <h1 style='margin: 0; color: {dept_config["color"]};'>{dept_config["icon"]}</h1>
                 <h3 style='margin: 0.5rem 0; color: #1f2937;'>{dept_config["title"]}</h3>
                 <p style='margin: 0; color: #6b7280; font-size: 0.9em;'>{dept_config["description"]}</p>
+                {f'<div style="position: absolute; top: 10px; right: 10px; background: #10b981; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">✓ Has Selections</div>' if has_selections else ''}
             </div>
             """, unsafe_allow_html=True)
             
-            if st.button(f"Select {dept_config['title']}", 
+            button_text = f"Continue with {dept_config['title']}" if has_selections else f"Select {dept_config['title']}"
+            button_type = "secondary" if has_selections else "primary"
+            
+            if st.button(button_text, 
                         key=f"select_dept_{dept_key}", 
                         use_container_width=True,
-                        type="primary" if is_selected else "secondary"):
+                        type=button_type):
                 st.session_state.selected_department = dept_key
                 st.rerun()
 
@@ -692,6 +891,33 @@ def calculate_operational_total():
                     annual_cost = service_info['price_per_contract'] * volume
                 elif 'price_per_event' in service_info:
                     annual_cost = service_info['price_per_event'] * volume
+                else:
+                    annual_cost = 0
+                
+                setup_cost = service_info['setup_cost'] if is_new_implementation else 0
+                total += annual_cost + setup_cost
+            # Check Facility & Safety services
+            elif actual_service_name in FACILITY_SAFETY_SERVICES:
+                service_info = FACILITY_SAFETY_SERVICES[actual_service_name]
+                volume = data.get('volume', users)  # Use volume or users depending on service
+                
+                if 'price_per_user' in service_info:
+                    monthly_cost = service_info['price_per_user'] * users
+                    annual_cost = monthly_cost * 12
+                elif 'price_per_employee' in service_info:
+                    annual_cost = service_info['price_per_employee'] * volume
+                elif 'price_per_sq_meter' in service_info:
+                    annual_cost = service_info['price_per_sq_meter'] * volume
+                elif 'price_per_access_point' in service_info:
+                    annual_cost = service_info['price_per_access_point'] * volume
+                elif 'price_per_location' in service_info:
+                    annual_cost = service_info['price_per_location'] * volume
+                elif 'price_per_monitoring_point' in service_info:
+                    annual_cost = service_info['price_per_monitoring_point'] * volume
+                elif 'price_per_asset' in service_info:
+                    annual_cost = service_info['price_per_asset'] * volume
+                elif 'price_per_vehicle' in service_info:
+                    annual_cost = service_info['price_per_vehicle'] * volume
                 else:
                     annual_cost = 0
                 
@@ -791,6 +1017,11 @@ def show_sidebar():
                 <strong>Shared Service:</strong> {dept_config['icon']} {dept_config['title']}
             </div>
             """, unsafe_allow_html=True)
+            
+            # Quick department switcher in sidebar
+            if st.button("🔄 Change Department", key="sidebar_change_dept", use_container_width=True):
+                st.session_state.selected_department = None
+                st.rerun()
         
         st.session_state.company_info = {
             'company': selected_company,
@@ -806,7 +1037,8 @@ def show_sidebar():
             st.markdown("---")
             
             # Budget summary
-            st.markdown("### 💰 Service Selection Summary")
+            dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+            st.markdown(f"### 💰 {dept_config['title']} Budget Summary")
             
             operational_total = calculate_operational_total()
             support_total = calculate_support_total()
@@ -860,6 +1092,8 @@ def show_operational_services():
         show_it_operational_services()
     elif st.session_state.selected_department == "Procurement":
         show_procurement_operational_services()
+    elif st.session_state.selected_department == "Facility_Safety":
+        show_facility_safety_operational_services()
 
 def show_it_operational_services():
     # Oracle Services (existing implementation)
@@ -1158,6 +1392,166 @@ def show_procurement_operational_services():
                     
                     st.markdown(f"""
                     <div class='cost-display procurement'>
+                        📊 {cost_display}{setup_text}<br>
+                        <strong>Total Annual Cost: SAR {total_cost:,.0f}</strong>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.session_state.operational_services[service_key] = {
+                    'selected': False,
+                    'users': 0,
+                    'volume': 0,
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
+    
+    # Show common custom services section
+    show_custom_operational_services()
+
+def show_facility_safety_operational_services():
+    # Facility & Safety Services
+    st.markdown("### 🏢 Facility & Safety Services & Solutions")
+    
+    col1, col2 = st.columns(2)
+    facility_safety_services = list(FACILITY_SAFETY_SERVICES.items())
+    
+    for i, (service_name, details) in enumerate(facility_safety_services):
+        col = col1 if i % 2 == 0 else col2
+        service_key = f"facility_safety_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
+        
+        with col:
+            # Determine pricing display based on service type
+            if 'price_per_user' in details:
+                pricing_text = f"SAR {details['price_per_user']}/user/month"
+                volume_label = "Number of Users"
+            elif 'price_per_employee' in details:
+                pricing_text = f"SAR {details['price_per_employee']}/employee/year"
+                volume_label = "Number of Employees"
+            elif 'price_per_sq_meter' in details:
+                pricing_text = f"SAR {details['price_per_sq_meter']}/sq meter/year"
+                volume_label = "Square Meters"
+            elif 'price_per_access_point' in details:
+                pricing_text = f"SAR {details['price_per_access_point']}/access point/year"
+                volume_label = "Number of Access Points"
+            elif 'price_per_location' in details:
+                pricing_text = f"SAR {details['price_per_location']}/location/year"
+                volume_label = "Number of Locations"
+            elif 'price_per_monitoring_point' in details:
+                pricing_text = f"SAR {details['price_per_monitoring_point']}/monitoring point/year"
+                volume_label = "Number of Monitoring Points"
+            elif 'price_per_asset' in details:
+                pricing_text = f"SAR {details['price_per_asset']}/asset/year"
+                volume_label = "Number of Assets"
+            elif 'price_per_vehicle' in details:
+                pricing_text = f"SAR {details['price_per_vehicle']}/vehicle/year"
+                volume_label = "Number of Vehicles"
+            else:
+                pricing_text = "Custom Pricing"
+                volume_label = "Volume"
+            
+            st.markdown(f"""
+            <div class='service-card' style='border-left: 4px solid #f59e0b;'>
+                <h4>{service_name}</h4>
+                <p style='color: #6b7280; font-size: 0.9em;'>{details['description']}</p>
+                <div style='background: #fffbeb; padding: 0.5rem; border-radius: 5px; margin: 0.5rem 0;'>
+                    💰 {pricing_text}<br>
+                    🆕 Setup (new implementation): SAR {details['setup_cost']:,}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Initialize service data if not exists
+            if service_key not in st.session_state.operational_services:
+                st.session_state.operational_services[service_key] = {
+                    'selected': False, 
+                    'users': 0,
+                    'volume': 0,
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
+            
+            # Get current values from session state
+            current_selected = st.session_state.operational_services[service_key].get('selected', False)
+            current_volume = st.session_state.operational_services[service_key].get('volume', 0)
+            current_users = st.session_state.operational_services[service_key].get('users', 0)
+            current_new_impl = st.session_state.operational_services[service_key].get('new_implementation', False)
+            
+            selected = st.checkbox(f"Include {service_name}", 
+                                 key=f"{service_key}_selected",
+                                 value=current_selected)
+            
+            if selected:
+                # New Implementation checkbox
+                new_implementation = st.checkbox(
+                    "🆕 New Implementation", 
+                    key=f"{service_key}_new_impl",
+                    value=current_new_impl,
+                    help="Check this if it's a new implementation requiring setup."
+                )
+                
+                # Volume input based on service type
+                if 'price_per_user' in details:
+                    volume = st.number_input(volume_label, 
+                                          min_value=0, 
+                                          value=current_users,
+                                          key=f"{service_key}_volume",
+                                          step=1)
+                    users = volume
+                else:
+                    volume = st.number_input(volume_label, 
+                                          min_value=0, 
+                                          value=current_volume,
+                                          key=f"{service_key}_volume",
+                                          step=1)
+                    users = 0  # Not user-based
+                
+                # Update session state immediately
+                st.session_state.operational_services[service_key] = {
+                    'selected': True,
+                    'users': users,
+                    'volume': volume,
+                    'actual_service_name': service_name,
+                    'new_implementation': new_implementation
+                }
+                
+                if volume > 0:
+                    # Calculate cost based on pricing model
+                    if 'price_per_user' in details:
+                        monthly_cost = details['price_per_user'] * volume
+                        annual_cost = monthly_cost * 12
+                        cost_display = f"Monthly: SAR {monthly_cost:,.0f}"
+                    elif 'price_per_employee' in details:
+                        annual_cost = details['price_per_employee'] * volume
+                        cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                    elif 'price_per_sq_meter' in details:
+                        annual_cost = details['price_per_sq_meter'] * volume
+                        cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                    elif 'price_per_access_point' in details:
+                        annual_cost = details['price_per_access_point'] * volume
+                        cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                    elif 'price_per_location' in details:
+                        annual_cost = details['price_per_location'] * volume
+                        cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                    elif 'price_per_monitoring_point' in details:
+                        annual_cost = details['price_per_monitoring_point'] * volume
+                        cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                    elif 'price_per_asset' in details:
+                        annual_cost = details['price_per_asset'] * volume
+                        cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                    elif 'price_per_vehicle' in details:
+                        annual_cost = details['price_per_vehicle'] * volume
+                        cost_display = f"Annual: SAR {annual_cost:,.0f}"
+                    else:
+                        annual_cost = 0
+                        cost_display = "Custom Pricing"
+                    
+                    setup_cost = details['setup_cost'] if new_implementation else 0
+                    total_cost = annual_cost + setup_cost
+                    
+                    setup_text = f" + SAR {setup_cost:,} setup" if new_implementation else " (no setup cost)"
+                    
+                    st.markdown(f"""
+                    <div class='cost-display' style='background: #fffbeb; border-color: #f59e0b;'>
                         📊 {cost_display}{setup_text}<br>
                         <strong>Total Annual Cost: SAR {total_cost:,.0f}</strong>
                     </div>
@@ -1621,6 +2015,19 @@ def show_implementation_projects():
                     "🔍 Audit & Compliance": "Strengthen audit processes and regulatory compliance",
                     "📞 Support & Communication": "Improve stakeholder communication and support services"
                 }
+            elif st.session_state.selected_department == "Facility_Safety":
+                category_descriptions = {
+                    "🏢 Facility Management & Operations": "Optimize building operations, maintenance, and space utilization",
+                    "🔒 Security & Access Control": "Enhance physical security and access management systems",
+                    "⚠️ Safety & Compliance": "Improve workplace safety and regulatory compliance management",
+                    "🚨 Emergency Management": "Strengthen emergency response and business continuity planning",
+                    "🌡️ Environmental & Health": "Monitor environmental conditions and occupational health",
+                    "🔧 Asset & Equipment Management": "Optimize asset lifecycle and maintenance operations",
+                    "🚗 Transportation & Fleet": "Manage vehicle fleet and transportation operations",
+                    "📋 Documentation & Reporting": "Streamline safety documentation and compliance reporting",
+                    "👷 Contractor & Vendor Management": "Ensure contractor safety compliance and performance",
+                    "📊 Safety Analytics & Reporting": "Analyze safety performance and generate insights"
+                }
             else:
                 category_descriptions = {}
             
@@ -1976,8 +2383,35 @@ def main():
     if not st.session_state.selected_department:
         show_department_selection()
     else:
-        # Navigation
+        # Back button and department navigation
         dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+        
+        col1, col2, col3 = st.columns([1, 3, 1])
+        
+        with col1:
+            if st.button("← Back to Departments", key="back_to_departments", help="Return to department selection"):
+                st.session_state.selected_department = None
+                st.rerun()
+        
+        with col2:
+            st.markdown(f"""
+            <div style='text-align: center; padding: 1rem; background: {dept_config['color']}20; border-radius: 8px; margin: 0.5rem 0;'>
+                <h3 style='margin: 0; color: {dept_config['color']};'>
+                    {dept_config['icon']} {dept_config['title']} Shared Services
+                </h3>
+                <p style='margin: 0.5rem 0 0 0; color: #6b7280; font-size: 0.9em;'>
+                    {dept_config['description']}
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            # Quick department switcher
+            if st.button("🔄 Switch Department", key="switch_department", help="Quickly switch to another department"):
+                st.session_state.selected_department = None
+                st.rerun()
+        
+        # Navigation tabs
         tab1, tab2, tab3, tab4 = st.tabs([
             f"{dept_config['icon']} Operational Services", 
             "🛠️ Support Packages", 
