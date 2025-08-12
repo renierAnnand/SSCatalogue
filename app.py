@@ -4,6 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import uuid
+import hashlib
+import json
 
 # Page configuration
 st.set_page_config(
@@ -13,13 +15,37 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Authentication Configuration
+ADMIN_CREDENTIALS = {
+    "it_admin": {
+        "password": "itadmin2025",
+        "department": "IT",
+        "name": "IT Department Head"
+    },
+    "procurement_admin": {
+        "password": "procadmin2025", 
+        "department": "Procurement",
+        "name": "Procurement Department Head"
+    },
+    "facility_admin": {
+        "password": "faciladmin2025",
+        "department": "Facility_Safety", 
+        "name": "Facility & Safety Department Head"
+    },
+    "super_admin": {
+        "password": "superadmin2025",
+        "department": "ALL",
+        "name": "Super Administrator"
+    }
+}
+
 # Company list for Alkhorayef Group
 ALKHORAYEF_COMPANIES = [
     "APC", "AIC", "AGC", "APS", "PS", "AWPT", "AMIC", "ACC", "SPC", "Tom Egypt"
 ]
 
 # Enhanced PROJECT_TYPES organized by categories for IT
-IT_PROJECT_CATEGORIES = {
+DEFAULT_IT_PROJECT_CATEGORIES = {
     "🤖 Digital Transformation & Automation": [
         "RPA (Robotic Process Automation)",
         "Process Automation & Optimization",
@@ -143,7 +169,7 @@ IT_PROJECT_CATEGORIES = {
 }
 
 # Procurement Service Categories based on the Excel file
-PROCUREMENT_SERVICE_CATEGORIES = {
+DEFAULT_PROCUREMENT_SERVICE_CATEGORIES = {
     "🛒 Purchase Order Management": [
         "Purchase Request Processing",
         "Purchase Order Creation & Management",
@@ -235,7 +261,7 @@ PROCUREMENT_SERVICE_CATEGORIES = {
 }
 
 # Facility & Safety Service Categories
-FACILITY_SAFETY_SERVICE_CATEGORIES = {
+DEFAULT_FACILITY_SAFETY_SERVICE_CATEGORIES = {
     "🏢 Facility Management & Operations": [
         "Building Maintenance & Repairs",
         "HVAC System Management",
@@ -347,39 +373,14 @@ FACILITY_SAFETY_SERVICE_CATEGORIES = {
     ]
 }
 
-# Department configurations
-DEPARTMENTS_CONFIG = {
-    "IT": {
-        "icon": "💻",
-        "title": "Information Technology",
-        "project_categories": IT_PROJECT_CATEGORIES,
-        "color": "#3b82f6",
-        "description": "Digital transformation, technology infrastructure, and enterprise applications"
-    },
-    "Procurement": {
-        "icon": "🛒",
-        "title": "Procurement & Supply Chain",
-        "project_categories": PROCUREMENT_SERVICE_CATEGORIES,
-        "color": "#10b981",
-        "description": "Purchasing, vendor management, contracts, and supply chain optimization"
-    },
-    "Facility_Safety": {
-        "icon": "🏢",
-        "title": "Facility & Safety",
-        "project_categories": FACILITY_SAFETY_SERVICE_CATEGORIES,
-        "color": "#f59e0b",
-        "description": "Facility management, workplace safety, security, and environmental compliance"
-    }
-}
-
 COMPANY_DEPARTMENTS = [
     "Finance", "Human Resources", "Operations", "Sales", "Marketing", 
     "IT", "Customer Service", "Supply Chain", "Manufacturing", "Executive",
     "Procurement", "Legal", "Quality Assurance", "Safety & Security"
 ]
 
-# Predefined service data for IT
-ORACLE_SERVICES = {
+# Default service data - these will be loaded into session state
+DEFAULT_ORACLE_SERVICES = {
     "Oracle ERP Cloud": {
         "description": "Complete enterprise resource planning solution with financials, procurement, and project management",
         "price_per_user": 180,
@@ -406,7 +407,7 @@ ORACLE_SERVICES = {
     }
 }
 
-MICROSOFT_SERVICES = {
+DEFAULT_MICROSOFT_SERVICES = {
     "Microsoft 365 E3": {
         "description": "Premium productivity suite with advanced security, compliance, and analytics capabilities",
         "price_per_user": 82,
@@ -440,7 +441,7 @@ MICROSOFT_SERVICES = {
 }
 
 # Procurement Services with pricing
-PROCUREMENT_SERVICES = {
+DEFAULT_PROCUREMENT_SERVICES = {
     "Procurement Management Suite": {
         "description": "Complete purchase-to-pay solution including PO management, supplier onboarding, and analytics",
         "price_per_transaction": 25,
@@ -474,7 +475,7 @@ PROCUREMENT_SERVICES = {
 }
 
 # Facility & Safety Services with pricing
-FACILITY_SAFETY_SERVICES = {
+DEFAULT_FACILITY_SAFETY_SERVICES = {
     "Facility Management Platform": {
         "description": "Comprehensive facility management system for maintenance, space planning, and operations",
         "price_per_sq_meter": 12,
@@ -526,7 +527,7 @@ FACILITY_SAFETY_SERVICES = {
 }
 
 # Support packages remain the same but now support multiple departments
-SUPPORT_PACKAGES = {
+DEFAULT_SUPPORT_PACKAGES = {
     "Basic": {
         "price": 52000,
         "support_requests_standard": 0,
@@ -595,7 +596,7 @@ SUPPORT_PACKAGES = {
 }
 
 # RPA Package data remains the same
-RPA_PACKAGES = {
+DEFAULT_RPA_PACKAGES = {
     "Bronze (1 Credit)": {
         "discovery_analysis": 33110,
         "build_implementation": 3080,
@@ -655,6 +656,16 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     
+    .admin-header {
+        background: linear-gradient(90deg, #dc2626, #ef4444);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+    
     .department-selector {
         background: #f8fafc;
         border: 2px solid #e2e8f0;
@@ -695,6 +706,15 @@ st.markdown("""
         padding: 1.5rem;
         margin: 1rem 0;
         border-left: 5px solid #3b82f6;
+    }
+    
+    .admin-section {
+        background: #fef2f2;
+        border: 2px solid #fecaca;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border-left: 5px solid #dc2626;
     }
     
     .service-card {
@@ -786,11 +806,117 @@ st.markdown("""
         border: 1px solid #e5e7eb;
         margin: 0.5rem 0;
     }
+    
+    .login-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 2rem auto;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .admin-warning {
+        background: #fef2f2;
+        border: 2px solid #fecaca;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+        color: #991b1b;
+        font-weight: 600;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
+# Authentication Functions
+def hash_password(password):
+    """Simple password hashing for demo purposes"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def authenticate_admin(username, password):
+    """Authenticate admin user"""
+    if username in ADMIN_CREDENTIALS:
+        stored_password = ADMIN_CREDENTIALS[username]["password"]
+        if password == stored_password:  # In production, use proper password hashing
+            return True, ADMIN_CREDENTIALS[username]
+    return False, None
+
+def show_admin_login():
+    """Show admin login interface"""
+    st.markdown("""
+    <div class='login-card'>
+        <h2 style='text-align: center; color: #dc2626; margin-bottom: 1.5rem;'>
+            🔐 Department Head Access
+        </h2>
+        <p style='text-align: center; color: #6b7280; margin-bottom: 1.5rem;'>
+            Secure access for authorized Department Heads to manage shared services content and pricing.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    with st.form("admin_login_form"):
+        st.markdown("### Login Credentials")
+        username = st.text_input("Username", placeholder="e.g., it_admin")
+        password = st.text_input("Password", type="password", placeholder="Enter your password")
+        
+        submitted = st.form_submit_button("🔓 Access Admin Panel", type="primary", use_container_width=True)
+        
+        if submitted:
+            if username and password:
+                is_valid, admin_info = authenticate_admin(username, password)
+                if is_valid:
+                    st.session_state.admin_authenticated = True
+                    st.session_state.admin_user = username
+                    st.session_state.admin_info = admin_info
+                    st.success(f"✅ Welcome, {admin_info['name']}!")
+                    st.rerun()
+                else:
+                    st.error("❌ Invalid credentials. Please check your username and password.")
+            else:
+                st.error("Please enter both username and password.")
+    
+    # Demo credentials info
+    with st.expander("🔍 Demo Credentials", expanded=False):
+        st.markdown("""
+        **For demonstration purposes, use these credentials:**
+        
+        **IT Department:**
+        - Username: `it_admin`
+        - Password: `itadmin2025`
+        
+        **Procurement Department:**
+        - Username: `procurement_admin`
+        - Password: `procadmin2025`
+        
+        **Facility & Safety Department:**
+        - Username: `facility_admin`
+        - Password: `faciladmin2025`
+        
+        **Super Administrator:**
+        - Username: `super_admin`
+        - Password: `superadmin2025`
+        """)
+
+def check_admin_access(required_department=None):
+    """Check if user has admin access for the specified department"""
+    if not st.session_state.get('admin_authenticated', False):
+        return False
+    
+    admin_info = st.session_state.get('admin_info', {})
+    admin_dept = admin_info.get('department', '')
+    
+    if admin_dept == 'ALL':  # Super admin
+        return True
+    
+    if required_department is None:
+        return True
+    
+    return admin_dept == required_department
+
+# Initialize session state for data management
 def initialize_session_state():
+    """Initialize session state with default data"""
     if 'selected_department' not in st.session_state:
         st.session_state.selected_department = None
     if 'operational_services' not in st.session_state:
@@ -805,11 +931,632 @@ def initialize_session_state():
         st.session_state.implementation_projects = []
     if 'company_info' not in st.session_state:
         st.session_state.company_info = {}
+    if 'app_mode' not in st.session_state:
+        st.session_state.app_mode = 'client'  # 'client' or 'admin'
+    if 'admin_authenticated' not in st.session_state:
+        st.session_state.admin_authenticated = False
+    
+    # Initialize admin-managed data from defaults
+    if 'admin_oracle_services' not in st.session_state:
+        st.session_state.admin_oracle_services = DEFAULT_ORACLE_SERVICES.copy()
+    if 'admin_microsoft_services' not in st.session_state:
+        st.session_state.admin_microsoft_services = DEFAULT_MICROSOFT_SERVICES.copy()
+    if 'admin_procurement_services' not in st.session_state:
+        st.session_state.admin_procurement_services = DEFAULT_PROCUREMENT_SERVICES.copy()
+    if 'admin_facility_safety_services' not in st.session_state:
+        st.session_state.admin_facility_safety_services = DEFAULT_FACILITY_SAFETY_SERVICES.copy()
+    if 'admin_support_packages' not in st.session_state:
+        st.session_state.admin_support_packages = DEFAULT_SUPPORT_PACKAGES.copy()
+    if 'admin_rpa_packages' not in st.session_state:
+        st.session_state.admin_rpa_packages = DEFAULT_RPA_PACKAGES.copy()
+    if 'admin_it_project_categories' not in st.session_state:
+        st.session_state.admin_it_project_categories = DEFAULT_IT_PROJECT_CATEGORIES.copy()
+    if 'admin_procurement_service_categories' not in st.session_state:
+        st.session_state.admin_procurement_service_categories = DEFAULT_PROCUREMENT_SERVICE_CATEGORIES.copy()
+    if 'admin_facility_safety_service_categories' not in st.session_state:
+        st.session_state.admin_facility_safety_service_categories = DEFAULT_FACILITY_SAFETY_SERVICE_CATEGORIES.copy()
 
-initialize_session_state()
+# Get current data (admin-managed if available, otherwise defaults)
+def get_current_data():
+    """Get current data from admin-managed session state"""
+    return {
+        'ORACLE_SERVICES': st.session_state.admin_oracle_services,
+        'MICROSOFT_SERVICES': st.session_state.admin_microsoft_services,
+        'PROCUREMENT_SERVICES': st.session_state.admin_procurement_services,
+        'FACILITY_SAFETY_SERVICES': st.session_state.admin_facility_safety_services,
+        'SUPPORT_PACKAGES': st.session_state.admin_support_packages,
+        'RPA_PACKAGES': st.session_state.admin_rpa_packages,
+        'IT_PROJECT_CATEGORIES': st.session_state.admin_it_project_categories,
+        'PROCUREMENT_SERVICE_CATEGORIES': st.session_state.admin_procurement_service_categories,
+        'FACILITY_SAFETY_SERVICE_CATEGORIES': st.session_state.admin_facility_safety_service_categories
+    }
 
-# Department selection functions
+# Department configurations
+def get_departments_config():
+    """Get departments configuration with current data"""
+    current_data = get_current_data()
+    
+    return {
+        "IT": {
+            "icon": "💻",
+            "title": "Information Technology",
+            "project_categories": current_data['IT_PROJECT_CATEGORIES'],
+            "color": "#3b82f6",
+            "description": "Digital transformation, technology infrastructure, and enterprise applications"
+        },
+        "Procurement": {
+            "icon": "🛒",
+            "title": "Procurement & Supply Chain",
+            "project_categories": current_data['PROCUREMENT_SERVICE_CATEGORIES'],
+            "color": "#10b981",
+            "description": "Purchasing, vendor management, contracts, and supply chain optimization"
+        },
+        "Facility_Safety": {
+            "icon": "🏢",
+            "title": "Facility & Safety",
+            "project_categories": current_data['FACILITY_SAFETY_SERVICE_CATEGORIES'],
+            "color": "#f59e0b",
+            "description": "Facility management, workplace safety, security, and environmental compliance"
+        }
+    }
+
+# Admin Management Functions
+def show_admin_dashboard():
+    """Show admin dashboard with department management options"""
+    admin_info = st.session_state.get('admin_info', {})
+    admin_dept = admin_info.get('department', '')
+    admin_name = admin_info.get('name', 'Administrator')
+    
+    st.markdown(f"""
+    <div class='admin-header'>
+        <h1>🔧 Admin Dashboard</h1>
+        <h2>Department Head Content Management</h2>
+        <p><strong>Welcome:</strong> {admin_name} | <strong>Access Level:</strong> {admin_dept}</p>
+        <p>Manage shared services content, pricing, and categories for 2025 budget planning</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Admin navigation
+    if admin_dept == 'ALL':
+        admin_tabs = st.tabs(["🏢 Overview", "💻 IT Services", "🛒 Procurement", "🏢 Facility & Safety", "🛠️ Support Packages"])
+        
+        with admin_tabs[0]:
+            show_admin_overview()
+        with admin_tabs[1]:
+            show_admin_it_management()
+        with admin_tabs[2]:
+            show_admin_procurement_management()
+        with admin_tabs[3]:
+            show_admin_facility_safety_management()
+        with admin_tabs[4]:
+            show_admin_support_management()
+            
+    elif admin_dept == 'IT':
+        admin_tabs = st.tabs(["💻 IT Services", "🛠️ Support Packages"])
+        with admin_tabs[0]:
+            show_admin_it_management()
+        with admin_tabs[1]:
+            show_admin_support_management()
+            
+    elif admin_dept == 'Procurement':
+        admin_tabs = st.tabs(["🛒 Procurement Services"])
+        with admin_tabs[0]:
+            show_admin_procurement_management()
+            
+    elif admin_dept == 'Facility_Safety':
+        admin_tabs = st.tabs(["🏢 Facility & Safety Services"])
+        with admin_tabs[0]:
+            show_admin_facility_safety_management()
+
+def show_admin_overview():
+    """Show admin overview with system statistics"""
+    st.markdown("""
+    <div class='admin-section'>
+        <h2>📊 System Overview</h2>
+        <p>Real-time statistics of the shared services catalogue system.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    current_data = get_current_data()
+    
+    # Statistics cards
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        oracle_count = len(current_data['ORACLE_SERVICES'])
+        microsoft_count = len(current_data['MICROSOFT_SERVICES'])
+        st.metric("IT Services", oracle_count + microsoft_count, f"{oracle_count} Oracle + {microsoft_count} Microsoft")
+    
+    with col2:
+        procurement_count = len(current_data['PROCUREMENT_SERVICES'])
+        st.metric("Procurement Services", procurement_count)
+    
+    with col3:
+        facility_count = len(current_data['FACILITY_SAFETY_SERVICES'])
+        st.metric("Facility & Safety Services", facility_count)
+    
+    with col4:
+        support_count = len(current_data['SUPPORT_PACKAGES'])
+        st.metric("Support Packages", support_count)
+    
+    # Recent activity (simulation)
+    st.markdown("### 📈 Recent Admin Activity")
+    st.info("🔄 This section would show recent changes made by department heads in a production environment.")
+    
+    # Quick actions
+    st.markdown("### ⚡ Quick Actions")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("📊 Export All Data", use_container_width=True):
+            st.success("📊 System data export functionality would be implemented here.")
+    
+    with col2:
+        if st.button("🔄 Reset to Defaults", use_container_width=True):
+            st.warning("⚠️ Reset functionality would restore all services to default settings.")
+    
+    with col3:
+        if st.button("📧 Notify Departments", use_container_width=True):
+            st.success("📧 Notification system would alert departments of updates.")
+
+def show_admin_it_management():
+    """Show IT services management interface"""
+    if not check_admin_access('IT'):
+        st.error("❌ Access denied. This section requires IT Department Head access.")
+        return
+    
+    st.markdown("""
+    <div class='admin-section'>
+        <h2>💻 IT Services Management</h2>
+        <p>Manage Oracle and Microsoft services, pricing, and project categories.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Oracle Services Management
+    st.markdown("### 🟠 Oracle Services Management")
+    
+    # Add new Oracle service
+    with st.expander("➕ Add New Oracle Service", expanded=False):
+        with st.form("add_oracle_service"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                service_name = st.text_input("Service Name")
+                description = st.text_area("Description")
+            
+            with col2:
+                price_per_user = st.number_input("Price per User (SAR/month)", min_value=0, value=100)
+                setup_cost = st.number_input("Setup Cost (SAR)", min_value=0, value=5000)
+            
+            if st.form_submit_button("Add Oracle Service", type="primary"):
+                if service_name and description:
+                    st.session_state.admin_oracle_services[service_name] = {
+                        "description": description,
+                        "price_per_user": price_per_user,
+                        "setup_cost": setup_cost,
+                        "department": "IT"
+                    }
+                    st.success(f"✅ Added Oracle service: {service_name}")
+                    st.rerun()
+                else:
+                    st.error("Please fill in all required fields.")
+    
+    # Existing Oracle services
+    if st.session_state.admin_oracle_services:
+        st.markdown("#### Current Oracle Services")
+        
+        for service_name, details in st.session_state.admin_oracle_services.items():
+            with st.expander(f"🔧 {service_name}", expanded=False):
+                col1, col2, col3 = st.columns([2, 2, 1])
+                
+                with col1:
+                    new_desc = st.text_area(
+                        "Description", 
+                        value=details['description'], 
+                        key=f"oracle_desc_{service_name}"
+                    )
+                    
+                with col2:
+                    new_price = st.number_input(
+                        "Price per User (SAR/month)", 
+                        value=details['price_per_user'], 
+                        min_value=0,
+                        key=f"oracle_price_{service_name}"
+                    )
+                    new_setup = st.number_input(
+                        "Setup Cost (SAR)", 
+                        value=details['setup_cost'], 
+                        min_value=0,
+                        key=f"oracle_setup_{service_name}"
+                    )
+                
+                with col3:
+                    if st.button("💾 Update", key=f"update_oracle_{service_name}"):
+                        st.session_state.admin_oracle_services[service_name].update({
+                            'description': new_desc,
+                            'price_per_user': new_price,
+                            'setup_cost': new_setup
+                        })
+                        st.success(f"✅ Updated {service_name}")
+                        st.rerun()
+                    
+                    if st.button("🗑️ Remove", key=f"remove_oracle_{service_name}"):
+                        del st.session_state.admin_oracle_services[service_name]
+                        st.success(f"🗑️ Removed {service_name}")
+                        st.rerun()
+    
+    st.markdown("---")
+    
+    # Microsoft Services Management
+    st.markdown("### 🟦 Microsoft Services Management")
+    
+    # Add new Microsoft service
+    with st.expander("➕ Add New Microsoft Service", expanded=False):
+        with st.form("add_microsoft_service"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                service_name = st.text_input("Service Name", key="ms_service_name")
+                description = st.text_area("Description", key="ms_description")
+            
+            with col2:
+                price_per_user = st.number_input("Price per User (SAR/month)", min_value=0, value=100, key="ms_price")
+                setup_cost = st.number_input("Setup Cost (SAR)", min_value=0, value=5000, key="ms_setup")
+            
+            if st.form_submit_button("Add Microsoft Service", type="primary"):
+                if service_name and description:
+                    st.session_state.admin_microsoft_services[service_name] = {
+                        "description": description,
+                        "price_per_user": price_per_user,
+                        "setup_cost": setup_cost,
+                        "department": "IT"
+                    }
+                    st.success(f"✅ Added Microsoft service: {service_name}")
+                    st.rerun()
+                else:
+                    st.error("Please fill in all required fields.")
+    
+    # Existing Microsoft services
+    if st.session_state.admin_microsoft_services:
+        st.markdown("#### Current Microsoft Services")
+        
+        for service_name, details in st.session_state.admin_microsoft_services.items():
+            with st.expander(f"🔧 {service_name}", expanded=False):
+                col1, col2, col3 = st.columns([2, 2, 1])
+                
+                with col1:
+                    new_desc = st.text_area(
+                        "Description", 
+                        value=details['description'], 
+                        key=f"ms_desc_{service_name}"
+                    )
+                    
+                with col2:
+                    new_price = st.number_input(
+                        "Price per User (SAR/month)", 
+                        value=details['price_per_user'], 
+                        min_value=0,
+                        key=f"ms_price_{service_name}"
+                    )
+                    new_setup = st.number_input(
+                        "Setup Cost (SAR)", 
+                        value=details['setup_cost'], 
+                        min_value=0,
+                        key=f"ms_setup_{service_name}"
+                    )
+                
+                with col3:
+                    if st.button("💾 Update", key=f"update_ms_{service_name}"):
+                        st.session_state.admin_microsoft_services[service_name].update({
+                            'description': new_desc,
+                            'price_per_user': new_price,
+                            'setup_cost': new_setup
+                        })
+                        st.success(f"✅ Updated {service_name}")
+                        st.rerun()
+                    
+                    if st.button("🗑️ Remove", key=f"remove_ms_{service_name}"):
+                        del st.session_state.admin_microsoft_services[service_name]
+                        st.success(f"🗑️ Removed {service_name}")
+                        st.rerun()
+
+def show_admin_procurement_management():
+    """Show Procurement services management interface"""
+    if not check_admin_access('Procurement'):
+        st.error("❌ Access denied. This section requires Procurement Department Head access.")
+        return
+    
+    st.markdown("""
+    <div class='admin-section'>
+        <h2>🛒 Procurement Services Management</h2>
+        <p>Manage procurement services, pricing models, and service categories.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Add new Procurement service
+    with st.expander("➕ Add New Procurement Service", expanded=False):
+        with st.form("add_procurement_service"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                service_name = st.text_input("Service Name")
+                description = st.text_area("Description")
+                pricing_model = st.selectbox(
+                    "Pricing Model", 
+                    ["price_per_user", "price_per_transaction", "price_per_supplier", "price_per_contract", "price_per_event"]
+                )
+            
+            with col2:
+                price_value = st.number_input("Price Value (SAR)", min_value=0, value=100)
+                setup_cost = st.number_input("Setup Cost (SAR)", min_value=0, value=5000)
+            
+            if st.form_submit_button("Add Procurement Service", type="primary"):
+                if service_name and description:
+                    service_data = {
+                        "description": description,
+                        pricing_model: price_value,
+                        "setup_cost": setup_cost,
+                        "department": "Procurement"
+                    }
+                    st.session_state.admin_procurement_services[service_name] = service_data
+                    st.success(f"✅ Added Procurement service: {service_name}")
+                    st.rerun()
+                else:
+                    st.error("Please fill in all required fields.")
+    
+    # Existing Procurement services
+    if st.session_state.admin_procurement_services:
+        st.markdown("#### Current Procurement Services")
+        
+        for service_name, details in st.session_state.admin_procurement_services.items():
+            with st.expander(f"🔧 {service_name}", expanded=False):
+                col1, col2, col3 = st.columns([2, 2, 1])
+                
+                with col1:
+                    new_desc = st.text_area(
+                        "Description", 
+                        value=details['description'], 
+                        key=f"proc_desc_{service_name}"
+                    )
+                
+                with col2:
+                    # Find the pricing model
+                    pricing_models = ["price_per_user", "price_per_transaction", "price_per_supplier", "price_per_contract", "price_per_event"]
+                    current_pricing_model = None
+                    current_price = 0
+                    
+                    for model in pricing_models:
+                        if model in details:
+                            current_pricing_model = model
+                            current_price = details[model]
+                            break
+                    
+                    new_price = st.number_input(
+                        f"Price ({current_pricing_model.replace('_', ' ').title()})", 
+                        value=current_price, 
+                        min_value=0,
+                        key=f"proc_price_{service_name}"
+                    )
+                    new_setup = st.number_input(
+                        "Setup Cost (SAR)", 
+                        value=details['setup_cost'], 
+                        min_value=0,
+                        key=f"proc_setup_{service_name}"
+                    )
+                
+                with col3:
+                    if st.button("💾 Update", key=f"update_proc_{service_name}"):
+                        st.session_state.admin_procurement_services[service_name]['description'] = new_desc
+                        st.session_state.admin_procurement_services[service_name]['setup_cost'] = new_setup
+                        if current_pricing_model:
+                            st.session_state.admin_procurement_services[service_name][current_pricing_model] = new_price
+                        st.success(f"✅ Updated {service_name}")
+                        st.rerun()
+                    
+                    if st.button("🗑️ Remove", key=f"remove_proc_{service_name}"):
+                        del st.session_state.admin_procurement_services[service_name]
+                        st.success(f"🗑️ Removed {service_name}")
+                        st.rerun()
+
+def show_admin_facility_safety_management():
+    """Show Facility & Safety services management interface"""
+    if not check_admin_access('Facility_Safety'):
+        st.error("❌ Access denied. This section requires Facility & Safety Department Head access.")
+        return
+    
+    st.markdown("""
+    <div class='admin-section'>
+        <h2>🏢 Facility & Safety Services Management</h2>
+        <p>Manage facility and safety services, pricing models, and service categories.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Add new Facility & Safety service
+    with st.expander("➕ Add New Facility & Safety Service", expanded=False):
+        with st.form("add_facility_service"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                service_name = st.text_input("Service Name")
+                description = st.text_area("Description")
+                pricing_model = st.selectbox(
+                    "Pricing Model", 
+                    ["price_per_user", "price_per_employee", "price_per_sq_meter", "price_per_access_point", 
+                     "price_per_location", "price_per_monitoring_point", "price_per_asset", "price_per_vehicle"]
+                )
+            
+            with col2:
+                price_value = st.number_input("Price Value (SAR)", min_value=0, value=100)
+                setup_cost = st.number_input("Setup Cost (SAR)", min_value=0, value=5000)
+            
+            if st.form_submit_button("Add Facility & Safety Service", type="primary"):
+                if service_name and description:
+                    service_data = {
+                        "description": description,
+                        pricing_model: price_value,
+                        "setup_cost": setup_cost,
+                        "department": "Facility_Safety"
+                    }
+                    st.session_state.admin_facility_safety_services[service_name] = service_data
+                    st.success(f"✅ Added Facility & Safety service: {service_name}")
+                    st.rerun()
+                else:
+                    st.error("Please fill in all required fields.")
+    
+    # Existing Facility & Safety services
+    if st.session_state.admin_facility_safety_services:
+        st.markdown("#### Current Facility & Safety Services")
+        
+        for service_name, details in st.session_state.admin_facility_safety_services.items():
+            with st.expander(f"🔧 {service_name}", expanded=False):
+                col1, col2, col3 = st.columns([2, 2, 1])
+                
+                with col1:
+                    new_desc = st.text_area(
+                        "Description", 
+                        value=details['description'], 
+                        key=f"fac_desc_{service_name}"
+                    )
+                
+                with col2:
+                    # Find the pricing model
+                    pricing_models = ["price_per_user", "price_per_employee", "price_per_sq_meter", "price_per_access_point", 
+                                    "price_per_location", "price_per_monitoring_point", "price_per_asset", "price_per_vehicle"]
+                    current_pricing_model = None
+                    current_price = 0
+                    
+                    for model in pricing_models:
+                        if model in details:
+                            current_pricing_model = model
+                            current_price = details[model]
+                            break
+                    
+                    new_price = st.number_input(
+                        f"Price ({current_pricing_model.replace('_', ' ').title()})", 
+                        value=current_price, 
+                        min_value=0,
+                        key=f"fac_price_{service_name}"
+                    )
+                    new_setup = st.number_input(
+                        "Setup Cost (SAR)", 
+                        value=details['setup_cost'], 
+                        min_value=0,
+                        key=f"fac_setup_{service_name}"
+                    )
+                
+                with col3:
+                    if st.button("💾 Update", key=f"update_fac_{service_name}"):
+                        st.session_state.admin_facility_safety_services[service_name]['description'] = new_desc
+                        st.session_state.admin_facility_safety_services[service_name]['setup_cost'] = new_setup
+                        if current_pricing_model:
+                            st.session_state.admin_facility_safety_services[service_name][current_pricing_model] = new_price
+                        st.success(f"✅ Updated {service_name}")
+                        st.rerun()
+                    
+                    if st.button("🗑️ Remove", key=f"remove_fac_{service_name}"):
+                        del st.session_state.admin_facility_safety_services[service_name]
+                        st.success(f"🗑️ Removed {service_name}")
+                        st.rerun()
+
+def show_admin_support_management():
+    """Show support packages management interface"""
+    if not check_admin_access():
+        st.error("❌ Access denied. This section requires admin access.")
+        return
+    
+    st.markdown("""
+    <div class='admin-section'>
+        <h2>🛠️ Support Packages Management</h2>
+        <p>Manage support packages pricing and features.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Support Packages Management
+    if st.session_state.admin_support_packages:
+        st.markdown("#### Current Support Packages")
+        
+        for package_name, details in st.session_state.admin_support_packages.items():
+            with st.expander(f"🔧 {package_name} Package", expanded=False):
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    new_price = st.number_input(
+                        "Package Price (SAR)", 
+                        value=details['price'], 
+                        min_value=0,
+                        key=f"support_price_{package_name}"
+                    )
+                    new_description = st.text_area(
+                        "Description", 
+                        value=details['description'], 
+                        key=f"support_desc_{package_name}"
+                    )
+                    new_standard = st.number_input(
+                        "Standard Support Requests", 
+                        value=details['support_requests_standard'], 
+                        min_value=0,
+                        key=f"support_standard_{package_name}"
+                    )
+                    new_priority = st.number_input(
+                        "Priority Support Requests", 
+                        value=details['support_requests_priority'], 
+                        min_value=0,
+                        key=f"support_priority_{package_name}"
+                    )
+                
+                with col2:
+                    new_premium = st.number_input(
+                        "Premium Support Requests", 
+                        value=details['support_requests_premium'], 
+                        min_value=0,
+                        key=f"support_premium_{package_name}"
+                    )
+                    new_improvement_hours = st.number_input(
+                        "Improvement Hours", 
+                        value=details['improvement_hours'], 
+                        min_value=0,
+                        key=f"support_improvement_{package_name}"
+                    )
+                    new_training = st.number_input(
+                        "Training Requests", 
+                        value=details['training_requests'], 
+                        min_value=0,
+                        key=f"support_training_{package_name}"
+                    )
+                    new_reports = st.number_input(
+                        "Report Requests", 
+                        value=details['report_requests'], 
+                        min_value=0,
+                        key=f"support_reports_{package_name}"
+                    )
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("💾 Update Package", key=f"update_support_{package_name}"):
+                        st.session_state.admin_support_packages[package_name].update({
+                            'price': new_price,
+                            'description': new_description,
+                            'support_requests_standard': new_standard,
+                            'support_requests_priority': new_priority,
+                            'support_requests_premium': new_premium,
+                            'total_support_requests': new_standard + new_priority + new_premium,
+                            'improvement_hours': new_improvement_hours,
+                            'training_requests': new_training,
+                            'report_requests': new_reports
+                        })
+                        st.success(f"✅ Updated {package_name} package")
+                        st.rerun()
+                
+                with col2:
+                    if st.button("🗑️ Remove Package", key=f"remove_support_{package_name}"):
+                        del st.session_state.admin_support_packages[package_name]
+                        st.success(f"🗑️ Removed {package_name} package")
+                        st.rerun()
+
+# Department selection functions (updated to use current data)
 def show_department_selection():
+    departments_config = get_departments_config()
+    
     st.markdown("""
     <div class='department-selector'>
         <h2>🏢 Select Shared Services Department</h2>
@@ -821,9 +1568,9 @@ def show_department_selection():
     if len(st.session_state.operational_services) > 0 or len(st.session_state.implementation_projects) > 0:
         st.info("💡 You have existing selections. Switching departments will preserve your data for each department separately.")
     
-    cols = st.columns(len(DEPARTMENTS_CONFIG))
+    cols = st.columns(len(departments_config))
     
-    for i, (dept_key, dept_config) in enumerate(DEPARTMENTS_CONFIG.items()):
+    for i, (dept_key, dept_config) in enumerate(departments_config.items()):
         with cols[i]:
             # Check if this department has any selections
             dept_projects = [p for p in st.session_state.implementation_projects if p.get('shared_service_dept') == dept_key]
@@ -852,8 +1599,9 @@ def show_department_selection():
                 st.session_state.selected_department = dept_key
                 st.rerun()
 
-# Utility functions
+# Utility functions (updated to use current data)
 def calculate_operational_total():
+    current_data = get_current_data()
     total = 0
     
     # Predefined services (IT)
@@ -864,20 +1612,20 @@ def calculate_operational_total():
             is_new_implementation = data.get('new_implementation', False)
             
             # Check Oracle services
-            if actual_service_name in ORACLE_SERVICES:
-                service_info = ORACLE_SERVICES[actual_service_name]
+            if actual_service_name in current_data['ORACLE_SERVICES']:
+                service_info = current_data['ORACLE_SERVICES'][actual_service_name]
                 monthly_cost = service_info['price_per_user'] * users
                 setup_cost = service_info['setup_cost'] if is_new_implementation else 0
                 total += (monthly_cost * 12) + setup_cost
             # Check Microsoft services
-            elif actual_service_name in MICROSOFT_SERVICES:
-                service_info = MICROSOFT_SERVICES[actual_service_name]
+            elif actual_service_name in current_data['MICROSOFT_SERVICES']:
+                service_info = current_data['MICROSOFT_SERVICES'][actual_service_name]
                 monthly_cost = service_info['price_per_user'] * users
                 setup_cost = service_info['setup_cost'] if is_new_implementation else 0
                 total += (monthly_cost * 12) + setup_cost
             # Check Procurement services
-            elif actual_service_name in PROCUREMENT_SERVICES:
-                service_info = PROCUREMENT_SERVICES[actual_service_name]
+            elif actual_service_name in current_data['PROCUREMENT_SERVICES']:
+                service_info = current_data['PROCUREMENT_SERVICES'][actual_service_name]
                 volume = data.get('volume', users)  # Use volume or users depending on service
                 
                 if 'price_per_user' in service_info:
@@ -897,8 +1645,8 @@ def calculate_operational_total():
                 setup_cost = service_info['setup_cost'] if is_new_implementation else 0
                 total += annual_cost + setup_cost
             # Check Facility & Safety services
-            elif actual_service_name in FACILITY_SAFETY_SERVICES:
-                service_info = FACILITY_SAFETY_SERVICES[actual_service_name]
+            elif actual_service_name in current_data['FACILITY_SAFETY_SERVICES']:
+                service_info = current_data['FACILITY_SAFETY_SERVICES'][actual_service_name]
                 volume = data.get('volume', users)  # Use volume or users depending on service
                 
                 if 'price_per_user' in service_info:
@@ -940,10 +1688,11 @@ def calculate_operational_total():
     return total
 
 def calculate_support_total():
+    current_data = get_current_data()
     total = 0
     
     if st.session_state.support_package:
-        total += SUPPORT_PACKAGES[st.session_state.support_package]['price']
+        total += current_data['SUPPORT_PACKAGES'][st.session_state.support_package]['price']
     
     # Add extras
     total += st.session_state.support_extras.get('support', 0) * 1800
@@ -962,124 +1711,197 @@ def calculate_total_budget():
 def show_header():
     selected_company_info = st.session_state.company_info.get('company_code', '')
     selected_dept = st.session_state.selected_department
+    app_mode = st.session_state.get('app_mode', 'client')
     
-    header_subtitle = "Multi-Department Shared Services Catalogue and Budgeting System"
-    if selected_company_info and selected_dept:
-        dept_name = DEPARTMENTS_CONFIG[selected_dept]['title']
-        header_subtitle = f"{selected_company_info} - {dept_name} - Shared Services Catalogue"
-    elif selected_dept:
-        dept_name = DEPARTMENTS_CONFIG[selected_dept]['title']
-        header_subtitle = f"{dept_name} - Shared Services Catalogue and Budgeting System"
-    
-    st.markdown(f"""
-    <div class='main-header'>
-        <h1>💼 Alkhorayef Group</h1>
-        <h2>2025 Multi-Department Shared Services Catalogue</h2>
-        <p>{header_subtitle}</p>
-        <p><strong>Budget Year:</strong> 2025 | <strong>Version:</strong> 2.0</p>
-    </div>
-    """, unsafe_allow_html=True)
+    if app_mode == 'admin':
+        admin_info = st.session_state.get('admin_info', {})
+        admin_name = admin_info.get('name', 'Administrator')
+        
+        st.markdown(f"""
+        <div class='admin-header'>
+            <h1>🔧 Alkhorayef Group</h1>
+            <h2>2025 Shared Services Admin Panel</h2>
+            <p>Department Head Content Management System</p>
+            <p><strong>Administrator:</strong> {admin_name} | <strong>Environment:</strong> Admin Mode</p>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        header_subtitle = "Multi-Department Shared Services Catalogue and Budgeting System"
+        if selected_company_info and selected_dept:
+            departments_config = get_departments_config()
+            dept_name = departments_config[selected_dept]['title']
+            header_subtitle = f"{selected_company_info} - {dept_name} - Shared Services Catalogue"
+        elif selected_dept:
+            departments_config = get_departments_config()
+            dept_name = departments_config[selected_dept]['title']
+            header_subtitle = f"{dept_name} - Shared Services Catalogue and Budgeting System"
+        
+        st.markdown(f"""
+        <div class='main-header'>
+            <h1>💼 Alkhorayef Group</h1>
+            <h2>2025 Multi-Department Shared Services Catalogue</h2>
+            <p>{header_subtitle}</p>
+            <p><strong>Budget Year:</strong> 2025 | <strong>Version:</strong> 2.0 | <strong>Environment:</strong> Client Site</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-# Sidebar for company info and budget summary
+# Sidebar for company info and budget summary (updated for admin mode)
 def show_sidebar():
     with st.sidebar:
-        st.markdown("### 🏢 Company Information")
+        # Mode switcher at the top
+        st.markdown("### 🔄 Application Mode")
         
-        st.markdown("**🏭 Alkhorayef Group**")
+        current_mode = st.session_state.get('app_mode', 'client')
         
-        # Company selection
-        selected_company = st.selectbox(
-            "Select Your Company", 
-            options=ALKHORAYEF_COMPANIES,
-            index=0,
-            key="company_selection",
-            help="Choose which Alkhorayef Group company you represent"
-        )
-        
-        # Department selection for the requester (not the shared service department)
-        department = st.selectbox(
-            "Your Department", 
-            options=COMPANY_DEPARTMENTS,
-            key="department_selection",
-            help="Your department within the company"
-        )
-        
-        contact_person = st.text_input("Contact Person", key="contact_person", placeholder="Your full name")
-        email = st.text_input("Email", key="email", placeholder="your.email@alkhorayef.com")
-        
-        # Display selected company and shared service department
-        if st.session_state.selected_department:
-            dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
-            st.markdown(f"""
-            <div style='background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;'>
-                <strong>Company:</strong> {selected_company}<br>
-                <strong>Your Dept:</strong> {department}<br>
-                <strong>Shared Service:</strong> {dept_config['icon']} {dept_config['title']}
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Quick department switcher in sidebar
-            if st.button("🔄 Change Department", key="sidebar_change_dept", use_container_width=True):
-                st.session_state.selected_department = None
+        # Mode selection
+        if current_mode == 'client':
+            if st.button("🔧 Switch to Admin Mode", use_container_width=True, type="secondary"):
+                st.session_state.app_mode = 'admin'
+                st.session_state.admin_authenticated = False  # Require re-authentication
                 st.rerun()
+        else:
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("👥 Client Mode", use_container_width=True):
+                    st.session_state.app_mode = 'client'
+                    st.rerun()
+            with col2:
+                if st.button("🚪 Logout", use_container_width=True, type="secondary"):
+                    st.session_state.admin_authenticated = False
+                    st.session_state.app_mode = 'client'
+                    st.rerun()
         
-        st.session_state.company_info = {
-            'company': selected_company,
-            'company_code': selected_company,
-            'department': department,
-            'contact_person': contact_person,
-            'email': email,
-            'shared_service_dept': st.session_state.selected_department,
-            'date': datetime.now().strftime("%Y-%m-%d")
-        }
+        st.markdown("---")
         
-        if st.session_state.selected_department:
-            st.markdown("---")
+        # Show different content based on mode
+        if st.session_state.get('app_mode', 'client') == 'admin':
+            # Admin sidebar content
+            if st.session_state.get('admin_authenticated', False):
+                admin_info = st.session_state.get('admin_info', {})
+                st.markdown(f"""
+                **🔧 Admin Panel**  
+                **User:** {admin_info.get('name', 'Admin')}  
+                **Department:** {admin_info.get('department', 'N/A')}  
+                **Access Level:** Department Head
+                """)
+                
+                st.markdown("### 📊 System Status")
+                current_data = get_current_data()
+                
+                total_services = (len(current_data['ORACLE_SERVICES']) + 
+                                len(current_data['MICROSOFT_SERVICES']) + 
+                                len(current_data['PROCUREMENT_SERVICES']) + 
+                                len(current_data['FACILITY_SAFETY_SERVICES']))
+                
+                st.metric("Total Services", total_services)
+                st.metric("Support Packages", len(current_data['SUPPORT_PACKAGES']))
+                
+            else:
+                st.markdown("**🔐 Admin Access Required**")
+                st.info("Please log in with your Department Head credentials to access the admin panel.")
+        
+        else:
+            # Client sidebar content (existing functionality)
+            st.markdown("### 🏢 Company Information")
             
-            # Budget summary
-            dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
-            st.markdown(f"### 💰 {dept_config['title']} Budget Summary")
+            st.markdown("**🏭 Alkhorayef Group**")
             
-            operational_total = calculate_operational_total()
-            support_total = calculate_support_total()
-            implementation_total = calculate_implementation_total()
-            total_budget = operational_total + support_total + implementation_total
+            # Company selection
+            selected_company = st.selectbox(
+                "Select Your Company", 
+                options=ALKHORAYEF_COMPANIES,
+                index=0,
+                key="company_selection",
+                help="Choose which Alkhorayef Group company you represent"
+            )
             
-            st.markdown(f"""
-            <div class='metric-card'>
-                <h4>Operational Services</h4>
-                <h3>SAR {operational_total:,.0f}</h3>
-            </div>
-            """, unsafe_allow_html=True)
+            # Department selection for the requester (not the shared service department)
+            department = st.selectbox(
+                "Your Department", 
+                options=COMPANY_DEPARTMENTS,
+                key="department_selection",
+                help="Your department within the company"
+            )
             
-            st.markdown(f"""
-            <div class='metric-card'>
-                <h4>Support Packages</h4>
-                <h3>SAR {support_total:,.0f}</h3>
-            </div>
-            """, unsafe_allow_html=True)
+            contact_person = st.text_input("Contact Person", key="contact_person", placeholder="Your full name")
+            email = st.text_input("Email", key="email", placeholder="your.email@alkhorayef.com")
             
-            st.markdown(f"""
-            <div class='metric-card'>
-                <h4>Custom Implementations</h4>
-                <h3>SAR {implementation_total:,.0f}</h3>
-            </div>
-            """, unsafe_allow_html=True)
+            # Display selected company and shared service department
+            if st.session_state.selected_department:
+                departments_config = get_departments_config()
+                dept_config = departments_config[st.session_state.selected_department]
+                st.markdown(f"""
+                <div style='background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;'>
+                    <strong>Company:</strong> {selected_company}<br>
+                    <strong>Your Dept:</strong> {department}<br>
+                    <strong>Shared Service:</strong> {dept_config['icon']} {dept_config['title']}
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Quick department switcher in sidebar
+                if st.button("🔄 Change Department", key="sidebar_change_dept", use_container_width=True):
+                    st.session_state.selected_department = None
+                    st.rerun()
             
-            st.markdown(f"""
-            <div class='total-budget'>
-                💰 Total 2025 Budget<br>
-                <span style='font-size: 1.5em'>SAR {total_budget:,.0f}</span>
-            </div>
-            """, unsafe_allow_html=True)
+            st.session_state.company_info = {
+                'company': selected_company,
+                'company_code': selected_company,
+                'department': department,
+                'contact_person': contact_person,
+                'email': email,
+                'shared_service_dept': st.session_state.selected_department,
+                'date': datetime.now().strftime("%Y-%m-%d")
+            }
+            
+            if st.session_state.selected_department:
+                st.markdown("---")
+                
+                # Budget summary
+                departments_config = get_departments_config()
+                dept_config = departments_config[st.session_state.selected_department]
+                st.markdown(f"### 💰 {dept_config['title']} Budget Summary")
+                
+                operational_total = calculate_operational_total()
+                support_total = calculate_support_total()
+                implementation_total = calculate_implementation_total()
+                total_budget = operational_total + support_total + implementation_total
+                
+                st.markdown(f"""
+                <div class='metric-card'>
+                    <h4>Operational Services</h4>
+                    <h3>SAR {operational_total:,.0f}</h3>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div class='metric-card'>
+                    <h4>Support Packages</h4>
+                    <h3>SAR {support_total:,.0f}</h3>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div class='metric-card'>
+                    <h4>Custom Implementations</h4>
+                    <h3>SAR {implementation_total:,.0f}</h3>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div class='total-budget'>
+                    💰 Total 2025 Budget<br>
+                    <span style='font-size: 1.5em'>SAR {total_budget:,.0f}</span>
+                </div>
+                """, unsafe_allow_html=True)
 
-# Operational Services Section - Updated to support multiple departments
+# Operational Services Section - Updated to use current data
 def show_operational_services():
     if not st.session_state.selected_department:
         st.warning("Please select a department first from the Department Selection tab.")
         return
     
-    dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+    departments_config = get_departments_config()
+    dept_config = departments_config[st.session_state.selected_department]
     
     st.markdown(f"""
     <div class='category-section'>
@@ -1096,11 +1918,13 @@ def show_operational_services():
         show_facility_safety_operational_services()
 
 def show_it_operational_services():
-    # Oracle Services (existing implementation)
+    current_data = get_current_data()
+    
+    # Oracle Services (using current data)
     st.markdown("### 🟠 Oracle Cloud Services")
     
     col1, col2 = st.columns(2)
-    oracle_services = list(ORACLE_SERVICES.items())
+    oracle_services = list(current_data['ORACLE_SERVICES'].items())
     
     for i, (service_name, details) in enumerate(oracle_services):
         col = col1 if i % 2 == 0 else col2
@@ -1182,11 +2006,11 @@ def show_it_operational_services():
     
     st.markdown("---")
     
-    # Microsoft Services (existing implementation)
+    # Microsoft Services (using current data)
     st.markdown("### 🟦 Microsoft Cloud Services")
     
     col1, col2 = st.columns(2)
-    microsoft_services = list(MICROSOFT_SERVICES.items())
+    microsoft_services = list(current_data['MICROSOFT_SERVICES'].items())
     
     for i, (service_name, details) in enumerate(microsoft_services):
         col = col1 if i % 2 == 0 else col2
@@ -1267,11 +2091,13 @@ def show_it_operational_services():
                 }
 
 def show_procurement_operational_services():
+    current_data = get_current_data()
+    
     # Procurement Services
     st.markdown("### 🛒 Procurement Services & Solutions")
     
     col1, col2 = st.columns(2)
-    procurement_services = list(PROCUREMENT_SERVICES.items())
+    procurement_services = list(current_data['PROCUREMENT_SERVICES'].items())
     
     for i, (service_name, details) in enumerate(procurement_services):
         col = col1 if i % 2 == 0 else col2
@@ -1409,11 +2235,13 @@ def show_procurement_operational_services():
     show_custom_operational_services()
 
 def show_facility_safety_operational_services():
+    current_data = get_current_data()
+    
     # Facility & Safety Services
     st.markdown("### 🏢 Facility & Safety Services & Solutions")
     
     col1, col2 = st.columns(2)
-    facility_safety_services = list(FACILITY_SAFETY_SERVICES.items())
+    facility_safety_services = list(current_data['FACILITY_SAFETY_SERVICES'].items())
     
     for i, (service_name, details) in enumerate(facility_safety_services):
         col = col1 if i % 2 == 0 else col2
@@ -1573,7 +2401,8 @@ def show_custom_operational_services():
     st.markdown("### ➕ Add Custom Services")
     
     with st.expander("Add Custom Operational Service", expanded=False):
-        dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+        departments_config = get_departments_config()
+        dept_config = departments_config[st.session_state.selected_department]
         
         st.markdown(f"""
         <div class='custom-service'>
@@ -1681,7 +2510,8 @@ def show_custom_operational_services():
                 implementation_status = "New Implementation" if service.get('new_implementation', False) else "Adding to Existing"
                 setup_display = f"Setup: SAR {setup_cost:,}" if service.get('new_implementation', False) else "No Setup Cost"
                 
-                dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+                departments_config = get_departments_config()
+                dept_config = departments_config[st.session_state.selected_department]
                 
                 st.markdown(f"""
                 <div class='service-card' style='border-left: 4px solid {dept_config["color"]};'>
@@ -1696,13 +2526,15 @@ def show_custom_operational_services():
                     st.session_state.custom_operational.pop(original_index)
                     st.rerun()
 
-# Support Packages Section (unchanged but now supports multiple departments)
+# Support Packages Section (updated to use current data)
 def show_support_packages():
     if not st.session_state.selected_department:
         st.warning("Please select a department first from the Department Selection tab.")
         return
     
-    dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+    departments_config = get_departments_config()
+    dept_config = departments_config[st.session_state.selected_department]
+    current_data = get_current_data()
     
     st.markdown(f"""
     <div class='category-section'>
@@ -1714,7 +2546,7 @@ def show_support_packages():
     st.markdown("### 📞 Support Packages Comparison")
     
     # Create comparison using Streamlit's native dataframe
-    packages_list = list(SUPPORT_PACKAGES.items())
+    packages_list = list(current_data['SUPPORT_PACKAGES'].items())
     
     # Filter packages that support the current department
     available_packages = [
@@ -1877,7 +2709,7 @@ def show_support_packages():
             st.session_state.support_extras['reports'] = extra_reports
         
         # Calculate and display total cost
-        selected_package = SUPPORT_PACKAGES[st.session_state.support_package]
+        selected_package = current_data['SUPPORT_PACKAGES'][st.session_state.support_package]
         base_cost = selected_package['price']
         extra_support_cost = extra_support * 1800
         extra_training_cost = extra_training * 5399
@@ -1922,13 +2754,15 @@ def show_support_packages():
     else:
         st.info("👆 Please select a support package from the comparison table above to continue.")
 
-# Implementation Projects Section with Enhanced Categories
+# Implementation Projects Section with Enhanced Categories (updated to use current data)
 def show_implementation_projects():
     if not st.session_state.selected_department:
         st.warning("Please select a department first from the Department Selection tab.")
         return
     
-    dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+    departments_config = get_departments_config()
+    dept_config = departments_config[st.session_state.selected_department]
+    current_data = get_current_data()
     
     st.markdown(f"""
     <div class='category-section'>
@@ -2050,10 +2884,10 @@ def show_implementation_projects():
             use_rpa_package = st.checkbox("Use Predefined RPA Package", key="use_rpa_package_input")
             
             if use_rpa_package:
-                rpa_package = st.selectbox("Select RPA Package", list(RPA_PACKAGES.keys()), key="rpa_package_selection")
+                rpa_package = st.selectbox("Select RPA Package", list(current_data['RPA_PACKAGES'].keys()), key="rpa_package_selection")
                 
                 if rpa_package:
-                    package_details = RPA_PACKAGES[rpa_package]
+                    package_details = current_data['RPA_PACKAGES'][rpa_package]
                     st.markdown(f"""
                     **Selected Package:** {rpa_package}  
                     **Year 1 Budget:** SAR {package_details['year_1_total']:,.0f}  
@@ -2089,7 +2923,7 @@ def show_implementation_projects():
                     if 'rpa_package_selection' in st.session_state:
                         rpa_package = st.session_state['rpa_package_selection']
                         new_project['rpa_package'] = True
-                        new_project['rpa_details'] = RPA_PACKAGES[rpa_package]
+                        new_project['rpa_details'] = current_data['RPA_PACKAGES'][rpa_package]
                         new_project['rpa_package_name'] = rpa_package
                 
                 st.session_state.implementation_projects.append(new_project)
@@ -2191,13 +3025,14 @@ def show_implementation_projects():
         </div>
         """, unsafe_allow_html=True)
 
-# Summary Section with Multi-Department Support
+# Summary Section with Multi-Department Support (updated to use current data)
 def show_summary():
     if not st.session_state.selected_department:
         st.warning("Please select a department first from the Department Selection tab.")
         return
     
-    dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+    departments_config = get_departments_config()
+    dept_config = departments_config[st.session_state.selected_department]
     
     st.markdown(f"""
     <div class='category-section'>
@@ -2376,60 +3211,77 @@ def show_summary():
 
 # Main application
 def main():
-    show_header()
-    show_sidebar()
+    # Initialize session state
+    initialize_session_state()
     
-    # Check if department is selected
-    if not st.session_state.selected_department:
-        show_department_selection()
+    # Check application mode
+    app_mode = st.session_state.get('app_mode', 'client')
+    
+    if app_mode == 'admin':
+        # Admin mode
+        if not st.session_state.get('admin_authenticated', False):
+            show_admin_login()
+        else:
+            show_header()
+            show_sidebar()
+            show_admin_dashboard()
     else:
-        # Back button and department navigation
-        dept_config = DEPARTMENTS_CONFIG[st.session_state.selected_department]
+        # Client mode (existing functionality)
+        show_header()
+        show_sidebar()
         
-        col1, col2, col3 = st.columns([1, 3, 1])
-        
-        with col1:
-            if st.button("← Back to Departments", key="back_to_departments", help="Return to department selection"):
-                st.session_state.selected_department = None
-                st.rerun()
-        
-        with col2:
-            st.markdown(f"""
-            <div style='text-align: center; padding: 1rem; background: {dept_config['color']}20; border-radius: 8px; margin: 0.5rem 0;'>
-                <h3 style='margin: 0; color: {dept_config['color']};'>
-                    {dept_config['icon']} {dept_config['title']} Shared Services
-                </h3>
-                <p style='margin: 0.5rem 0 0 0; color: #6b7280; font-size: 0.9em;'>
-                    {dept_config['description']}
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col3:
-            # Quick department switcher
-            if st.button("🔄 Switch Department", key="switch_department", help="Quickly switch to another department"):
-                st.session_state.selected_department = None
-                st.rerun()
-        
-        # Navigation tabs
-        tab1, tab2, tab3, tab4 = st.tabs([
-            f"{dept_config['icon']} Operational Services", 
-            "🛠️ Support Packages", 
-            "🚀 Implementation Projects", 
-            "📊 Summary"
-        ])
-        
-        with tab1:
-            show_operational_services()
-        
-        with tab2:
-            show_support_packages()
-        
-        with tab3:
-            show_implementation_projects()
-        
-        with tab4:
-            show_summary()
+        # Check if department is selected
+        if not st.session_state.selected_department:
+            show_department_selection()
+        else:
+            # Back button and department navigation
+            departments_config = get_departments_config()
+            dept_config = departments_config[st.session_state.selected_department]
+            
+            col1, col2, col3 = st.columns([1, 3, 1])
+            
+            with col1:
+                if st.button("← Back to Departments", key="back_to_departments", help="Return to department selection"):
+                    st.session_state.selected_department = None
+                    st.rerun()
+            
+            with col2:
+                st.markdown(f"""
+                <div style='text-align: center; padding: 1rem; background: {dept_config['color']}20; border-radius: 8px; margin: 0.5rem 0;'>
+                    <h3 style='margin: 0; color: {dept_config['color']};'>
+                        {dept_config['icon']} {dept_config['title']} Shared Services
+                    </h3>
+                    <p style='margin: 0.5rem 0 0 0; color: #6b7280; font-size: 0.9em;'>
+                        {dept_config['description']}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col3:
+                # Quick department switcher
+                if st.button("🔄 Switch Department", key="switch_department", help="Quickly switch to another department"):
+                    st.session_state.selected_department = None
+                    st.rerun()
+            
+            # Navigation tabs
+            tab1, tab2, tab3, tab4 = st.tabs([
+                f"{dept_config['icon']} Operational Services", 
+                "🛠️ Support Packages", 
+                "🚀 Implementation Projects", 
+                "📊 Summary"
+            ])
+            
+            with tab1:
+                show_operational_services()
+            
+            with tab2:
+                show_support_packages()
+            
+            with tab3:
+                show_implementation_projects()
+            
+            with tab4:
+                show_summary()
 
 if __name__ == "__main__":
     main()
