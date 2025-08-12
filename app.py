@@ -2176,6 +2176,196 @@ def show_department_selection():
                 st.session_state.selected_department = dept_key
                 st.rerun()
 
+# Sidebar for company info and budget summary (CORRECTED)
+def show_sidebar():
+    with st.sidebar:
+        # Mode switcher at the top
+        st.markdown("### 🔄 Application Mode")
+        
+        current_mode = st.session_state.get('app_mode', 'client')
+        
+        # Mode selection
+        if current_mode == 'client':
+            if st.button("🔧 Switch to Admin Mode", use_container_width=True, type="secondary"):
+                st.session_state.app_mode = 'admin'
+                st.session_state.admin_authenticated = False  # Require re-authentication
+                st.rerun()
+        else:
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("👥 Client Mode", use_container_width=True):
+                    st.session_state.app_mode = 'client'
+                    st.rerun()
+            with col2:
+                if st.button("🚪 Logout", use_container_width=True, type="secondary"):
+                    st.session_state.admin_authenticated = False
+                    st.session_state.app_mode = 'client'
+                    st.rerun()
+        
+        st.markdown("---")
+        
+        # Show different content based on mode
+        if st.session_state.get('app_mode', 'client') == 'admin':
+            # Admin sidebar content
+            if st.session_state.get('admin_authenticated', False):
+                admin_info = st.session_state.get('admin_info', {})
+                st.markdown(f"""
+                **🔧 Admin Panel**  
+                **User:** {admin_info.get('name', 'Admin')}  
+                **Department:** {admin_info.get('department', 'N/A')}  
+                **Access Level:** Department Head
+                """)
+                
+                st.markdown("### 📊 System Status")
+                current_data = get_current_data()
+                
+                # Comprehensive statistics for all 3 categories
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("**🔧 Operational Services**")
+                    total_operational = (len(current_data['ORACLE_SERVICES']) + 
+                                       len(current_data['MICROSOFT_SERVICES']) + 
+                                       len(current_data['OTHER_SERVICES']) + 
+                                       len(current_data['PROCUREMENT_SERVICES']) + 
+                                       len(current_data['FACILITY_SAFETY_SERVICES']))
+                    st.metric("Total Services", total_operational)
+                
+                with col2:
+                    st.markdown("**🛠️ Support Packages**")
+                    st.metric("Packages", len(current_data['SUPPORT_PACKAGES']))
+                
+                st.markdown("**🚀 Implementation Projects**")
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    total_categories = (len(current_data['IT_PROJECT_CATEGORIES']) + 
+                                      len(current_data['PROCUREMENT_SERVICE_CATEGORIES']) + 
+                                      len(current_data['FACILITY_SAFETY_SERVICE_CATEGORIES']))
+                    st.metric("Project Categories", total_categories)
+                
+                with col2:
+                    st.metric("RPA Packages", len(current_data['RPA_PACKAGES']))
+                
+                # Admin capabilities highlight
+                st.markdown("---")
+                st.markdown("""
+                <div class='admin-warning'>
+                    <strong>🚀 NEW: Full Implementation Management</strong><br>
+                    ✅ Manage all 3 categories: Operational, Support & Implementation<br>
+                    ✅ Add/Edit project categories for all departments<br>
+                    ✅ Configure RPA packages with custom pricing<br>
+                    ✅ Real-time updates to client interface
+                </div>
+                """, unsafe_allow_html=True)
+                
+            else:
+                st.markdown("**🔐 Admin Access Required**")
+                st.info("Please log in with your Department Head credentials to access the admin panel.")
+                
+                # Show demo credentials reminder
+                with st.expander("🔑 Demo Access", expanded=False):
+                    st.markdown("""
+                    **Quick Demo Access:**
+                    - IT: `it_admin` / `itadmin2025`
+                    - Procurement: `procurement_admin` / `procadmin2025`
+                    - Facility: `facility_admin` / `faciladmin2025`
+                    - Super Admin: `super_admin` / `superadmin2025`
+                    """)
+        else:
+            # Client sidebar content (existing functionality)
+            st.markdown("### 🏢 Company Information")
+            
+            st.markdown("**🏭 Alkhorayef Group**")
+            
+            # Company selection
+            selected_company = st.selectbox(
+                "Select Your Company", 
+                options=ALKHORAYEF_COMPANIES,
+                index=0,
+                key="company_selection",
+                help="Choose which Alkhorayef Group company you represent"
+            )
+            
+            # Department selection for the requester (not the shared service department)
+            department = st.selectbox(
+                "Your Department", 
+                options=COMPANY_DEPARTMENTS,
+                key="department_selection",
+                help="Your department within the company"
+            )
+            
+            contact_person = st.text_input("Contact Person", key="contact_person", placeholder="Your full name")
+            email = st.text_input("Email", key="email", placeholder="your.email@alkhorayef.com")
+            
+            # Display selected company and shared service department
+            if st.session_state.selected_department:
+                departments_config = get_departments_config()
+                dept_config = departments_config[st.session_state.selected_department]
+                st.markdown(f"""
+                <div style='background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;'>
+                    <strong>Company:</strong> {selected_company}<br>
+                    <strong>Your Dept:</strong> {department}<br>
+                    <strong>Shared Service:</strong> {dept_config['icon']} {dept_config['title']}
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Quick department switcher in sidebar
+                if st.button("🔄 Change Department", key="sidebar_change_dept", use_container_width=True):
+                    st.session_state.selected_department = None
+                    st.rerun()
+            
+            st.session_state.company_info = {
+                'company': selected_company,
+                'company_code': selected_company,
+                'department': department,
+                'contact_person': contact_person,
+                'email': email,
+                'shared_service_dept': st.session_state.selected_department,
+                'date': datetime.now().strftime("%Y-%m-%d")
+            }
+            
+            if st.session_state.selected_department:
+                st.markdown("---")
+                
+                # Budget summary
+                departments_config = get_departments_config()
+                dept_config = departments_config[st.session_state.selected_department]
+                st.markdown(f"### 💰 {dept_config['title']} Budget Summary")
+                
+                operational_total = calculate_operational_total()
+                support_total = calculate_support_total()
+                implementation_total = calculate_implementation_total()
+                total_budget = operational_total + support_total + implementation_total
+                
+                st.markdown(f"""
+                <div class='metric-card'>
+                    <h4>Operational Services</h4>
+                    <h3>SAR {operational_total:,.0f}</h3>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div class='metric-card'>
+                    <h4>Support Packages</h4>
+                    <h3>SAR {support_total:,.0f}</h3>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div class='metric-card'>
+                    <h4>Custom Implementations</h4>
+                    <h3>SAR {implementation_total:,.0f}</h3>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div class='total-budget'>
+                    💰 Total 2025 Budget<br>
+                    <span style='font-size: 1.5em'>SAR {total_budget:,.0f}</span>
+                </div>
+                """, unsafe_allow_html=True)
+
 # Utility functions (updated to use current data)
 def calculate_operational_total():
     current_data = get_current_data()
@@ -2300,17 +2490,17 @@ def show_header():
         admin_info = st.session_state.get('admin_info', {})
         admin_name = admin_info.get('name', 'Administrator')
         
-    st.markdown(f"""
-    <div class='admin-header'>
-        <h1>🔧 Alkhorayef Group</h1>
-        <h2>2025 Shared Services Admin Panel</h2>
-        <p>Complete Department Head Content Management System</p>
-        <p><strong>Administrator:</strong> {admin_name} | <strong>Environment:</strong> Admin Mode</p>
-        <div style='background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; margin-top: 1rem;'>
-            <strong>🚀 FULL SYSTEM MANAGEMENT:</strong> Operational Services • Support Packages • Implementation Projects
+        st.markdown(f"""
+        <div class='admin-header'>
+            <h1>🔧 Alkhorayef Group</h1>
+            <h2>2025 Shared Services Admin Panel</h2>
+            <p>Complete Department Head Content Management System</p>
+            <p><strong>Administrator:</strong> {admin_name} | <strong>Environment:</strong> Admin Mode</p>
+            <div style='background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; margin-top: 1rem;'>
+                <strong>🚀 FULL SYSTEM MANAGEMENT:</strong> Operational Services • Support Packages • Implementation Projects
+            </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
     else:
         header_subtitle = "Multi-Department Shared Services Catalogue and Budgeting System"
         if selected_company_info and selected_dept:
@@ -2330,197 +2520,6 @@ def show_header():
             <p><strong>Budget Year:</strong> 2025 | <strong>Version:</strong> 2.0 | <strong>Environment:</strong> Client Site</p>
         </div>
         """, unsafe_allow_html=True)
-
-# Sidebar for company info and budget summary (updated for admin mode)
-def show_sidebar():
-    with st.sidebar:
-        # Mode switcher at the top
-        st.markdown("### 🔄 Application Mode")
-        
-        current_mode = st.session_state.get('app_mode', 'client')
-        
-        # Mode selection
-        if current_mode == 'client':
-            if st.button("🔧 Switch to Admin Mode", use_container_width=True, type="secondary"):
-                st.session_state.app_mode = 'admin'
-                st.session_state.admin_authenticated = False  # Require re-authentication
-                st.rerun()
-        else:
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("👥 Client Mode", use_container_width=True):
-                    st.session_state.app_mode = 'client'
-                    st.rerun()
-            with col2:
-                if st.button("🚪 Logout", use_container_width=True, type="secondary"):
-                    st.session_state.admin_authenticated = False
-                    st.session_state.app_mode = 'client'
-                    st.rerun()
-        
-        st.markdown("---")
-        
-        # Show different content based on mode
-        if st.session_state.get('app_mode', 'client') == 'admin':
-            # Admin sidebar content
-            if st.session_state.get('admin_authenticated', False):
-                admin_info = st.session_state.get('admin_info', {})
-                st.markdown(f"""
-                **🔧 Admin Panel**  
-                **User:** {admin_info.get('name', 'Admin')}  
-                **Department:** {admin_info.get('department', 'N/A')}  
-                **Access Level:** Department Head
-                """)
-                
-                st.markdown("### 📊 System Status")
-                current_data = get_current_data()
-                
-                # Comprehensive statistics for all 3 categories
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.markdown("**🔧 Operational Services**")
-                    total_operational = (len(current_data['ORACLE_SERVICES']) + 
-                                       len(current_data['MICROSOFT_SERVICES']) + 
-                                       len(current_data['OTHER_SERVICES']) + 
-                                       len(current_data['PROCUREMENT_SERVICES']) + 
-                                       len(current_data['FACILITY_SAFETY_SERVICES']))
-                    st.metric("Total Services", total_operational)
-                
-                with col2:
-                    st.markdown("**🛠️ Support Packages**")
-                    st.metric("Packages", len(current_data['SUPPORT_PACKAGES']))
-                
-                st.markdown("**🚀 Implementation Projects**")
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    total_categories = (len(current_data['IT_PROJECT_CATEGORIES']) + 
-                                      len(current_data['PROCUREMENT_SERVICE_CATEGORIES']) + 
-                                      len(current_data['FACILITY_SAFETY_SERVICE_CATEGORIES']))
-                    st.metric("Project Categories", total_categories)
-                
-                with col2:
-                    st.metric("RPA Packages", len(current_data['RPA_PACKAGES']))
-                
-                # Admin capabilities highlight
-                st.markdown("---")
-                st.markdown("""
-                <div class='admin-warning'>
-                    <strong>🚀 NEW: Full Implementation Management</strong><br>
-                    ✅ Manage all 3 categories: Operational, Support & Implementation<br>
-                    ✅ Add/Edit project categories for all departments<br>
-                    ✅ Configure RPA packages with custom pricing<br>
-                    ✅ Real-time updates to client interface
-                </div>
-                """, unsafe_allow_html=True)
-                
-            else:
-                st.markdown("**🔐 Admin Access Required**")
-                st.info("Please log in with your Department Head credentials to access the admin panel.")
-                
-                # Show demo credentials reminder
-                with st.expander("🔑 Demo Access", expanded=False):
-                    st.markdown("""
-                    **Quick Demo Access:**
-                    - IT: `it_admin` / `itadmin2025`
-                    - Procurement: `procurement_admin` / `procadmin2025`
-                    - Facility: `facility_admin` / `faciladmin2025`
-                    - Super Admin: `super_admin` / `superadmin2025`
-                    """)
-        
-        else:
-            # Client sidebar content (existing functionality)
-            st.markdown("### 🏢 Company Information")
-            
-            st.markdown("**🏭 Alkhorayef Group**")
-            
-            # Company selection
-            selected_company = st.selectbox(
-                "Select Your Company", 
-                options=ALKHORAYEF_COMPANIES,
-                index=0,
-                key="company_selection",
-                help="Choose which Alkhorayef Group company you represent"
-            )
-            
-            # Department selection for the requester (not the shared service department)
-            department = st.selectbox(
-                "Your Department", 
-                options=COMPANY_DEPARTMENTS,
-                key="department_selection",
-                help="Your department within the company"
-            )
-            
-            contact_person = st.text_input("Contact Person", key="contact_person", placeholder="Your full name")
-            email = st.text_input("Email", key="email", placeholder="your.email@alkhorayef.com")
-            
-            # Display selected company and shared service department
-            if st.session_state.selected_department:
-                departments_config = get_departments_config()
-                dept_config = departments_config[st.session_state.selected_department]
-                st.markdown(f"""
-                <div style='background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;'>
-                    <strong>Company:</strong> {selected_company}<br>
-                    <strong>Your Dept:</strong> {department}<br>
-                    <strong>Shared Service:</strong> {dept_config['icon']} {dept_config['title']}
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Quick department switcher in sidebar
-                if st.button("🔄 Change Department", key="sidebar_change_dept", use_container_width=True):
-                    st.session_state.selected_department = None
-                    st.rerun()
-            
-            st.session_state.company_info = {
-                'company': selected_company,
-                'company_code': selected_company,
-                'department': department,
-                'contact_person': contact_person,
-                'email': email,
-                'shared_service_dept': st.session_state.selected_department,
-                'date': datetime.now().strftime("%Y-%m-%d")
-            }
-            
-            if st.session_state.selected_department:
-                st.markdown("---")
-                
-                # Budget summary
-                departments_config = get_departments_config()
-                dept_config = departments_config[st.session_state.selected_department]
-                st.markdown(f"### 💰 {dept_config['title']} Budget Summary")
-                
-                operational_total = calculate_operational_total()
-                support_total = calculate_support_total()
-                implementation_total = calculate_implementation_total()
-                total_budget = operational_total + support_total + implementation_total
-                
-                st.markdown(f"""
-                <div class='metric-card'>
-                    <h4>Operational Services</h4>
-                    <h3>SAR {operational_total:,.0f}</h3>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                st.markdown(f"""
-                <div class='metric-card'>
-                    <h4>Support Packages</h4>
-                    <h3>SAR {support_total:,.0f}</h3>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                st.markdown(f"""
-                <div class='metric-card'>
-                    <h4>Custom Implementations</h4>
-                    <h3>SAR {implementation_total:,.0f}</h3>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                st.markdown(f"""
-                <div class='total-budget'>
-                    💰 Total 2025 Budget<br>
-                    <span style='font-size: 1.5em'>SAR {total_budget:,.0f}</span>
-                </div>
-                """, unsafe_allow_html=True)
 
 # Operational Services Section - Updated to use current data
 def show_operational_services():
@@ -2632,177 +2631,8 @@ def show_it_operational_services():
                     'new_implementation': False
                 }
     
-    st.markdown("---")
-    
-    # Other Services (using current data)
-    st.markdown("### 🔧 Other Licenses & Services")
-    
-    col1, col2 = st.columns(2)
-    other_services = list(current_data['OTHER_SERVICES'].items())
-    
-    for i, (service_name, details) in enumerate(other_services):
-        col = col1 if i % 2 == 0 else col2
-        service_key = f"other_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
-        
-        with col:
-            st.markdown(f"""
-            <div class='service-card'>
-                <h4>{service_name}</h4>
-                <p style='color: #6b7280; font-size: 0.9em;'>{details['description']}</p>
-                <div style='background: #f3f4f6; padding: 0.5rem; border-radius: 5px; margin: 0.5rem 0;'>
-                    💰 SAR {details['price_per_user']}/user/month<br>
-                    🆕 Setup (new implementation): SAR {details['setup_cost']:,}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Initialize service data if not exists
-            if service_key not in st.session_state.operational_services:
-                st.session_state.operational_services[service_key] = {
-                    'selected': False, 
-                    'users': 0, 
-                    'actual_service_name': service_name,
-                    'new_implementation': False
-                }
-            
-            # Get current values from session state
-            current_selected = st.session_state.operational_services[service_key].get('selected', False)
-            current_users = st.session_state.operational_services[service_key].get('users', 0)
-            current_new_impl = st.session_state.operational_services[service_key].get('new_implementation', False)
-            
-            selected = st.checkbox(f"Include {service_name}", 
-                                 key=f"{service_key}_selected",
-                                 value=current_selected)
-            
-            if selected:
-                # New Implementation checkbox
-                new_implementation = st.checkbox(
-                    "🆕 New Implementation", 
-                    key=f"{service_key}_new_impl",
-                    value=current_new_impl,
-                    help="Check this if it's a new implementation requiring setup. Uncheck if adding users to existing system."
-                )
-                
-                users = st.number_input(f"Number of users for {service_name}", 
-                                      min_value=0, 
-                                      value=current_users,
-                                      key=f"{service_key}_users",
-                                      step=1)
-                
-                # Update session state immediately
-                st.session_state.operational_services[service_key] = {
-                    'selected': True,
-                    'users': users,
-                    'actual_service_name': service_name,
-                    'new_implementation': new_implementation
-                }
-                
-                if users > 0:
-                    monthly_cost = details['price_per_user'] * users
-                    setup_cost = details['setup_cost'] if new_implementation else 0
-                    annual_cost = monthly_cost * 12 + setup_cost
-                    
-                    setup_text = f" + SAR {setup_cost:,} setup" if new_implementation else " (no setup cost)"
-                    
-                    st.markdown(f"""
-                    <div class='cost-display'>
-                        📊 Monthly: SAR {monthly_cost:,.0f}{setup_text}<br>
-                        <strong>Annual Total: SAR {annual_cost:,.0f}</strong>
-                    </div>
-                    """, unsafe_allow_html=True)
-            else:
-                st.session_state.operational_services[service_key] = {
-                    'selected': False,
-                    'users': 0,
-                    'actual_service_name': service_name,
-                    'new_implementation': False
-                }
-    
-    st.markdown("---")
-    
-    # Microsoft Services (using current data)
-    st.markdown("### 🟦 Microsoft Cloud Services")
-    
-    col1, col2 = st.columns(2)
-    microsoft_services = list(current_data['MICROSOFT_SERVICES'].items())
-    
-    for i, (service_name, details) in enumerate(microsoft_services):
-        col = col1 if i % 2 == 0 else col2
-        service_key = f"microsoft_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
-        
-        with col:
-            st.markdown(f"""
-            <div class='service-card'>
-                <h4>{service_name}</h4>
-                <p style='color: #6b7280; font-size: 0.9em;'>{details['description']}</p>
-                <div style='background: #f3f4f6; padding: 0.5rem; border-radius: 5px; margin: 0.5rem 0;'>
-                    💰 SAR {details['price_per_user']}/user/month<br>
-                    🆕 Setup (new implementation): SAR {details['setup_cost']:,}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Initialize service data if not exists
-            if service_key not in st.session_state.operational_services:
-                st.session_state.operational_services[service_key] = {
-                    'selected': False, 
-                    'users': 0, 
-                    'actual_service_name': service_name,
-                    'new_implementation': False
-                }
-            
-            # Get current values from session state
-            current_selected = st.session_state.operational_services[service_key].get('selected', False)
-            current_users = st.session_state.operational_services[service_key].get('users', 0)
-            current_new_impl = st.session_state.operational_services[service_key].get('new_implementation', False)
-            
-            selected = st.checkbox(f"Include {service_name}", 
-                                 key=f"{service_key}_selected",
-                                 value=current_selected)
-            
-            if selected:
-                # New Implementation checkbox
-                new_implementation = st.checkbox(
-                    "🆕 New Implementation", 
-                    key=f"{service_key}_new_impl",
-                    value=current_new_impl,
-                    help="Check this if it's a new implementation requiring setup. Uncheck if adding users to existing system."
-                )
-                
-                users = st.number_input(f"Number of users for {service_name}", 
-                                      min_value=0, 
-                                      value=current_users,
-                                      key=f"{service_key}_users",
-                                      step=1)
-                
-                # Update session state immediately
-                st.session_state.operational_services[service_key] = {
-                    'selected': True,
-                    'users': users,
-                    'actual_service_name': service_name,
-                    'new_implementation': new_implementation
-                }
-                
-                if users > 0:
-                    monthly_cost = details['price_per_user'] * users
-                    setup_cost = details['setup_cost'] if new_implementation else 0
-                    annual_cost = monthly_cost * 12 + setup_cost
-                    
-                    setup_text = f" + SAR {setup_cost:,} setup" if new_implementation else " (no setup cost)"
-                    
-                    st.markdown(f"""
-                    <div class='cost-display'>
-                        📊 Monthly: SAR {monthly_cost:,.0f}{setup_text}<br>
-                        <strong>Annual Total: SAR {annual_cost:,.0f}</strong>
-                    </div>
-                    """, unsafe_allow_html=True)
-            else:
-                st.session_state.operational_services[service_key] = {
-                    'selected': False,
-                    'users': 0,
-                    'actual_service_name': service_name,
-                    'new_implementation': False
-                }
+    # Show common custom services section
+    show_custom_operational_services()
 
 def show_procurement_operational_services():
     current_data = get_current_data()
@@ -3999,3 +3829,175 @@ def main():
 
 if __name__ == "__main__":
     main()
+                }
+    
+    st.markdown("---")
+    
+    # Other Services (using current data)
+    st.markdown("### 🔧 Other Licenses & Services")
+    
+    col1, col2 = st.columns(2)
+    other_services = list(current_data['OTHER_SERVICES'].items())
+    
+    for i, (service_name, details) in enumerate(other_services):
+        col = col1 if i % 2 == 0 else col2
+        service_key = f"other_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
+        
+        with col:
+            st.markdown(f"""
+            <div class='service-card'>
+                <h4>{service_name}</h4>
+                <p style='color: #6b7280; font-size: 0.9em;'>{details['description']}</p>
+                <div style='background: #f3f4f6; padding: 0.5rem; border-radius: 5px; margin: 0.5rem 0;'>
+                    💰 SAR {details['price_per_user']}/user/month<br>
+                    🆕 Setup (new implementation): SAR {details['setup_cost']:,}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Initialize service data if not exists
+            if service_key not in st.session_state.operational_services:
+                st.session_state.operational_services[service_key] = {
+                    'selected': False, 
+                    'users': 0, 
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
+            
+            # Get current values from session state
+            current_selected = st.session_state.operational_services[service_key].get('selected', False)
+            current_users = st.session_state.operational_services[service_key].get('users', 0)
+            current_new_impl = st.session_state.operational_services[service_key].get('new_implementation', False)
+            
+            selected = st.checkbox(f"Include {service_name}", 
+                                 key=f"{service_key}_selected",
+                                 value=current_selected)
+            
+            if selected:
+                # New Implementation checkbox
+                new_implementation = st.checkbox(
+                    "🆕 New Implementation", 
+                    key=f"{service_key}_new_impl",
+                    value=current_new_impl,
+                    help="Check this if it's a new implementation requiring setup. Uncheck if adding users to existing system."
+                )
+                
+                users = st.number_input(f"Number of users for {service_name}", 
+                                      min_value=0, 
+                                      value=current_users,
+                                      key=f"{service_key}_users",
+                                      step=1)
+                
+                # Update session state immediately
+                st.session_state.operational_services[service_key] = {
+                    'selected': True,
+                    'users': users,
+                    'actual_service_name': service_name,
+                    'new_implementation': new_implementation
+                }
+                
+                if users > 0:
+                    monthly_cost = details['price_per_user'] * users
+                    setup_cost = details['setup_cost'] if new_implementation else 0
+                    annual_cost = monthly_cost * 12 + setup_cost
+                    
+                    setup_text = f" + SAR {setup_cost:,} setup" if new_implementation else " (no setup cost)"
+                    
+                    st.markdown(f"""
+                    <div class='cost-display'>
+                        📊 Monthly: SAR {monthly_cost:,.0f}{setup_text}<br>
+                        <strong>Annual Total: SAR {annual_cost:,.0f}</strong>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.session_state.operational_services[service_key] = {
+                    'selected': False,
+                    'users': 0,
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
+    
+    st.markdown("---")
+    
+    # Microsoft Services (using current data)
+    st.markdown("### 🟦 Microsoft Cloud Services")
+    
+    col1, col2 = st.columns(2)
+    microsoft_services = list(current_data['MICROSOFT_SERVICES'].items())
+    
+    for i, (service_name, details) in enumerate(microsoft_services):
+        col = col1 if i % 2 == 0 else col2
+        service_key = f"microsoft_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
+        
+        with col:
+            st.markdown(f"""
+            <div class='service-card'>
+                <h4>{service_name}</h4>
+                <p style='color: #6b7280; font-size: 0.9em;'>{details['description']}</p>
+                <div style='background: #f3f4f6; padding: 0.5rem; border-radius: 5px; margin: 0.5rem 0;'>
+                    💰 SAR {details['price_per_user']}/user/month<br>
+                    🆕 Setup (new implementation): SAR {details['setup_cost']:,}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Initialize service data if not exists
+            if service_key not in st.session_state.operational_services:
+                st.session_state.operational_services[service_key] = {
+                    'selected': False, 
+                    'users': 0, 
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
+            
+            # Get current values from session state
+            current_selected = st.session_state.operational_services[service_key].get('selected', False)
+            current_users = st.session_state.operational_services[service_key].get('users', 0)
+            current_new_impl = st.session_state.operational_services[service_key].get('new_implementation', False)
+            
+            selected = st.checkbox(f"Include {service_name}", 
+                                 key=f"{service_key}_selected",
+                                 value=current_selected)
+            
+            if selected:
+                # New Implementation checkbox
+                new_implementation = st.checkbox(
+                    "🆕 New Implementation", 
+                    key=f"{service_key}_new_impl",
+                    value=current_new_impl,
+                    help="Check this if it's a new implementation requiring setup. Uncheck if adding users to existing system."
+                )
+                
+                users = st.number_input(f"Number of users for {service_name}", 
+                                      min_value=0, 
+                                      value=current_users,
+                                      key=f"{service_key}_users",
+                                      step=1)
+                
+                # Update session state immediately
+                st.session_state.operational_services[service_key] = {
+                    'selected': True,
+                    'users': users,
+                    'actual_service_name': service_name,
+                    'new_implementation': new_implementation
+                }
+                
+                if users > 0:
+                    monthly_cost = details['price_per_user'] * users
+                    setup_cost = details['setup_cost'] if new_implementation else 0
+                    annual_cost = monthly_cost * 12 + setup_cost
+                    
+                    setup_text = f" + SAR {setup_cost:,} setup" if new_implementation else " (no setup cost)"
+                    
+                    st.markdown(f"""
+                    <div class='cost-display'>
+                        📊 Monthly: SAR {monthly_cost:,.0f}{setup_text}<br>
+                        <strong>Annual Total: SAR {annual_cost:,.0f}</strong>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.session_state.operational_services[service_key] = {
+                    'selected': False,
+                    'users': 0,
+                    'actual_service_name': service_name,
+                    'new_implementation': False
