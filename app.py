@@ -1018,7 +1018,14 @@ def show_admin_dashboard():
     
     # Admin navigation
     if admin_dept == 'ALL':
-        admin_tabs = st.tabs(["🏢 Overview", "💻 IT Services", "🛒 Procurement", "🏢 Facility & Safety", "🛠️ Support Packages"])
+        admin_tabs = st.tabs([
+            "🏢 Overview", 
+            "💻 IT Services", 
+            "🛒 Procurement", 
+            "🏢 Facility & Safety", 
+            "🛠️ Support Packages",
+            "🚀 Implementation Projects"
+        ])
         
         with admin_tabs[0]:
             show_admin_overview()
@@ -1030,23 +1037,41 @@ def show_admin_dashboard():
             show_admin_facility_safety_management()
         with admin_tabs[4]:
             show_admin_support_management()
+        with admin_tabs[5]:
+            show_admin_implementation_management()
             
     elif admin_dept == 'IT':
-        admin_tabs = st.tabs(["💻 IT Services", "🛠️ Support Packages"])
+        admin_tabs = st.tabs([
+            "💻 IT Services", 
+            "🛠️ Support Packages", 
+            "🚀 IT Implementation Projects"
+        ])
         with admin_tabs[0]:
             show_admin_it_management()
         with admin_tabs[1]:
             show_admin_support_management()
+        with admin_tabs[2]:
+            show_admin_it_implementation_management()
             
     elif admin_dept == 'Procurement':
-        admin_tabs = st.tabs(["🛒 Procurement Services"])
+        admin_tabs = st.tabs([
+            "🛒 Procurement Services",
+            "🚀 Procurement Implementation Projects"
+        ])
         with admin_tabs[0]:
             show_admin_procurement_management()
+        with admin_tabs[1]:
+            show_admin_procurement_implementation_management()
             
     elif admin_dept == 'Facility_Safety':
-        admin_tabs = st.tabs(["🏢 Facility & Safety Services"])
+        admin_tabs = st.tabs([
+            "🏢 Facility & Safety Services",
+            "🚀 Facility Implementation Projects"
+        ])
         with admin_tabs[0]:
             show_admin_facility_safety_management()
+        with admin_tabs[1]:
+            show_admin_facility_implementation_management()
 
 def show_admin_overview():
     """Show admin overview with system statistics"""
@@ -1457,6 +1482,369 @@ def show_admin_facility_safety_management():
                         del st.session_state.admin_facility_safety_services[service_name]
                         st.success(f"🗑️ Removed {service_name}")
                         st.rerun()
+
+def show_admin_implementation_management():
+    """Show comprehensive implementation projects management for all departments"""
+    if not check_admin_access():
+        st.error("❌ Access denied. This section requires admin access.")
+        return
+    
+    st.markdown("""
+    <div class='admin-section'>
+        <h2>🚀 Implementation Projects Management</h2>
+        <p>Manage project categories, RPA packages, and implementation settings across all departments.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Sub-tabs for different aspects of implementation management
+    impl_tabs = st.tabs([
+        "💻 IT Categories", 
+        "🛒 Procurement Categories", 
+        "🏢 Facility Categories",
+        "🤖 RPA Packages"
+    ])
+    
+    with impl_tabs[0]:
+        show_admin_it_categories_management()
+    
+    with impl_tabs[1]:
+        show_admin_procurement_categories_management()
+    
+    with impl_tabs[2]:
+        show_admin_facility_categories_management()
+    
+    with impl_tabs[3]:
+        show_admin_rpa_management()
+
+def show_admin_it_implementation_management():
+    """Show IT implementation projects management"""
+    if not check_admin_access('IT'):
+        st.error("❌ Access denied. This section requires IT Department Head access.")
+        return
+    
+    st.markdown("""
+    <div class='admin-section'>
+        <h2>🚀 IT Implementation Projects Management</h2>
+        <p>Manage IT project categories and RPA packages.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    impl_tabs = st.tabs(["💻 IT Categories", "🤖 RPA Packages"])
+    
+    with impl_tabs[0]:
+        show_admin_it_categories_management()
+    
+    with impl_tabs[1]:
+        show_admin_rpa_management()
+
+def show_admin_procurement_implementation_management():
+    """Show Procurement implementation projects management"""
+    if not check_admin_access('Procurement'):
+        st.error("❌ Access denied. This section requires Procurement Department Head access.")
+        return
+    
+    st.markdown("""
+    <div class='admin-section'>
+        <h2>🚀 Procurement Implementation Projects Management</h2>
+        <p>Manage procurement project categories and implementation settings.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    show_admin_procurement_categories_management()
+
+def show_admin_facility_implementation_management():
+    """Show Facility & Safety implementation projects management"""
+    if not check_admin_access('Facility_Safety'):
+        st.error("❌ Access denied. This section requires Facility & Safety Department Head access.")
+        return
+    
+    st.markdown("""
+    <div class='admin-section'>
+        <h2>🚀 Facility & Safety Implementation Projects Management</h2>
+        <p>Manage facility and safety project categories and implementation settings.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    show_admin_facility_categories_management()
+
+def show_admin_it_categories_management():
+    """Manage IT project categories"""
+    st.markdown("### 💻 IT Project Categories Management")
+    
+    # Add new category
+    with st.expander("➕ Add New IT Project Category", expanded=False):
+        with st.form("add_it_category"):
+            category_name = st.text_input("Category Name (with emoji)", placeholder="e.g., 🆕 New Technology")
+            category_services = st.text_area(
+                "Services in Category (one per line)", 
+                placeholder="Service Name 1\nService Name 2\nService Name 3"
+            )
+            
+            if st.form_submit_button("Add IT Category", type="primary"):
+                if category_name and category_services:
+                    services_list = [service.strip() for service in category_services.split('\n') if service.strip()]
+                    st.session_state.admin_it_project_categories[category_name] = services_list
+                    st.success(f"✅ Added IT category: {category_name}")
+                    st.rerun()
+                else:
+                    st.error("Please fill in all required fields.")
+    
+    # Existing categories management
+    if st.session_state.admin_it_project_categories:
+        st.markdown("#### Current IT Project Categories")
+        
+        for category_name, services in st.session_state.admin_it_project_categories.items():
+            with st.expander(f"🔧 {category_name}", expanded=False):
+                col1, col2 = st.columns([3, 1])
+                
+                with col1:
+                    new_services = st.text_area(
+                        "Services in Category (one per line)",
+                        value='\n'.join(services),
+                        key=f"it_cat_services_{category_name}",
+                        height=150
+                    )
+                
+                with col2:
+                    if st.button("💾 Update", key=f"update_it_cat_{category_name}"):
+                        services_list = [service.strip() for service in new_services.split('\n') if service.strip()]
+                        st.session_state.admin_it_project_categories[category_name] = services_list
+                        st.success(f"✅ Updated {category_name}")
+                        st.rerun()
+                    
+                    if st.button("🗑️ Remove", key=f"remove_it_cat_{category_name}"):
+                        del st.session_state.admin_it_project_categories[category_name]
+                        st.success(f"🗑️ Removed {category_name}")
+                        st.rerun()
+
+def show_admin_procurement_categories_management():
+    """Manage Procurement project categories"""
+    st.markdown("### 🛒 Procurement Project Categories Management")
+    
+    # Add new category
+    with st.expander("➕ Add New Procurement Project Category", expanded=False):
+        with st.form("add_procurement_category"):
+            category_name = st.text_input("Category Name (with emoji)", placeholder="e.g., 📦 New Process Category")
+            category_services = st.text_area(
+                "Services in Category (one per line)", 
+                placeholder="Service Name 1\nService Name 2\nService Name 3"
+            )
+            
+            if st.form_submit_button("Add Procurement Category", type="primary"):
+                if category_name and category_services:
+                    services_list = [service.strip() for service in category_services.split('\n') if service.strip()]
+                    st.session_state.admin_procurement_service_categories[category_name] = services_list
+                    st.success(f"✅ Added Procurement category: {category_name}")
+                    st.rerun()
+                else:
+                    st.error("Please fill in all required fields.")
+    
+    # Existing categories management
+    if st.session_state.admin_procurement_service_categories:
+        st.markdown("#### Current Procurement Project Categories")
+        
+        for category_name, services in st.session_state.admin_procurement_service_categories.items():
+            with st.expander(f"🔧 {category_name}", expanded=False):
+                col1, col2 = st.columns([3, 1])
+                
+                with col1:
+                    new_services = st.text_area(
+                        "Services in Category (one per line)",
+                        value='\n'.join(services),
+                        key=f"proc_cat_services_{category_name}",
+                        height=150
+                    )
+                
+                with col2:
+                    if st.button("💾 Update", key=f"update_proc_cat_{category_name}"):
+                        services_list = [service.strip() for service in new_services.split('\n') if service.strip()]
+                        st.session_state.admin_procurement_service_categories[category_name] = services_list
+                        st.success(f"✅ Updated {category_name}")
+                        st.rerun()
+                    
+                    if st.button("🗑️ Remove", key=f"remove_proc_cat_{category_name}"):
+                        del st.session_state.admin_procurement_service_categories[category_name]
+                        st.success(f"🗑️ Removed {category_name}")
+                        st.rerun()
+
+def show_admin_facility_categories_management():
+    """Manage Facility & Safety project categories"""
+    st.markdown("### 🏢 Facility & Safety Project Categories Management")
+    
+    # Add new category
+    with st.expander("➕ Add New Facility & Safety Project Category", expanded=False):
+        with st.form("add_facility_category"):
+            category_name = st.text_input("Category Name (with emoji)", placeholder="e.g., 🔒 New Security Category")
+            category_services = st.text_area(
+                "Services in Category (one per line)", 
+                placeholder="Service Name 1\nService Name 2\nService Name 3"
+            )
+            
+            if st.form_submit_button("Add Facility & Safety Category", type="primary"):
+                if category_name and category_services:
+                    services_list = [service.strip() for service in category_services.split('\n') if service.strip()]
+                    st.session_state.admin_facility_safety_service_categories[category_name] = services_list
+                    st.success(f"✅ Added Facility & Safety category: {category_name}")
+                    st.rerun()
+                else:
+                    st.error("Please fill in all required fields.")
+    
+    # Existing categories management
+    if st.session_state.admin_facility_safety_service_categories:
+        st.markdown("#### Current Facility & Safety Project Categories")
+        
+        for category_name, services in st.session_state.admin_facility_safety_service_categories.items():
+            with st.expander(f"🔧 {category_name}", expanded=False):
+                col1, col2 = st.columns([3, 1])
+                
+                with col1:
+                    new_services = st.text_area(
+                        "Services in Category (one per line)",
+                        value='\n'.join(services),
+                        key=f"fac_cat_services_{category_name}",
+                        height=150
+                    )
+                
+                with col2:
+                    if st.button("💾 Update", key=f"update_fac_cat_{category_name}"):
+                        services_list = [service.strip() for service in new_services.split('\n') if service.strip()]
+                        st.session_state.admin_facility_safety_service_categories[category_name] = services_list
+                        st.success(f"✅ Updated {category_name}")
+                        st.rerun()
+                    
+                    if st.button("🗑️ Remove", key=f"remove_fac_cat_{category_name}"):
+                        del st.session_state.admin_facility_safety_service_categories[category_name]
+                        st.success(f"🗑️ Removed {category_name}")
+                        st.rerun()
+
+def show_admin_rpa_management():
+    """Manage RPA packages"""
+    st.markdown("### 🤖 RPA Packages Management")
+    
+    # Add new RPA package
+    with st.expander("➕ Add New RPA Package", expanded=False):
+        with st.form("add_rpa_package"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                package_name = st.text_input("Package Name", placeholder="e.g., Enterprise (15 Credits)")
+                discovery_analysis = st.number_input("Discovery Analysis Cost (SAR)", min_value=0, value=50000)
+                build_implementation = st.number_input("Build Implementation Cost (SAR)", min_value=0, value=10000)
+                project_management = st.number_input("Project Management Cost (SAR)", min_value=0, value=15000)
+                infrastructure_license = st.number_input("Infrastructure License Cost (SAR)", min_value=0, value=60000)
+            
+            with col2:
+                year_2_cost = st.number_input("Year 2 Cost (SAR)", min_value=0, value=15000)
+                year_3_cost = st.number_input("Year 3 Cost (SAR)", min_value=0, value=16000)
+                processes_covered = st.text_input("Processes Covered", placeholder="e.g., Covers up to 15 processes")
+                implementation_processes = st.text_input("Implementation Processes", placeholder="e.g., Covers up to 8 processes")
+            
+            if st.form_submit_button("Add RPA Package", type="primary"):
+                if package_name and processes_covered and implementation_processes:
+                    year_1_total = discovery_analysis + build_implementation + project_management + infrastructure_license
+                    
+                    rpa_package_data = {
+                        "discovery_analysis": discovery_analysis,
+                        "build_implementation": build_implementation,
+                        "project_management": project_management,
+                        "infrastructure_license": infrastructure_license,
+                        "year_1_total": year_1_total,
+                        "year_2_cost": year_2_cost,
+                        "year_3_cost": year_3_cost,
+                        "processes_covered": processes_covered,
+                        "implementation_processes": implementation_processes
+                    }
+                    
+                    st.session_state.admin_rpa_packages[package_name] = rpa_package_data
+                    st.success(f"✅ Added RPA package: {package_name}")
+                    st.rerun()
+                else:
+                    st.error("Please fill in all required fields.")
+    
+    # Existing RPA packages management
+    if st.session_state.admin_rpa_packages:
+        st.markdown("#### Current RPA Packages")
+        
+        for package_name, details in st.session_state.admin_rpa_packages.items():
+            with st.expander(f"🔧 {package_name}", expanded=False):
+                col1, col2, col3 = st.columns([2, 2, 1])
+                
+                with col1:
+                    new_discovery = st.number_input(
+                        "Discovery Analysis (SAR)", 
+                        value=details['discovery_analysis'], 
+                        min_value=0,
+                        key=f"rpa_discovery_{package_name}"
+                    )
+                    new_build = st.number_input(
+                        "Build Implementation (SAR)", 
+                        value=details['build_implementation'], 
+                        min_value=0,
+                        key=f"rpa_build_{package_name}"
+                    )
+                    new_pm = st.number_input(
+                        "Project Management (SAR)", 
+                        value=details['project_management'], 
+                        min_value=0,
+                        key=f"rpa_pm_{package_name}"
+                    )
+                    new_infrastructure = st.number_input(
+                        "Infrastructure License (SAR)", 
+                        value=details['infrastructure_license'], 
+                        min_value=0,
+                        key=f"rpa_infrastructure_{package_name}"
+                    )
+                
+                with col2:
+                    new_year_2 = st.number_input(
+                        "Year 2 Cost (SAR)", 
+                        value=details['year_2_cost'], 
+                        min_value=0,
+                        key=f"rpa_year2_{package_name}"
+                    )
+                    new_year_3 = st.number_input(
+                        "Year 3 Cost (SAR)", 
+                        value=details['year_3_cost'], 
+                        min_value=0,
+                        key=f"rpa_year3_{package_name}"
+                    )
+                    new_processes_covered = st.text_input(
+                        "Processes Covered", 
+                        value=details['processes_covered'],
+                        key=f"rpa_processes_{package_name}"
+                    )
+                    new_implementation_processes = st.text_input(
+                        "Implementation Processes", 
+                        value=details['implementation_processes'],
+                        key=f"rpa_impl_{package_name}"
+                    )
+                
+                with col3:
+                    if st.button("💾 Update", key=f"update_rpa_{package_name}"):
+                        year_1_total = new_discovery + new_build + new_pm + new_infrastructure
+                        
+                        st.session_state.admin_rpa_packages[package_name].update({
+                            'discovery_analysis': new_discovery,
+                            'build_implementation': new_build,
+                            'project_management': new_pm,
+                            'infrastructure_license': new_infrastructure,
+                            'year_1_total': year_1_total,
+                            'year_2_cost': new_year_2,
+                            'year_3_cost': new_year_3,
+                            'processes_covered': new_processes_covered,
+                            'implementation_processes': new_implementation_processes
+                        })
+                        st.success(f"✅ Updated {package_name}")
+                        st.rerun()
+                    
+                    if st.button("🗑️ Remove", key=f"remove_rpa_{package_name}"):
+                        del st.session_state.admin_rpa_packages[package_name]
+                        st.success(f"🗑️ Removed {package_name}")
+                        st.rerun()
+                    
+                    # Show calculated Year 1 total
+                    year_1_calc = new_discovery + new_build + new_pm + new_infrastructure
+                    st.metric("Year 1 Total", f"SAR {year_1_calc:,.0f}")
 
 def show_admin_support_management():
     """Show support packages management interface"""
