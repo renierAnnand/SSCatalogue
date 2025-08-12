@@ -440,6 +440,39 @@ DEFAULT_MICROSOFT_SERVICES = {
     }
 }
 
+DEFAULT_OTHER_SERVICES = {
+    "Salesforce Enterprise": {
+        "description": "Complete CRM platform with sales automation, marketing, and customer service capabilities",
+        "price_per_user": 165,
+        "setup_cost": 20000,
+        "department": "IT"
+    },
+    "ServiceNow IT Service Management": {
+        "description": "Comprehensive IT service management platform with incident, problem, and change management",
+        "price_per_user": 95,
+        "setup_cost": 15000,
+        "department": "IT"
+    },
+    "Tableau Server": {
+        "description": "Enterprise-grade data visualization and business intelligence platform",
+        "price_per_user": 70,
+        "setup_cost": 12000,
+        "department": "IT"
+    },
+    "DocuSign eSignature": {
+        "description": "Digital signature and document workflow automation platform",
+        "price_per_user": 25,
+        "setup_cost": 3000,
+        "department": "IT"
+    },
+    "Zoom Enterprise Plus": {
+        "description": "Advanced video conferencing with webinar and phone system integration",
+        "price_per_user": 20,
+        "setup_cost": 2500,
+        "department": "IT"
+    }
+}
+
 # Procurement Services with pricing
 DEFAULT_PROCUREMENT_SERVICES = {
     "Procurement Management Suite": {
@@ -941,6 +974,8 @@ def initialize_session_state():
         st.session_state.admin_oracle_services = DEFAULT_ORACLE_SERVICES.copy()
     if 'admin_microsoft_services' not in st.session_state:
         st.session_state.admin_microsoft_services = DEFAULT_MICROSOFT_SERVICES.copy()
+    if 'admin_other_services' not in st.session_state:
+        st.session_state.admin_other_services = DEFAULT_OTHER_SERVICES.copy()
     if 'admin_procurement_services' not in st.session_state:
         st.session_state.admin_procurement_services = DEFAULT_PROCUREMENT_SERVICES.copy()
     if 'admin_facility_safety_services' not in st.session_state:
@@ -962,6 +997,7 @@ def get_current_data():
     return {
         'ORACLE_SERVICES': st.session_state.admin_oracle_services,
         'MICROSOFT_SERVICES': st.session_state.admin_microsoft_services,
+        'OTHER_SERVICES': st.session_state.admin_other_services,
         'PROCUREMENT_SERVICES': st.session_state.admin_procurement_services,
         'FACILITY_SAFETY_SERVICES': st.session_state.admin_facility_safety_services,
         'SUPPORT_PACKAGES': st.session_state.admin_support_packages,
@@ -1084,33 +1120,107 @@ def show_admin_overview():
     
     current_data = get_current_data()
     
-    # Statistics cards
+    # Statistics cards - Updated to include all 3 categories
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         oracle_count = len(current_data['ORACLE_SERVICES'])
         microsoft_count = len(current_data['MICROSOFT_SERVICES'])
-        st.metric("IT Services", oracle_count + microsoft_count, f"{oracle_count} Oracle + {microsoft_count} Microsoft")
+        other_count = len(current_data['OTHER_SERVICES'])
+        st.metric("🔧 IT Services", oracle_count + microsoft_count + other_count, f"{oracle_count} Oracle + {microsoft_count} Microsoft + {other_count} Other")
     
     with col2:
         procurement_count = len(current_data['PROCUREMENT_SERVICES'])
-        st.metric("Procurement Services", procurement_count)
+        st.metric("🛒 Procurement Services", procurement_count)
     
     with col3:
         facility_count = len(current_data['FACILITY_SAFETY_SERVICES'])
-        st.metric("Facility & Safety Services", facility_count)
+        st.metric("🏢 Facility & Safety Services", facility_count)
     
     with col4:
         support_count = len(current_data['SUPPORT_PACKAGES'])
-        st.metric("Support Packages", support_count)
+        st.metric("🛠️ Support Packages", support_count)
+    
+    # Second row for Implementation Projects statistics
+    st.markdown("---")
+    st.markdown("#### 🚀 Implementation Projects Management")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        it_categories = len(current_data['IT_PROJECT_CATEGORIES'])
+        st.metric("💻 IT Project Categories", it_categories)
+    
+    with col2:
+        proc_categories = len(current_data['PROCUREMENT_SERVICE_CATEGORIES'])
+        st.metric("🛒 Procurement Categories", proc_categories)
+    
+    with col3:
+        facility_categories = len(current_data['FACILITY_SAFETY_SERVICE_CATEGORIES'])
+        st.metric("🏢 Facility Categories", facility_categories)
+    
+    with col4:
+        rpa_packages = len(current_data['RPA_PACKAGES'])
+        st.metric("🤖 RPA Packages", rpa_packages)
+    
+    # Detailed breakdown
+    st.markdown("---")
+    st.markdown("#### 📈 Detailed System Statistics")
+    
+    # Create comprehensive statistics
+    stats_data = {
+        'Category': [
+            '🔧 Operational Services',
+            '🛠️ Support Packages', 
+            '🚀 Implementation Projects',
+            '📊 Total System Items'
+        ],
+        'IT Department': [
+            len(current_data['ORACLE_SERVICES']) + len(current_data['MICROSOFT_SERVICES']) + len(current_data['OTHER_SERVICES']),
+            len([p for p in current_data['SUPPORT_PACKAGES'].values() if 'IT' in p.get('departments', [])]),
+            len(current_data['IT_PROJECT_CATEGORIES']) + len(current_data['RPA_PACKAGES']),
+            len(current_data['ORACLE_SERVICES']) + len(current_data['MICROSOFT_SERVICES']) + len(current_data['OTHER_SERVICES']) + 
+            len([p for p in current_data['SUPPORT_PACKAGES'].values() if 'IT' in p.get('departments', [])]) +
+            len(current_data['IT_PROJECT_CATEGORIES']) + len(current_data['RPA_PACKAGES'])
+        ],
+        'Procurement Department': [
+            len(current_data['PROCUREMENT_SERVICES']),
+            len([p for p in current_data['SUPPORT_PACKAGES'].values() if 'Procurement' in p.get('departments', [])]),
+            len(current_data['PROCUREMENT_SERVICE_CATEGORIES']),
+            len(current_data['PROCUREMENT_SERVICES']) + 
+            len([p for p in current_data['SUPPORT_PACKAGES'].values() if 'Procurement' in p.get('departments', [])]) +
+            len(current_data['PROCUREMENT_SERVICE_CATEGORIES'])
+        ],
+        'Facility & Safety': [
+            len(current_data['FACILITY_SAFETY_SERVICES']),
+            len([p for p in current_data['SUPPORT_PACKAGES'].values() if 'Facility_Safety' in p.get('departments', [])]),
+            len(current_data['FACILITY_SAFETY_SERVICE_CATEGORIES']),
+            len(current_data['FACILITY_SAFETY_SERVICES']) + 
+            len([p for p in current_data['SUPPORT_PACKAGES'].values() if 'Facility_Safety' in p.get('departments', [])]) +
+            len(current_data['FACILITY_SAFETY_SERVICE_CATEGORIES'])
+        ]
+    }
+    
+    df_stats = pd.DataFrame(stats_data)
+    st.dataframe(df_stats, use_container_width=True)
     
     # Recent activity (simulation)
     st.markdown("### 📈 Recent Admin Activity")
     st.info("🔄 This section would show recent changes made by department heads in a production environment.")
     
+    # Implementation Projects Activity Summary
+    with st.expander("🚀 Implementation Projects Activity", expanded=False):
+        st.markdown("""
+        **Recent Changes to Implementation Projects:**
+        - ✅ Project categories can now be managed by department heads
+        - ✅ RPA packages are fully configurable with pricing
+        - ✅ All 3 main categories (Operational, Support, Implementation) are admin-managed
+        - ✅ Real-time updates apply immediately to client interface
+        """)
+    
     # Quick actions
     st.markdown("### ⚡ Quick Actions")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         if st.button("📊 Export All Data", use_container_width=True):
@@ -1123,6 +1233,10 @@ def show_admin_overview():
     with col3:
         if st.button("📧 Notify Departments", use_container_width=True):
             st.success("📧 Notification system would alert departments of updates.")
+    
+    with col4:
+        if st.button("🚀 Sync Implementation Projects", use_container_width=True):
+            st.success("🚀 Implementation projects synchronized across all departments.")
 
 def show_admin_it_management():
     """Show IT services management interface"""
@@ -1133,7 +1247,7 @@ def show_admin_it_management():
     st.markdown("""
     <div class='admin-section'>
         <h2>💻 IT Services Management</h2>
-        <p>Manage Oracle and Microsoft services, pricing, and project categories.</p>
+        <p>Manage Oracle, Microsoft, and other IT services, pricing, and project categories.</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1282,6 +1396,81 @@ def show_admin_it_management():
                     
                     if st.button("🗑️ Remove", key=f"remove_ms_{service_name}"):
                         del st.session_state.admin_microsoft_services[service_name]
+                        st.success(f"🗑️ Removed {service_name}")
+                        st.rerun()
+    
+    st.markdown("---")
+    
+    # Other Services Management
+    st.markdown("### 🔧 Other Licenses & Services Management")
+    
+    # Add new Other service
+    with st.expander("➕ Add New Other Service", expanded=False):
+        with st.form("add_other_service"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                service_name = st.text_input("Service Name", key="other_service_name")
+                description = st.text_area("Description", key="other_description")
+            
+            with col2:
+                price_per_user = st.number_input("Price per User (SAR/month)", min_value=0, value=100, key="other_price")
+                setup_cost = st.number_input("Setup Cost (SAR)", min_value=0, value=5000, key="other_setup")
+            
+            if st.form_submit_button("Add Other Service", type="primary"):
+                if service_name and description:
+                    st.session_state.admin_other_services[service_name] = {
+                        "description": description,
+                        "price_per_user": price_per_user,
+                        "setup_cost": setup_cost,
+                        "department": "IT"
+                    }
+                    st.success(f"✅ Added Other service: {service_name}")
+                    st.rerun()
+                else:
+                    st.error("Please fill in all required fields.")
+    
+    # Existing Other services
+    if st.session_state.admin_other_services:
+        st.markdown("#### Current Other Services")
+        
+        for service_name, details in st.session_state.admin_other_services.items():
+            with st.expander(f"🔧 {service_name}", expanded=False):
+                col1, col2, col3 = st.columns([2, 2, 1])
+                
+                with col1:
+                    new_desc = st.text_area(
+                        "Description", 
+                        value=details['description'], 
+                        key=f"other_desc_{service_name}"
+                    )
+                    
+                with col2:
+                    new_price = st.number_input(
+                        "Price per User (SAR/month)", 
+                        value=details['price_per_user'], 
+                        min_value=0,
+                        key=f"other_price_{service_name}"
+                    )
+                    new_setup = st.number_input(
+                        "Setup Cost (SAR)", 
+                        value=details['setup_cost'], 
+                        min_value=0,
+                        key=f"other_setup_{service_name}"
+                    )
+                
+                with col3:
+                    if st.button("💾 Update", key=f"update_other_{service_name}"):
+                        st.session_state.admin_other_services[service_name].update({
+                            'description': new_desc,
+                            'price_per_user': new_price,
+                            'setup_cost': new_setup
+                        })
+                        st.success(f"✅ Updated {service_name}")
+                        st.rerun()
+                    
+                    if st.button("🗑️ Remove", key=f"remove_other_{service_name}"):
+                        del st.session_state.admin_other_services[service_name]
                         st.success(f"🗑️ Removed {service_name}")
                         st.rerun()
 
@@ -2011,6 +2200,12 @@ def calculate_operational_total():
                 monthly_cost = service_info['price_per_user'] * users
                 setup_cost = service_info['setup_cost'] if is_new_implementation else 0
                 total += (monthly_cost * 12) + setup_cost
+            # Check Other services
+            elif actual_service_name in current_data['OTHER_SERVICES']:
+                service_info = current_data['OTHER_SERVICES'][actual_service_name]
+                monthly_cost = service_info['price_per_user'] * users
+                setup_cost = service_info['setup_cost'] if is_new_implementation else 0
+                total += (monthly_cost * 12) + setup_cost
             # Check Procurement services
             elif actual_service_name in current_data['PROCUREMENT_SERVICES']:
                 service_info = current_data['PROCUREMENT_SERVICES'][actual_service_name]
@@ -2105,14 +2300,17 @@ def show_header():
         admin_info = st.session_state.get('admin_info', {})
         admin_name = admin_info.get('name', 'Administrator')
         
-        st.markdown(f"""
-        <div class='admin-header'>
-            <h1>🔧 Alkhorayef Group</h1>
-            <h2>2025 Shared Services Admin Panel</h2>
-            <p>Department Head Content Management System</p>
-            <p><strong>Administrator:</strong> {admin_name} | <strong>Environment:</strong> Admin Mode</p>
+    st.markdown(f"""
+    <div class='admin-header'>
+        <h1>🔧 Alkhorayef Group</h1>
+        <h2>2025 Shared Services Admin Panel</h2>
+        <p>Complete Department Head Content Management System</p>
+        <p><strong>Administrator:</strong> {admin_name} | <strong>Environment:</strong> Admin Mode</p>
+        <div style='background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; margin-top: 1rem;'>
+            <strong>🚀 FULL SYSTEM MANAGEMENT:</strong> Operational Services • Support Packages • Implementation Projects
         </div>
-        """, unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
     else:
         header_subtitle = "Multi-Department Shared Services Catalogue and Budgeting System"
         if selected_company_info and selected_dept:
@@ -2176,17 +2374,59 @@ def show_sidebar():
                 st.markdown("### 📊 System Status")
                 current_data = get_current_data()
                 
-                total_services = (len(current_data['ORACLE_SERVICES']) + 
-                                len(current_data['MICROSOFT_SERVICES']) + 
-                                len(current_data['PROCUREMENT_SERVICES']) + 
-                                len(current_data['FACILITY_SAFETY_SERVICES']))
+                # Comprehensive statistics for all 3 categories
+                col1, col2 = st.columns(2)
                 
-                st.metric("Total Services", total_services)
-                st.metric("Support Packages", len(current_data['SUPPORT_PACKAGES']))
+                with col1:
+                    st.markdown("**🔧 Operational Services**")
+                    total_operational = (len(current_data['ORACLE_SERVICES']) + 
+                                       len(current_data['MICROSOFT_SERVICES']) + 
+                                       len(current_data['OTHER_SERVICES']) + 
+                                       len(current_data['PROCUREMENT_SERVICES']) + 
+                                       len(current_data['FACILITY_SAFETY_SERVICES']))
+                    st.metric("Total Services", total_operational)
+                
+                with col2:
+                    st.markdown("**🛠️ Support Packages**")
+                    st.metric("Packages", len(current_data['SUPPORT_PACKAGES']))
+                
+                st.markdown("**🚀 Implementation Projects**")
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    total_categories = (len(current_data['IT_PROJECT_CATEGORIES']) + 
+                                      len(current_data['PROCUREMENT_SERVICE_CATEGORIES']) + 
+                                      len(current_data['FACILITY_SAFETY_SERVICE_CATEGORIES']))
+                    st.metric("Project Categories", total_categories)
+                
+                with col2:
+                    st.metric("RPA Packages", len(current_data['RPA_PACKAGES']))
+                
+                # Admin capabilities highlight
+                st.markdown("---")
+                st.markdown("""
+                <div class='admin-warning'>
+                    <strong>🚀 NEW: Full Implementation Management</strong><br>
+                    ✅ Manage all 3 categories: Operational, Support & Implementation<br>
+                    ✅ Add/Edit project categories for all departments<br>
+                    ✅ Configure RPA packages with custom pricing<br>
+                    ✅ Real-time updates to client interface
+                </div>
+                """, unsafe_allow_html=True)
                 
             else:
                 st.markdown("**🔐 Admin Access Required**")
                 st.info("Please log in with your Department Head credentials to access the admin panel.")
+                
+                # Show demo credentials reminder
+                with st.expander("🔑 Demo Access", expanded=False):
+                    st.markdown("""
+                    **Quick Demo Access:**
+                    - IT: `it_admin` / `itadmin2025`
+                    - Procurement: `procurement_admin` / `procadmin2025`
+                    - Facility: `facility_admin` / `faciladmin2025`
+                    - Super Admin: `super_admin` / `superadmin2025`
+                    """)
         
         else:
             # Client sidebar content (existing functionality)
@@ -2317,6 +2557,92 @@ def show_it_operational_services():
     for i, (service_name, details) in enumerate(oracle_services):
         col = col1 if i % 2 == 0 else col2
         service_key = f"oracle_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
+        
+        with col:
+            st.markdown(f"""
+            <div class='service-card'>
+                <h4>{service_name}</h4>
+                <p style='color: #6b7280; font-size: 0.9em;'>{details['description']}</p>
+                <div style='background: #f3f4f6; padding: 0.5rem; border-radius: 5px; margin: 0.5rem 0;'>
+                    💰 SAR {details['price_per_user']}/user/month<br>
+                    🆕 Setup (new implementation): SAR {details['setup_cost']:,}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Initialize service data if not exists
+            if service_key not in st.session_state.operational_services:
+                st.session_state.operational_services[service_key] = {
+                    'selected': False, 
+                    'users': 0, 
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
+            
+            # Get current values from session state
+            current_selected = st.session_state.operational_services[service_key].get('selected', False)
+            current_users = st.session_state.operational_services[service_key].get('users', 0)
+            current_new_impl = st.session_state.operational_services[service_key].get('new_implementation', False)
+            
+            selected = st.checkbox(f"Include {service_name}", 
+                                 key=f"{service_key}_selected",
+                                 value=current_selected)
+            
+            if selected:
+                # New Implementation checkbox
+                new_implementation = st.checkbox(
+                    "🆕 New Implementation", 
+                    key=f"{service_key}_new_impl",
+                    value=current_new_impl,
+                    help="Check this if it's a new implementation requiring setup. Uncheck if adding users to existing system."
+                )
+                
+                users = st.number_input(f"Number of users for {service_name}", 
+                                      min_value=0, 
+                                      value=current_users,
+                                      key=f"{service_key}_users",
+                                      step=1)
+                
+                # Update session state immediately
+                st.session_state.operational_services[service_key] = {
+                    'selected': True,
+                    'users': users,
+                    'actual_service_name': service_name,
+                    'new_implementation': new_implementation
+                }
+                
+                if users > 0:
+                    monthly_cost = details['price_per_user'] * users
+                    setup_cost = details['setup_cost'] if new_implementation else 0
+                    annual_cost = monthly_cost * 12 + setup_cost
+                    
+                    setup_text = f" + SAR {setup_cost:,} setup" if new_implementation else " (no setup cost)"
+                    
+                    st.markdown(f"""
+                    <div class='cost-display'>
+                        📊 Monthly: SAR {monthly_cost:,.0f}{setup_text}<br>
+                        <strong>Annual Total: SAR {annual_cost:,.0f}</strong>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.session_state.operational_services[service_key] = {
+                    'selected': False,
+                    'users': 0,
+                    'actual_service_name': service_name,
+                    'new_implementation': False
+                }
+    
+    st.markdown("---")
+    
+    # Other Services (using current data)
+    st.markdown("### 🔧 Other Licenses & Services")
+    
+    col1, col2 = st.columns(2)
+    other_services = list(current_data['OTHER_SERVICES'].items())
+    
+    for i, (service_name, details) in enumerate(other_services):
+        col = col1 if i % 2 == 0 else col2
+        service_key = f"other_{service_name.lower().replace(' ', '_').replace('&', 'and')}"
         
         with col:
             st.markdown(f"""
