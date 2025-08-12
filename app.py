@@ -2427,10 +2427,99 @@ def show_sidebar():
                     - Facility: `facility_admin` / `faciladmin2025`
                     - Super Admin: `super_admin` / `superadmin2025`
                     """)
-        
         else:
             # Client sidebar content (existing functionality)
             st.markdown("### 🏢 Company Information")
+            
+            st.markdown("**🏭 Alkhorayef Group**")
+            
+            # Company selection
+            selected_company = st.selectbox(
+                "Select Your Company", 
+                options=ALKHORAYEF_COMPANIES,
+                index=0,
+                key="company_selection",
+                help="Choose which Alkhorayef Group company you represent"
+            )
+            
+            # Department selection for the requester (not the shared service department)
+            department = st.selectbox(
+                "Your Department", 
+                options=COMPANY_DEPARTMENTS,
+                key="department_selection",
+                help="Your department within the company"
+            )
+            
+            contact_person = st.text_input("Contact Person", key="contact_person", placeholder="Your full name")
+            email = st.text_input("Email", key="email", placeholder="your.email@alkhorayef.com")
+            
+            # Display selected company and shared service department
+            if st.session_state.selected_department:
+                departments_config = get_departments_config()
+                dept_config = departments_config[st.session_state.selected_department]
+                st.markdown(f"""
+                <div style='background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin: 0.5rem 0;'>
+                    <strong>Company:</strong> {selected_company}<br>
+                    <strong>Your Dept:</strong> {department}<br>
+                    <strong>Shared Service:</strong> {dept_config['icon']} {dept_config['title']}
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Quick department switcher in sidebar
+                if st.button("🔄 Change Department", key="sidebar_change_dept", use_container_width=True):
+                    st.session_state.selected_department = None
+                    st.rerun()
+            
+            st.session_state.company_info = {
+                'company': selected_company,
+                'company_code': selected_company,
+                'department': department,
+                'contact_person': contact_person,
+                'email': email,
+                'shared_service_dept': st.session_state.selected_department,
+                'date': datetime.now().strftime("%Y-%m-%d")
+            }
+            
+            if st.session_state.selected_department:
+                st.markdown("---")
+                
+                # Budget summary
+                departments_config = get_departments_config()
+                dept_config = departments_config[st.session_state.selected_department]
+                st.markdown(f"### 💰 {dept_config['title']} Budget Summary")
+                
+                operational_total = calculate_operational_total()
+                support_total = calculate_support_total()
+                implementation_total = calculate_implementation_total()
+                total_budget = operational_total + support_total + implementation_total
+                
+                st.markdown(f"""
+                <div class='metric-card'>
+                    <h4>Operational Services</h4>
+                    <h3>SAR {operational_total:,.0f}</h3>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div class='metric-card'>
+                    <h4>Support Packages</h4>
+                    <h3>SAR {support_total:,.0f}</h3>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div class='metric-card'>
+                    <h4>Custom Implementations</h4>
+                    <h3>SAR {implementation_total:,.0f}</h3>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(f"""
+                <div class='total-budget'>
+                    💰 Total 2025 Budget<br>
+                    <span style='font-size: 1.5em'>SAR {total_budget:,.0f}</span>
+                </div>
+                """, unsafe_allow_html=True)
             
             st.markdown("**🏭 Alkhorayef Group**")
             
